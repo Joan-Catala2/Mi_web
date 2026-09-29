@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Joan Català Mateu — Diario personal</title>
+  <meta name="description" content="Diario personal de Joan Català Mateu: esgrima, viajar, aprender inglés y crear proyectos con inteligencia artificial. Bachillerato, 1º DAM (IES Simarro) y C1 de valenciano.">
+  <meta name="author" content="Joan Català Mateu">
+
+  <!-- Fuentes: Karla (lectura) + Silkscreen (rótulos pixel) + VT323 (diálogo) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Karla:wght@400;500;600;700&family=Silkscreen:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-pantalla="portada">
+    <!-- ================================================================
+       PORTADA — lo primero que se ve. Nombre en grande con el estilo
+       del bar + 3 botones: Conóceme (diario entero) · Contactar · Entrar (bar).
+       ================================================================ -->
+  <section class="portada" id="portada" aria-labelledby="portada-title">
+    <div class="portada__scan" aria-hidden="true"></div>
+
+    <p class="portada__eyebrow">Bachillerato · 1º DAM · C1 de valencià</p>
+
+    <h1 class="portada__name" id="portada-title">
+      Joan <span class="gold">Català</span> Mateu
+    </h1>
+
+    <p class="portada__desc">
+      Esgrimista de alto rendimiento, estudiante de DAM y futuro creando proyectos con IA.
+    </p>
+
+    <div class="portada__cta">
+      <button class="btn3 btn3--laton" type="button" data-ir="diario">Conóceme</button>
+      <button class="btn3"             type="button" data-ir="contacto">Contactar</button>
+      <button class="btn3"             type="button" data-ir="bar">Entrar</button>
+    </div>
+
+    <p class="portada__nota">Casa Joan · despachos desde 2018</p>
+  </section>
+
+  <!-- ================================================================
+       DIARIO — la web entera. El cuerpo lo rellena script.js desde el
+       <template id="datosBar">, entrada por entrada, con botones de
+       navegación al final de cada una.
+       ================================================================ -->
+  <main class="diario" id="diario" aria-labelledby="diario-title">
+
+    <div class="diario__barra">
+      <a class="diario__marca" href="#diario-top">Joan Català Mateu</a>
+      <button class="btn4" type="button" data-ir="portada">⌂ portada</button>
+      <button class="btn4" type="button" data-ir="bar">☰ el bar</button>
+      <button class="btn4" type="button" data-ir="contacto">✉ contactar</button>
+    </div>
+
+    <header class="diario__top" id="diario-top">
+      <p class="diario__eyebrow">Diario personal</p>
+      <h2 class="diario__title" id="diario-title">Joan Català Mateu</h2>
+      <p class="diario__phrase">Esgrima, viajar, inglés y proyectos con IA. Todo lo que sé de mí, en un solo sitio.</p>
+      <nav class="sumario" aria-label="Sumario del diario">
+        <p class="sumario__label">En este diario</p>
+        <ol class="sumario__lista" id="sumarioLista"><!-- la rellena script.js --></ol>
+      </nav>
+    </header>
+
+    <div class="diario__cuerpo" id="diarioCuerpo"><!-- las entradas, generadas --></div>
+
+    <!-- Contacto del diario: el botón Contactar aterriza aquí -->
+    <section class="entrada entrada--contacto" id="contacto">
+      <h2>Hablemos</h2>
+      <p>
+        Si quieres proponerme un proyecto, una colaboración o escribirme sobre lo que has leído,
+        puedes hacerlo por correo. Respondo en un plazo de veinticuatro horas.
+      </p>
+      <p class="contacto__mail">
+        <a href="mailto:joan.catala.mateu@correo.es">joan.catala.mateu@correo.es</a>
+        <button type="button" id="diarioCopyMail" data-copy="joan.catala.mateu@correo.es">copiar</button>
+      </p>
+      <ul class="contacto__redes">
+        <li><a href="https://github.com/" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a></li>
+        <li><a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a></li>
+      </ul>
+      <div class="nav3" id="nav3Contacto"><!-- botón ☰ el bar, añadidos por JS --></div>
+      <p class="diario__legal">© <span id="year">2025</span> Joan Català Mateu · página hecha a mano con HTML, CSS y JavaScript.</p>
+    </section>
+  </main>
+  <!-- ================================================================
+       EL BAR · es la web entera. No hay portada, ni cabecera, ni pie.
+       Panel derecho con 3 vistas: carta · plato · contacto.
+       La escena de la izquierda la pinta script.js en el canvas.
+       ================================================================ -->
+    <section class="bar" id="bar" aria-labelledby="bar-title">
+
+    <!-- Botones sobre el marco de madera -->
+        <div class="bar__utfila">
+      <button class="bar__ini" type="button" data-ir="portada">⌂ portada</button>
+      <button class="bar__ini" type="button" data-ir="diario">📖 diario</button>
+      <button class="bar__ini" type="button" data-ir="contacto">✉ contactar</button>
+      <button class="bar__son" id="barSon" type="button" aria-pressed="false">sonido: off</button>
+    </div>
+
+    <div class="bar__marco">
+
+      <!-- ── IZQUIERDA: la escena ── -->
+      <div class="bar__escena" id="barEscena">
+        <canvas class="bar__canvas" id="barCanvas" width="256" height="144" aria-hidden="true"></canvas>
+        <div class="bar__scan" aria-hidden="true"></div>
+        <div class="bar__glow" aria-hidden="true"></div>
+        <p   class="bar__neon" aria-hidden="true">abierto</p>
+
+        <!-- Altavoz del camarero (aria-live: lo leen los lectores de pantalla) -->
+        <div class="burbuja" id="burbuja">
+          <p class="burbuja__who"><span class="burbuja__dot"></span>Marcos · camarero de la casa</p>
+          <p class="burbuja__eco" id="burbujaEco" hidden></p>
+          <p class="burbuja__txt" id="burbujaTxt" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <!-- ── DERECHA: las tres vistas ── -->
+      <div class="bar__panel" id="barPanel" data-vista="carta">
+
+        <!-- VISTA 1 · pizarra -->
+        <section class="pizarra">
+          <p class="pizarra__eyebrow">Casa Joan · despachos desde 2018</p>
+          <h2 class="pizarra__title" id="bar-title">¿Qué te sirvo?</h2>
+          <p class="pizarra__sub">Todo lo que sé de Joan, plato por plato. Elige y te lo cuento entero.</p>
+
+          <ol class="pizarra__lista" id="barLista"><!-- la rellena script.js --></ol>
+
+          <p class="pizarra__nota">↑ ↓ navegar · enter elegir · <span id="barTotal">—</span> platos en carta</p>
+                    <div class="pizarra__fila">
+            <button class="bar__full" type="button" data-ir="diario">📖 Ver el diario entero</button>
+            <button class="bar__full" type="button" data-ir="contacto">✉ Contactar</button>
+          </div>
+        </section>
+
+        <!-- VISTA 2 · serveta: el texto COMPLETO del apartado -->
+        <section class="servido">
+          <div class="servido__papel">
+            <p class="servido__sello" id="servidoSello">plato 01</p>
+            <button class="servido__prev" id="barPrev" type="button">← anterior</button>
+            <div class="servido__cuerpo" id="servidoCuerpo" tabindex="-1"><!-- artículo clonado --></div>
+            <!-- Los 3 botones (carta / siguiente / contactar) los añade script.js -->
+          </div>
+        </section>
+
+        <!-- VISTA 3 · contacto -->
+        <section class="contacto">
+          <p class="contacto__eyebrow">La cuenta</p>
+          <h2 class="contacto__title">¿Hablamos?</h2>
+          <p class="contacto__txt">
+            Si quieres proponerme un proyecto, una colaboración o escribirme sobre lo que has leído
+            aquí, por correo. Respondo en veinticuatro horas, te lo firma el camarero.
+          </p>
+          <p class="contacto__mail">
+            <a id="barMail" href="mailto:joan.catala.mateu@correo.es">joan.catala.mateu@correo.es</a>
+            <button type="button" id="barCopyMail" data-copy="joan.catala.mateu@correo.es">copiar</button>
+          </p>
+          <ul class="contacto__redes">
+            <li><a href="https://github.com/" target="_blank" rel="noopener">GitHub</a></li>
+            <li><a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a></li>
+            <li><a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a></li>
+          </ul>
+          <p class="contacto__legal">© <span id="year">2025</span> Joan Català Mateu · página hecha a mano.</p>
+          <button class="jn-btn jn-btn--linea" id="barContactoBack" type="button">☰ la carta</button>
+        </section>
+
+      </div>
+    </div>
+
+    <p class="bar__hint" aria-hidden="true">1–8 saltar a un plato · c carta · s siguiente · m contactar · esc carta</p>
+    </section>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       DATOS · un <template> no se pinta en pantalla: es la despensa.
+       Cada <article> es un plato. Para añadir uno, copia y pega un
+       bloque entero cambiando id, título y textos. El menú de la
+       pizarra se genera solo a partir de esta lista.
+       ════════════════════════════════════════════════════════════════ -->
+  <template id="datosBar">
+
+    <article class="post" id="sobre-mi">
+      <header class="post__head">
+        <h2>Sobre mí y mi método</h2>
+        <p class="post__meta">2025 · Presentación</p>
+      </header>
+      <p>
+        Mi día se ordena alrededor de dos actividades: entrenar y estudiar. La esgrima me impuso
+        pronto una disciplina de horarios, y la programación me ha enseñado a aplicar esa misma
+        disciplina a un problema distinto. No concibo el trabajo de otra manera: se prepara, se
+        ejecuta, se revisa con calma y se corrige. Lo que no se revisa, no mejora.
+      </p>
+      <p>
+        Me interesa hacer bien las cosas antes que hacerlas rápidas. Prefiero terminar un
+        proyecto pequeño y bien acabado que empezar cinco a la vez.
+      </p>
+    </article>
+
+    <article class="post" id="esgrima">
+      <header class="post__head">
+        <h2>Siete años de esgrima</h2>
+        <p class="post__meta">2018 – 2025 · Deporte</p>
+      </header>
+      <p>
+        La esgrima es un deporte de lectura: antes de atacar hay que entender qué está haciendo
+        el contrario. Empecé con siete años menos de los que tengo ahora y nunca lo he dejado.
+      </p>
+      <h3>Recorrido deportivo</h3>
+      <ul class="list">
+        <li>Temporadas completas de competición autonómica, con resultados destacados.</li>
+        <li>Participación en campeonatos nacionales de mi categoría.</li>
+        <li>Convocatoria para representar a España en una competición internacional.</li>
+        <li>Condición de <strong>deportista de alto rendimiento</strong>.</li>
+      </ul>
+      <p>
+        Lo más útil que me ha dado la competición no son los resultados, sino el hábito de
+        analizar lo que he hecho mal. Un asalto perdido se ve en vídeo, se identifica un solo
+        error y se trabaja ese error concreto.
+      </p>
+    </article>
+
+    <article class="post" id="viajar">
+      <header class="post__head">
+        <h2>Viajar para entender, no para ver</h2>
+        <p class="post__meta">2025 · Viajes</p>
+      </header>
+      <p>
+        He viajado mucho por España, casi siempre por competiciones, y he tenido ocasión de
+        salir del país. Me interesan los sitios lejanos, y no tanto los monumentos como la forma
+        en que la gente de allí organiza su día.
+      </p>
+      <p>
+        Viajar enseña una cosa muy práctica: saber desenvolverse solo. Coger un transporte que no
+        entiendes, preguntar en un idioma que dominas a medias, llegar a la hora prevista.
+      </p>
+    </article>
+
+    <article class="post" id="musica">
+      <header class="post__head">
+        <h2>La música como método</h2>
+        <p class="post__meta">2025 · Costumbres</p>
+      </header>
+      <p>
+        Uso la música con una intención concreta. Antes de competir subo el volumen: funciona
+        como una señal para el cuerpo. En los tiempos muertos sirve para aprovechar esas horas.
+      </p>
+      <p>
+        No es un gusto decorativo, es una herramienta. Y como herramienta, también la ordeno: una
+        lista para entrenar, otra para viajar, otra para trabajar.
+      </p>
+    </article>
+
+    <article class="post" id="ingles">
+      <header class="post__head">
+        <h2>Aprender inglés por independencia</h2>
+        <p class="post__meta">2025 · Idiomas</p>
+      </header>
+      <p>
+        Estudio inglés por una razón práctica: quiero poder moverme fuera de España sin depender
+        de nadie. En la competición internacional se nota mucho la diferencia entre quien puede
+        hablar con los demás y quien necesita traductor.
+      </p>
+      <p>
+        La otra razón es el trabajo: casi toda la documentación técnica está en inglés. Avanzo
+        despacio, pero con constancia. Equivocarse hablando es la única forma de dejar de
+        equivocarse.
+      </p>
+    </article>
+
+    <article class="post" id="estudios">
+      <header class="post__head">
+        <h2>Estudios y formación</h2>
+        <p class="post__meta">2025 · Formación</p>
+      </header>
+      <p>
+        Mi formación combina una base académica con idiomas y un deporte de alto rendimiento.
+        Todo se apoya en el mismo método: constancia y revisión.
+      </p>
+      <ul class="list">
+        <li><strong>Bachillerato</strong> — finalizado.</li>
+        <li><strong>1º de DAM</strong> (Desarrollo de Aplicaciones Multiplataforma) — en curso, IES Simarro.</li>
+        <li><strong>C1 de valenciano</strong> — certificado.</li>
+        <li><strong>Inglés</strong> — en aprendizaje (objetivo B2).</li>
+      </ul>
+      <p>
+        La parte técnica la estoy construyendo ahora mismo, y por eso me interesa tanto la
+        programación: es la herramienta que me permite pasar de una idea a algo real.
+      </p>
+    </article>
+
+    <article class="post" id="ia">
+      <header class="post__head">
+        <h2>Quiero vivir de crear con IA</h2>
+        <p class="post__meta">2025 · Futuro</p>
+      </header>
+      <p>
+        Estoy en primero de DAM porque quiero trabajar construyendo mis propios proyectos. La
+        programación me interesa por lo que permite: si sabes cómo está hecho, puedes levantar
+        prácticamente lo que se te ocurra en formato digital.
+      </p>
+      <p>
+        La inteligencia artificial ha cambiado la manera de empezar: una idea se puede prototipar
+        en un día y corregir después. Eso no sustituye el criterio, lo multiplica.
+      </p>
+      <blockquote>Medir, ejecutar, corregir un detalle y volver mañana. El mismo método en la pista y en el editor.</blockquote>
+    </article>
+
+    <article class="post" id="proyectos">
+      <header class="post__head">
+        <h2>Proyectos</h2>
+        <p class="post__meta">2025 · Lo que estoy construyendo</p>
+      </header>
+      <p>
+        Aquí van algunos de los proyectos en los que trabajo. Son enlaces de ejemplo: sustitúyelos
+        por los tuyos reales cuando los tengas.
+      </p>
+      <ul class="list">
+        <li><a href="https://github.com/" target="_blank" rel="noopener">Marca personal (esta web)</a> — HTML, CSS y JS puros.</li>
+        <li><a href="https://github.com/" target="_blank" rel="noopener">Prototipo con IA</a> — idea → prueba en un día.</li>
+        <li><a href="https://github.com/" target="_blank" rel="noopener">Prácticas de DAM</a> — ejercicios y proyectos de clase.</li>
+      </ul>
+      <p>
+        <a class="btn" href="https://github.com/" target="_blank" rel="noopener">Ver todo en GitHub →</a>
+      </p>
+    </article>
+
+  </template>
+
+  <noscript>
+    <p class="sin-js">Esta web es un bar con escena animada: necesita JavaScript. Con JavaScript
+    activado verás la pizarra y los ocho apartados completos.</p>
+  </noscript>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

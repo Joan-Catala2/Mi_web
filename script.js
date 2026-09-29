@@ -1,5 +1,8 @@
 /* ══════════════════════════════════════════════════════════════════════
-   script.js v5 · Joan Català Mateu
+   script.js v6 · Joan Català Mateu
+   ──────────────────────────────────────────────────────────────────────
+   v6 = v5 + botón "← atrás" en cada plato del bar (vuelve a la carta
+        donde está el camarero). Ver marcas [v6] en el código.
    ──────────────────────────────────────────────────────────────────────
    TRES PANTALLAS en la misma página (body[data-pantalla]):
      portada → nombre grande + Conóceme / Contactar / Entrar
@@ -63,6 +66,7 @@ function leerPlatos() {
     };
   });
 }
+PLATOS = leerPlatos();   /* se lee una sola vez: mismo orden en bar y diario */
 
 /* ══════════════════════════════════════════════════════════════════════
    2. EL CONMUTADOR DE PANTALLAS
@@ -73,13 +77,9 @@ function setPantalla(p) {
   document.body.dataset.pantalla = p;
   Escena.corriendo(p === 'bar');                 /* la escena solo gasta CPU si se ve */
   if (p === 'diario') window.scrollTo(0, 0);
-  if (p === 'portada') {
-    var t = document.getElementById('portada-title');
-    if (t) t.focus && t.focus();                 /* el foco sigue a la pantalla */
-  }
 }
 
-/* Los tres destinos. "contacto" se comporta distinto según dónde estés:
+/* Los destinos. "contacto" se comporta distinto según dónde estés:
    dentro del bar abre la vista contacto del panel; desde fuera aterriza
    en la sección de contacto del diario (tu contacto y todo alrededor). */
 var DESTINOS = {
@@ -90,7 +90,9 @@ var DESTINOS = {
     if (document.body.dataset.pantalla === 'bar') { setPantalla('bar'); verVista('contacto'); decir('La cuenta no corre. El correo está ahí mismo.', true); }
     else { setPantalla('diario'); var c = document.getElementById('contacto');
            if (c) c.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth' }); }
-  } }
+  } },
+  /* [v6] ← atrás: dentro del bar, volver a la pizarra donde está el camarero */
+  carta   : { txt:'← atrás',      acc:function(){ irCarta(); } }
 };
 
 /* Fila con los OTROS DOS destinos (el actual sale marcado y apagado) */
@@ -104,7 +106,7 @@ function botonera(actual) {
   return html;
 }
 
-/* Un solo manejador global para todos los botones de destino */
+/* Un solo manejador global para todos los botones de destino (data-ir) */
 document.addEventListener('click', function (e) {
   var b = e.target.closest && e.target.closest('[data-ir]');
   if (!b) return;
@@ -119,14 +121,13 @@ modulo('diario', function () {
   var cuerpoD = document.getElementById('diarioCuerpo');
   var sumario = document.getElementById('sumarioLista');
   if (!cuerpoD || !sumario) return;
-  PLATOS = leerPlatos();
 
   /* Sumario: un enlace por entrada */
   sumario.innerHTML = PLATOS.map(function (p) {
     return '<li><a href="#' + p.id + '">' + p.name + '</a></li>';
   }).join('');
 
-  /* Entradas: título, meta, contenido íntegro y los botones de salida */
+  /* Entradas: número, contenido íntegro y los botones de salida */
   cuerpoD.innerHTML = PLATOS.map(function (p) {
     var clon = p.art.cloneNode(true);
     clon.removeAttribute('id');
@@ -137,7 +138,7 @@ modulo('diario', function () {
            '</section>';
   }).join('');
 
-  /* Enlace del sumario y de "Volver arriba": scroll suave sin recargar */
+  /* Enlaces internos (#) con scroll suave, sin recargar */
   on(document.getElementById('diario'), 'click', function (e) {
     var a = e.target.closest && e.target.closest('a[href^="#"]');
     if (!a) return;
@@ -150,8 +151,7 @@ modulo('diario', function () {
   if (n3) n3.innerHTML = botonera('contacto');
 
   /* Copiar correo dentro del diario */
-  var btn = document.getElementById('diarioCopyMail');
-  on(btn, 'click', function () { copiar(btn); });
+  on(document.getElementById('diarioCopyMail'), 'click', function () { copiar(this); });
 });
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -173,7 +173,7 @@ function construirCarta() {
 
 function verVista(v) { if (panel) panel.dataset.vista = v; }
 
-/* Sirve el plato COMPLETO + siguiente + los otros dos destinos */
+/* Sirve el plato COMPLETO + [← atrás] + siguiente + los otros dos destinos */
 function servirPlato(i) {
   var p = PLATOS[i]; if (!p || !cuerpo) return;
   actual = i;
@@ -187,6 +187,8 @@ function servirPlato(i) {
   var fin = document.createElement('div');
   fin.className = 'servido__fin';
   fin.innerHTML =
+    /* [v6] el botón que pediste: volver a la carta con el camarero */
+    '<button class="jn-btn jn-btn--linea" type="button" data-ir="carta">← atrás</button>' +
     '<button class="jn-btn" type="button" data-siguiente="' + PLATOS.indexOf(sig) + '">Siguiente · ' + sig.name + ' →</button>' +
     botonera('bar');                                  /* 📖 el diario · ✉ contactar */
   cuerpo.appendChild(fin);
@@ -198,6 +200,7 @@ function servirPlato(i) {
   setTimeout(function () { try { cuerpo.focus({ preventScroll: true }); } catch (e) {} }, 240);
 }
 
+/* Volver a la pizarra (la usan el botón ← atrás, la tecla c y Esc del panel) */
 function irCarta() {
   verVista('carta');
   decir('¿Otra cosa? Mira la pizarra tranquilamente.', true);
@@ -215,10 +218,9 @@ modulo('bar', function () {
   ecoEl   = document.getElementById('burbujaEco');
   if (!bar || !panel || !listaEl || !cuerpo) { console.error('[bar] faltan referencias'); return; }
 
-  PLATOS = leerPlatos();
   construirCarta();
 
-  /* Pizarra: clic, sobrevuelo y flechas */
+  /* Pizarra: clic, sobrevuelo y flechas como menú de videojuego */
   on(listaEl, 'click', function (e) {
     var b = e.target.closest && e.target.closest('.plato');
     if (b) servirPlato(+b.dataset.i);
@@ -233,7 +235,7 @@ modulo('bar', function () {
     if (e.key === 'ArrowUp')   { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
   });
 
-  /* Serveta: siguiente / anterior / los destinos */
+  /* Serveta: siguiente / anterior (los destinos ya los capta el manejador global) */
   on(cuerpo, 'click', function (e) {
     var s = e.target.closest && e.target.closest('[data-siguiente]');
     var a = e.target.closest && e.target.closest('[data-anterior]');
@@ -304,8 +306,8 @@ function pompear() {
   escribiendo.i++;
   txtEl.textContent = t.slice(0, escribiendo.i);
   var ch = t.charAt(escribiendo.i - 1);
-  if (',;:'.indexOf(ch) > -1) escribiendo.i += 6;
-  else if ('.!?'.indexOf(ch) > -1) escribiendo.i += 14;
+  if (',;:'.indexOf(ch) > -1) escribiendo.i += 6;          /* pausa corta  */
+  else if ('.!?'.indexOf(ch) > -1) escribiendo.i += 14;    /* pausa larga  */
   if (escribiendo.i % 3 === 0) Sonido.blip();
   if (escribiendo.i >= t.length) { txtEl.textContent = t; terminar(); }
 }
@@ -314,7 +316,7 @@ function terminar() {
   Escena.hablar(false);
   if (cola.length) setTimeout(siguienteFrase, 340);
 }
-function saltarTexto() {
+function saltarTexto() {                                   /* clic en la burbuja */
   if (!escribiendo && !cola.length) return;
   var destino = cola.length ? cola[cola.length - 1] : escribiendo.txt;
   cola.length = 0; clearInterval(reloj); fijar(destino); terminar();
@@ -333,7 +335,7 @@ var Escena = (function () {
   var g = cv.getContext('2d', { alpha: false });
   if (!g) return { corriendo: noop, hablar: noop, pulso: noop };
 
-  var W = cv.width, H = cv.height, CY = 100;
+  var W = cv.width, H = cv.height, CY = 100;   /* CY = borde superior de la barra */
   g.imageSmoothingEnabled = false;
 
   var C = {
@@ -346,9 +348,9 @@ var Escena = (function () {
   };
   function R(x, y, w, h, c) { g.fillStyle = c; g.fillRect(x | 0, y | 0, w | 0, h | 0); }
   function A(x, y, w, h, c, a) { g.globalAlpha = a; g.fillStyle = c; g.fillRect(x | 0, y | 0, w | 0, h | 0); g.globalAlpha = 1; }
-  function azar(n) { return (Math.sin(n * 12.9898) * 43758.5453) % 1; }
+  function azar(n) { return (Math.sin(n * 12.9898) * 43758.5453) % 1; }   /* pseudoaleatorio estable */
 
-  /* Grano de película: una vez, y siempre encima */
+  /* Grano de película: se genera una vez y siempre se superpone */
   var grano = document.createElement('canvas'); grano.width = W; grano.height = H;
   (function () {
     var gg = grano.getContext('2d'), n = Math.floor(W * H * .05);
@@ -371,6 +373,7 @@ var Escena = (function () {
     for (var k = 0; k < n; k++) vapor.push({ x: x + Math.random() * 3 - 1.5, y: y, v: 7 + Math.random() * 9, vida: 1, f: Math.random() * 6 });
   }
 
+  /* Pared de listones con veta falsa */
   function pared() {
     R(0, 10, W, CY - 10, C.pared);
     for (var x = 0; x < W; x += 13) {
@@ -380,6 +383,7 @@ var Escena = (function () {
     }
     R(0, 78, W, 2, C.junta); R(0, 80, W, CY - 80, '#2e1c13');
   }
+  /* Ventana a la calle: edificios, ventanas titilando y lluvia */
   var VX = 8, VY = 22, VW = 58, VH = 46;
   function ventana(t, dt) {
     R(VX - 3, VY - 3, VW + 6, VH + 6, C.marco); R(VX, VY, VW, VH, C.noche);
@@ -401,6 +405,7 @@ var Escena = (function () {
     R(VX, VY + (VH >> 1) - 1, VW, 2, C.marco);
     R(VX - 5, VY + VH + 3, VW + 10, 3, C.madera);
   }
+  /* Pizarra colgada: menú con tiza + tacita humeante */
   function menuPared(t) {
     var BX = 140, BY = 26, BW = 62, BH = 42;
     R(BX - 3, BY - 3, BW + 6, BH + 6, C.madera); R(BX, BY, BW, BH, C.pizarra);
@@ -438,6 +443,7 @@ var Escena = (function () {
       R(x - 2, 26, 4, 3, C.bombilla);
     }
   }
+  /* El camarero: respira, pestañea y mueve la boca al hablar */
   function camarero(t) {
     var bx = 104, bob = Math.round(Math.sin(t * 1.7)), y = CY - 2 + bob;
     R(bx - 3, y - 38, 6, 4, C.piel2);
@@ -488,6 +494,7 @@ var Escena = (function () {
     R(x + 13, y - 7, 2, 1, '#120c09');
     R(x - 4, y - 5, 4, 2, C.gato); R(x - 5, y - 6 + Math.round(Math.sin(t * 1.6) * 2), 2, 3, C.gato);
   }
+  /* Conos de luz: por delante de todo, con parpadeo eléctrico */
   function conos(t) {
     for (var i = 0; i < lamparas.length; i++) {
       var x = lamparas[i].x;
@@ -502,13 +509,13 @@ var Escena = (function () {
     pared(); ventana(t, dt); menuPared(t); estanteria(t); techo(t); lamparasE();
     camarero(t); barra(); cafetera(t); taza(128); taza(154); gato(t);
     conos(t);
-    for (var v = vapor.length - 1; v >= 0; v--) {
+    for (var v = vapor.length - 1; v >= 0; v--) {                    /* vapor */
       var p = vapor[v]; p.y -= p.v * dt; p.x += Math.sin(p.y * .17 + p.f) * .3; p.vida -= dt * .5;
       if (p.vida <= 0 || p.y < 12) { vapor.splice(v, 1); continue; }
       A(p.x, p.y, 1, 1, '#efe6d2', p.vida * .34);
       if (p.vida < .65) A(p.x + 1, p.y - 1, 1, 1, '#efe6d2', p.vida * .2);
     }
-    for (var d = 0; d < polvo.length; d++) {
+    for (var d = 0; d < polvo.length; d++) {                          /* motas en el haz */
       var q = polvo[d]; q.x += Math.sin(t * .3 + q.f) * .07; q.y -= q.v * dt * 5;
       if (q.y < 14) { q.y = CY - 6; q.x = Math.random() * W; }
       var cerca = Math.min(Math.abs(q.x - lamparas[0].x), Math.abs(q.x - lamparas[1].x));
@@ -520,16 +527,15 @@ var Escena = (function () {
   var ultimo = 0;
   function bucle(now) {
     st.raf = requestAnimationFrame(bucle);
-    if (document.hidden) return;
+    if (document.hidden) return;                                      /* pestaña oculta: no gastar */
     var dt = Math.min(.05, (now - ultimo) / 1000) || .016; ultimo = now;
     pintar((now - st.t0) / 1000, dt);
   }
   return {
-    /* arranca o para según la pantalla visible (ahorro de batería) */
-    corriendo: function (v) {
+    corriendo: function (v) {                                         /* solo anima si el bar se ve */
       if (v && !st.corriendo) {
         pintar(0, .016);
-        if (REDUCED) { st.corriendo = true; return; }        /* estática: un solo fotograma */
+        if (REDUCED) { st.corriendo = true; return; }                 /* estática: un fotograma */
         st.corriendo = true; st.t0 = performance.now(); ultimo = st.t0;
         st.raf = requestAnimationFrame(bucle);
       } else if (!v && st.corriendo) {
@@ -592,9 +598,9 @@ modulo('teclado', function () {
     if (pantalla !== 'bar') return;
     if (/^[1-8]$/.test(e.key) && PLATOS[+e.key - 1]) { servirPlato(+e.key - 1); return; }
     var t = document.activeElement && document.activeElement.tagName;
-    if (/^(BUTTON|A|INPUT|TEXTAREA)$/.test(t)) return;
+    if (/^(BUTTON|A|INPUT|TEXTAREA)$/.test(t)) return;   /* no pisar al foco del teclado */
     var k = e.key.toLowerCase();
-    if (k === 'c') irCarta();
+    if (k === 'c') irCarta();                             /* c = carta (= ← atrás) */
     if (k === 's') servirPlato((actual + 1) % PLATOS.length);
     if (k === 'm') DESTINOS.contacto.acc();
   });
@@ -612,6 +618,6 @@ modulo('arranque', function () {
   }
 });
 
-console.log('%c[web] v5 cargada · ' + PLATOS.length + ' apartados', 'color:#ffb066;font-weight:700');
+console.log('%c[web] v6 cargada · ' + PLATOS.length + ' apartados', 'color:#ffb066;font-weight:700');
 
 })();

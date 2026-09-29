@@ -1,0 +1,932 @@
+/* ==========================================================================
+   JOAN CATALÀ MATEU · styles.css  (CSS puro, sin frameworks)
+   Marca: minimalista y formal. Paleta negro · plata · dorado.
+   Tipografía: una sola familia sans (Karla) → look 100% limpio.
+   Compatible con el index.html mínimo (mismas clases).
+   --------------------------------------------------------------------------
+   Índice
+   01 Variables y paleta        08 Ficha, sumario, listas, cita
+   02 Reset y base tipográfica  09 Figuras (hueco imagen/vídeo)
+   03 Contenedor 900px          10 "Me gusta" → cuadrícula 2 col
+   04 Barra de progreso         11 Pie de página
+   05 Cabecera de color         12 Toast
+   06 Enlaces y botones         13 Revelado al scroll
+   07 Cuerpo del diario         14 Accesibilidad (movimiento + impresión)
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   01 · VARIABLES Y PALETA
+   Negro rico (no #000), plata fría y dorado apagado (sobrio, no amarillo).
+   -------------------------------------------------------------------------- */
+:root{
+  /* Texto y superficies */
+  --negro:        #0E0E10;   /* cabecera, pie, texto principal */
+  --grafito:      #1A1B1F;   /* texto secundario sobre claro   */
+  --plata:        #C9CDD3;   /* texto sobre oscuro             */
+  --plata-suave:  #ECEEF0;   /* fondo de página (blanco frío)  */
+  --plata-hoja:   #F5F6F7;   /* fondo de huecos / figuras      */
+  --acero:        #6E757E;   /* texto terciario sobre claro    */
+  --gris:         #9AA1AA;   /* texto terciario sobre oscuro   */
+
+  /* Acento dorado */
+  --dorado:       #B4882F;   /* estado normal / detalles       */
+  --dorado-claro: #D8B15A;   /* hover y acentos sobre oscuro   */
+
+  /* Líneas muy sutiles (minimalismo) */
+  --linea:        rgba(14,14,16,.14);
+  --linea-suave:  rgba(14,14,16,.08);
+  --linea-oscura: rgba(201,205,211,.18);
+
+  /* Tipografía: SANS en todo */
+  --sans: "Karla", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Medidas */
+  --max:     900px;                      /* ancho máximo del contenido */
+  --medida:  68ch;                       /* ancho de línea cómodo      */
+  --pad:     clamp(20px, 5vw, 48px);     /* margen lateral fluido      */
+  --espacio: clamp(3rem, 7vh, 5.5rem);   /* espaciado vertical generoso*/
+  --radio:   3px;                        /* esquinas casi rectas       */
+  --ease:    cubic-bezier(.2,.8,.2,1);   /* curva suave para todo      */
+}
+  /*
+/* --------------------------------------------------------------------------
+   02 · RESET Y BASE
+   -------------------------------------------------------------------------- */
+*, *::before, *::after{ box-sizing:border-box }
+
+/* clip (no overflow-x:hidden): evita scroll horizontal sin romper position:sticky */
+html{
+  overflow-x:clip;
+  scroll-behavior:smooth;
+  -webkit-text-size-adjust:100%;
+  scroll-padding-top:90px;               /* compensa la cabecera fija al saltar a una sección */
+}
+
+body{
+  margin:0;
+  background:var(--plata-suave);
+  color:var(--negro);
+  font-family:var(--sans);
+  font-size:clamp(16px, .35vw + 15px, 18px);
+  line-height:1.8;                       /* interlineado amplio para leer cómodo */
+  overflow-x:clip;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Medios nunca desbordan su columna */
+img, iframe, video{ max-width:100%; height:auto; display:block }
+
+/* Titulares: sans, peso fuerte, tracking cerrado */
+h1, h2, h3{
+  font-family:var(--sans);
+  font-weight:700;
+  line-height:1.15;
+  letter-spacing:-.02em;
+  color:var(--negro);
+  margin:0 0 .5em;
+}
+h1{ font-size:clamp(2rem, 5vw, 3rem) }
+h2{ font-size:clamp(1.6rem, 3.2vw, 2.2rem) }
+h3{ font-size:clamp(1.2rem, 2vw, 1.45rem); margin-top:1.6em; font-weight:600 }
+
+p{ margin:0 0 1.2em }
+
+/* Selección y foco, siempre en color de marca (accesible) */
+::selection{ background:var(--dorado); color:var(--negro) }
+:focus-visible{ outline:2px solid var(--dorado); outline-offset:3px; border-radius:2px }
+
+
+/* --------------------------------------------------------------------------
+   03 · CONTENEDOR (columna centrada, máx 900px)
+   -------------------------------------------------------------------------- */
+.wrap{ width:100%; max-width:var(--max); margin-inline:auto; padding-inline:var(--pad) }
+
+
+/* --------------------------------------------------------------------------
+   04 · BARRA DE PROGRESO DE LECTURA (dorado sobre la página)
+   El <span> lo rellena el JS según el scroll.
+   -------------------------------------------------------------------------- */
+.progress{ position:fixed; inset:0 0 auto 0; height:3px; z-index:60 }
+.progress span{
+  display:block; height:100%; width:0;
+  background:linear-gradient(90deg, var(--dorado), var(--dorado-claro));
+}
+
+
+/* --------------------------------------------------------------------------
+   05 · CABECERA — fondo de color (negro) + texto legible (plata)
+   Fija arriba; el nav usa subrayado dorado para el estado activo/hover.
+   -------------------------------------------------------------------------- */
+.masthead{
+  position:sticky; top:0; z-index:50;
+  background:var(--negro); color:var(--plata);
+  border-bottom:1px solid var(--linea-oscura);
+  display:flex; flex-wrap:wrap; align-items:center; gap:14px 24px;
+  padding:16px var(--pad);
+}
+.masthead__brand{ display:flex; flex-direction:column; gap:2px; margin-right:auto; color:var(--plata); text-decoration:none }
+.masthead__name{ font-size:1.15rem; font-weight:700; letter-spacing:-.02em; color:#fff }
+.masthead__phrase{ font-size:.76rem; letter-spacing:.02em; color:var(--gris) }
+
+.nav{ display:flex; flex-wrap:wrap; gap:20px }
+.nav a{
+  font-size:.8rem; letter-spacing:.02em; text-decoration:none; color:var(--plata);
+  padding-bottom:3px; border-bottom:1px solid transparent;
+  transition:color .3s var(--ease), border-color .3s var(--ease);
+}
+.nav a:hover, .nav a.is-active{ color:var(--dorado-claro); border-bottom-color:var(--dorado) }
+.nav__contact{ color:var(--dorado-claro) }
+
+/* Botón de menú (solo móvil) */
+.nav-toggle{
+  display:none; font:inherit; font-size:.8rem; cursor:pointer;
+  background:transparent; color:var(--plata);
+  border:1px solid var(--linea-oscura); border-radius:999px; padding:7px 14px;
+  transition:border-color .3s, color .3s;
+}
+.nav-toggle:hover{ color:#fff; border-color:var(--dorado) }
+
+@media (max-width:860px){
+  .nav-toggle{ display:block; order:3 }
+  .nav{ display:none; width:100%; order:4; flex-direction:column; gap:12px; padding-top:12px }
+  .masthead.is-open .nav{ display:flex }   /* lo abre el JS al pulsar el botón */
+}
+
+
+/* --------------------------------------------------------------------------
+   06 · ENLACES Y BOTONES (misma lógica en toda la web)
+   -------------------------------------------------------------------------- */
+/* Enlace de texto sobre fondo claro */
+a{ color:var(--dorado); text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px }
+a:hover{ color:var(--negro) }
+
+/* Botón principal: negro sólido → hover dorado */
+.btn{
+  display:inline-flex; align-items:center; gap:.6em; cursor:pointer; text-decoration:none;
+  font-family:var(--sans); font-size:.82rem; letter-spacing:.02em;
+  padding:12px 22px; border-radius:var(--radio);
+  background:var(--negro); color:var(--plata); border:1px solid var(--negro);
+  transition:background .3s var(--ease), color .3s var(--ease), border-color .3s var(--ease);
+}
+.btn:hover{ background:var(--dorado); border-color:var(--dorado); color:var(--negro) }
+
+/* Botón secundario: borde fino, se rellena al pasar */
+.btn--ghost{ background:transparent; color:var(--negro); border-color:var(--linea) }
+.btn--ghost:hover{ background:var(--negro); color:var(--plata); border-color:var(--negro) }
+
+/* Botón pequeño (p. ej. copiar correo) */
+.btn--sm{ font-size:.74rem; padding:8px 15px }
+
+
+/* --------------------------------------------------------------------------
+   07 · CUERPO DEL DIARIO (columna de lectura, máx 900px, espaciado generoso)
+   -------------------------------------------------------------------------- */
+.entry{ max-width:var(--max); margin-inline:auto; padding:var(--espacio) var(--pad) }
+.intro{ padding-bottom:calc(var(--espacio) * .6) }
+.lead{ font-size:1.08em; color:var(--grafito) }
+
+/* Entradas separadas por una línea fina (sin cajas ni sombras: minimalista) */
+.post{ padding:var(--espacio) 0; border-top:1px solid var(--linea) }
+.post__head{ margin-bottom:1.2em }
+.post__meta{ font-size:.74rem; letter-spacing:.08em; text-transform:uppercase; color:var(--acero); margin:0 }
+.post p{ max-width:var(--medida) }
+
+
+/* --------------------------------------------------------------------------
+   08 · FICHA, SUMARIO, LISTAS Y CITA
+   -------------------------------------------------------------------------- */
+/* Ficha en texto corrido (definiciones), no tabla rígida */
+.ficha{ margin:2em 0 0; padding-top:1.1em; border-top:1px solid var(--linea); display:flex; flex-wrap:wrap; gap:.4em 1.3em }
+.ficha div{ display:inline }
+.ficha dt{ display:inline; font-weight:700; color:var(--negro) }
+.ficha dt::after{ content:" ·"; color:var(--linea) }
+.ficha dd{ display:inline; margin:0; color:var(--acero) }
+
+/* Sumario / índice */
+.toc{ margin-top:2.2em; padding-top:1.1em; border-top:1px solid var(--linea) }
+.toc__label{ font-size:.74rem; letter-spacing:.08em; text-transform:uppercase; color:var(--acero); margin:0 0 .5em }
+.toc ol{ margin:0; padding-left:1.3em }
+.toc li{ margin-bottom:.35em }
+.toc a{ color:var(--grafito); text-decoration:none; border-bottom:1px solid var(--linea-suave) }
+.toc a:hover{ color:var(--dorado); border-bottom-color:var(--dorado) }
+
+/* Lista con viñeta en dorado */
+.list{ margin:0 0 1.2em; padding-left:1.2em }
+.list li{ margin-bottom:.55em; color:var(--grafito) }
+.list li::marker{ color:var(--dorado) }
+
+/* Cita: filete dorado, sans normal (sin cursiva), sin caja */
+blockquote{
+  margin:1.8em 0; padding-left:1.1em; border-left:2px solid var(--dorado);
+  font-size:1.08em; line-height:1.5; color:var(--negro); font-weight:500;
+}
+
+
+/* --------------------------------------------------------------------------
+   09 · FIGURAS CON HUECO PARA IMAGEN / VÍDEO
+   El marco reserva la proporción (--ratio) para que la página no "salte"
+   mientras cargan. Pega tu <img>/<iframe> dentro y borra el hueco.
+   -------------------------------------------------------------------------- */
+.media{ margin:2em 0 }
+.media__frame{
+  aspect-ratio:var(--ratio, 3/2);
+  display:grid; place-items:center; text-align:center; gap:10px; padding:16px;
+  background:var(--plata-hoja); border:1px solid var(--linea); border-radius:var(--radio);
+  color:var(--acero); font-size:.82rem; line-height:1.4;
+}
+.media__hint code{ background:var(--linea-suave); padding:.12em .45em; border-radius:3px; font-size:.9em }
+.media__play{ width:54px; height:54px; display:grid; place-items:center; padding-left:4px; border-radius:50%; background:var(--negro); color:var(--dorado-claro); font-size:1rem }
+.media--video .media__frame{ grid-template-rows:auto auto; justify-items:center }
+
+/* Imagen/vídeo real: respeta la proporción y el radio */
+.media img, .media iframe{ width:100%; aspect-ratio:var(--ratio, 3/2); border:0; border-radius:var(--radio) }
+figcaption{ font-size:.82rem; color:var(--acero); margin-top:.6em }
+
+
+/* --------------------------------------------------------------------------
+   10 · "ME GUSTA" — CUADRÍCULA DE 2 COLUMNAS (1 columna en móvil)
+   Cada ítem lleva un filete superior sobrio y un número en dorado.
+   -------------------------------------------------------------------------- */
+.gusta{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);   /* ← 2 columnas */
+  gap:clamp(2rem, 4vw, 3.5rem);           /* separación generosa */
+  margin-top:2.4em;
+}
+.gusta__item{ padding-top:1.2em; border-top:2px solid var(--negro) }
+.gusta__num{ display:block; font-size:.74rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dorado); margin-bottom:.4em }
+.gusta__title{ margin:0 0 .4em }
+.gusta__text{ margin:0; color:var(--grafito) }
+
+/* Móvil / tablet estrecha: una sola columna */
+@media (max-width:720px){ .gusta{ grid-template-columns:1fr } }
+
+
+/* --------------------------------------------------------------------------
+   11 · PIE DE PÁGINA (mismo fondo de color que la cabecera)
+   -------------------------------------------------------------------------- */
+.footer{ background:var(--negro); color:var(--plata); border-top:1px solid var(--linea-oscura); padding:var(--espacio) var(--pad) }
+.footer > *{ max-width:var(--max); margin-inline:auto }
+.footer h2{ color:#fff; margin-top:0 }
+.footer p{ color:var(--plata); max-width:var(--medida) }
+
+.contact-line{ display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin:1.4em 0 }
+.contact-line a{ font-size:1.15em; color:var(--dorado-claro); text-decoration:none; border-bottom:1px solid var(--linea-oscura) }
+.contact-line a:hover{ color:#fff; border-bottom-color:var(--dorado-claro) }
+
+/* Botón de copiar adaptado al fondo oscuro */
+#copyMail{
+  font:inherit; font-size:.76rem; cursor:pointer;
+  background:transparent; color:var(--plata);
+  border:1px solid var(--linea-oscura); border-radius:var(--radio); padding:8px 15px;
+  transition:background .3s, color .3s, border-color .3s;
+}
+#copyMail:hover{ background:var(--dorado); color:var(--negro); border-color:var(--dorado) }
+
+.social{ display:flex; flex-wrap:wrap; gap:18px; list-style:none; padding:0; margin:0 }
+.social a{ font-size:.84rem; color:var(--plata); text-decoration:none; border-bottom:1px solid var(--linea-oscura); padding-bottom:2px }
+.social a:hover{ color:var(--dorado-claro); border-bottom-color:var(--dorado-claro) }
+
+.legal{ font-size:.76rem; color:var(--gris); margin-top:2.4em; padding-top:1.2em; border-top:1px solid var(--linea-oscura) }
+
+
+/* --------------------------------------------------------------------------
+   12 · MENSAJE DE CONFIRMACIÓN (toast) — aparece al copiar el correo
+   -------------------------------------------------------------------------- */
+.toast{
+  position:fixed; left:50%; bottom:22px; transform:translate(-50%,16px);
+  margin:0; z-index:70;
+  background:var(--negro); color:var(--dorado-claro); border:1px solid var(--linea-oscura);
+  font-size:.8rem; padding:10px 18px; border-radius:var(--radio);
+  opacity:0; pointer-events:none; transition:opacity .35s, transform .35s var(--ease);
+}
+.toast.is-on{ opacity:1; transform:translate(-50%,0) }
+
+
+/* --------------------------------------------------------------------------
+   13 · REVELADO AL SCROLL (fundido simple, sin recortar acentos)
+   El JS añade .is-in a los elementos con [data-reveal].
+   -------------------------------------------------------------------------- */
+[data-reveal]{ opacity:0; transform:translateY(14px); transition:opacity .8s var(--ease), transform .8s var(--ease) }
+[data-reveal].is-in{ opacity:1; transform:none }
+
+
+/* --------------------------------------------------------------------------
+   14 · ACCESIBILIDAD
+   -------------------------------------------------------------------------- */
+/* Respetar quien no quiere animaciones */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{ animation-duration:.001ms!important; transition-duration:.001ms!important }
+  html{ scroll-behavior:auto }
+  [data-reveal]{ opacity:1; transform:none }
+}
+
+/* Impresión: solo contenido, en negro, sin fondos de color */
+@media print{
+  .masthead, .progress, .nav-toggle, .toast, .btn, #copyMail{ display:none!important }
+  body{ background:#fff; color:#000 }
+  .footer{ background:#fff; color:#000; border-top:1px solid #000 }
+  .footer h2, .footer p, .social a, .contact-line a, .legal{ color:#000 }
+  a{ text-decoration:none; color:#000 }
+}
+/* ==========================================================================
+   15 · TEMAS INTERACTIVOS — botones plateados con texto azul neón
+   (Acento "neón" deliberado sobre el resto de la paleta plata/negro/dorado.)
+   El botón es rectangular y metálico; el contenido desplegado vuelve al
+   texto normal para que se lea bien. La apertura usa grid 0fr → 1fr,
+   que anima cualquier altura sin medir nada en JS.
+   ========================================================================== */
+
+.temas{ padding:var(--espacio) 0; border-top:1px solid var(--linea) }
+.temas__lead{ color:var(--acero); margin-top:-.4em }
+
+/* Cuadrícula de botones: 2 columnas en escritorio, 1 en móvil */
+.temas__lista{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:clamp(1rem, 2.5vw, 1.5rem);
+  margin-top:1.6em;
+}
+@media (max-width:720px){ .temas__lista{ grid-template-columns:1fr } }
+
+/* Botón rectangular plateado */
+.tema__btn{
+  width:100%; text-align:left; cursor:pointer;
+  font-family:var(--sans); font-size:1rem; font-weight:700; letter-spacing:.02em;
+  padding:16px 48px 16px 20px;            /* hueco a la derecha para el chevron */
+  border:1px solid #8a9099; border-radius:4px;
+  /* Brillo metálico tipo plata */
+  background:
+    linear-gradient(180deg, #f3f5f7 0%, #c7ccd3 46%, #aeb4bd 54%, #e2e6ea 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.7),   /* luz superior */
+    inset 0 -2px 4px rgba(0,0,0,.12),     /* sombra inferior */
+    0 2px 6px rgba(14,14,16,.25);
+  /* Texto azul neón con resplandor */
+  color:#19e3ff;
+  text-shadow:0 0 6px rgba(25,227,255,.75), 0 0 14px rgba(25,227,255,.35);
+  position:relative;
+  transition:transform .25s var(--ease), box-shadow .25s var(--ease), filter .25s var(--ease);
+}
+/* Chevron a la derecha (rota al abrir) */
+.tema__btn::after{
+  content:"▾"; position:absolute; right:18px; top:50%; transform:translateY(-50%);
+  color:#19e3ff; text-shadow:0 0 6px rgba(25,227,255,.75);
+  transition:transform .3s var(--ease);
+}
+.tema__btn:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.8),
+    inset 0 -2px 4px rgba(0,0,0,.12),
+    0 6px 16px rgba(14,14,16,.3),
+    0 0 0 1px rgba(25,227,255,.5);        /* halo neón al pasar */
+}
+.tema__btn:focus-visible{ outline:2px solid #19e3ff; outline-offset:3px }
+
+/* Estado abierto: chevron girado */
+.tema.is-open .tema__btn::after{ transform:translateY(-50%) rotate(180deg) }
+
+/* Panel: la animación real la hace el grid (0fr → 1fr) */
+.tema__panel{
+  display:grid;
+  grid-template-rows:0fr;                 /* cerrado = 0 de alto */
+  transition:grid-template-rows .45s var(--ease);
+}
+.tema__inner{
+  overflow:hidden; min-height:0;          /* imprescindible para que el 0fr colapse */
+  background:var(--plata-hoja);
+  border:1px solid var(--linea); border-top:0; border-radius:0 0 var(--radio) var(--radio);
+  color:var(--grafito);
+  padding:0 18px;                          /* padding en reposo = 0 para no saltar */
+  transition:padding .45s var(--ease);
+}
+.tema.is-open .tema__panel{ grid-template-rows:1fr }   /* abierto = altura natural */
+.tema.is-open .tema__inner{ padding:18px }             /* y aparece el relleno */
+.tema__inner p{ max-width:var(--medida) }
+.tema__inner .list{ margin:0; padding-left:1.2em }
+.tema__inner .list li{ color:var(--grafito) }
+
+/* Movimiento reducido: sin animación de apertura */
+@media (prefers-reduced-motion: reduce){
+  .tema__panel, .tema__inner, .tema__btn, .tema__btn::after{ transition:none }
+}
+
+/* En impresión, todo desplegado y sin neón (legible en papel) */
+@media print{
+  .temas__lista{ grid-template-columns:1fr }
+  .tema__btn{ background:#fff; color:#000; text-shadow:none; box-shadow:none; border:1px solid #000 }
+  .tema__btn::after{ display:none }
+  .tema__panel{ grid-template-rows:1fr }
+  .tema__inner{ padding:12px; border:1px solid #000; color:#000 }
+}
+/* ==========================================================================
+   22 · PORTADA — lo único visible al entrar
+   ========================================================================== */
+.intro{
+  position:fixed; inset:0; z-index:200;
+  display:grid; place-content:center; justify-items:center; gap:1.4rem;
+  padding:var(--pad); text-align:center;
+  background:var(--plata-suave);
+  transition:opacity .6s var(--ease), transform .6s var(--ease), visibility 0s .6s;
+}
+.intro__eyebrow{ font-size:.82rem; letter-spacing:.16em; text-transform:uppercase; color:var(--dorado); margin:0 }
+.intro__name{ font-size:clamp(2.6rem,9vw,5.5rem); font-weight:700; letter-spacing:-.03em; line-height:1; color:var(--negro); margin:0 }
+.intro__name .gold{ color:var(--dorado) }
+.intro__desc{ font-size:clamp(1rem,2.5vw,1.2rem); color:var(--grafito); max-width:36ch; margin:0 }
+.intro__cta{ display:flex; gap:14px; flex-wrap:wrap; justify-content:center }
+.intro.is-gone{ opacity:0; visibility:hidden; transform:scale(1.05); pointer-events:none }
+
+/* Nada visible ni scrolleable mientras la portada está activa */
+body.intro-open{ overflow:hidden }
+body.intro-open .masthead,
+body.intro-open .progress,
+body.intro-open .carta,
+body.intro-open main,
+body.intro-open .footer{ display:none }
+
+/* Letas saltando (portada + hero) */
+.word{ display:inline-block }
+.intro__name .ltr, .hero__name .ltr{
+  display:inline-block; opacity:0;
+  transform:translateY(40px) scale(.8);
+  animation:introJump .6s var(--ease) forwards;
+  animation-delay:var(--d, 0s);
+}
+@keyframes introJump{
+  0%   { opacity:0; transform:translateY(40px) scale(.8) }
+  60%  { opacity:1; transform:translateY(-12px) scale(1.05) }
+  100% { opacity:1; transform:translateY(0) scale(1) }
+}
+@media (prefers-reduced-motion: reduce){
+  .intro__name .ltr, .hero__name .ltr{ opacity:1; transform:none; animation:none }
+  .intro{ transition:none }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   BAR PIXEL · v4 — la web es solo el bar
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── 0. Base mínima (es un solo plano: no se scrollea el documento) ── */
+*,*::before,*::after{ box-sizing:border-box }
+html,body{ height:100%; overflow:hidden; margin:0 }
+body{ background:#070505; color:#fff3dd; font-family:Karla,system-ui,sans-serif }
+img{ max-width:100% }
+:focus-visible{ outline:2px solid #ffb066; outline-offset:2px }
+.sin-js{ position:fixed; inset:auto 0 0; margin:0; padding:16px; background:#c04a3a; color:#fff; font:400 15px/1.5 Karla,sans-serif }
+
+:root{
+  --jn-noche:#0d0908;      --jn-humo:#171010;
+  --jn-madera:#4a2c1a;     --jn-madera-oscura:#2a1a12;   --jn-madera-clara:#a4693a;
+  --jn-laton:#e8c07a;      --jn-ambar:#ffb066;           --jn-crema:#fff3dd;
+  --jn-tiza:#e9e2cf;       --jn-pizarra:#1b2621;
+  --jn-papel:#efe6d2;      --jn-tinta:#2a1f18;           --jn-rojo:#c04a3a;
+  --jn-display:'Silkscreen','Karla',system-ui,sans-serif;
+  --jn-terminal:'VT323','Karla',monospace;
+}
+
+/* ── 1. Escenario ─────────────────────────────────────────────────── */
+.bar{
+  position:fixed; inset:0; z-index:1;
+  display:grid; place-items:center;
+  padding:clamp(46px,7vh,64px) clamp(10px,2.4vw,30px) clamp(30px,5vh,44px);
+  background:radial-gradient(130% 100% at 50% -12%, #3b2417 0%, #160e09 55%, #070505 100%);
+}
+.bar__marco{
+  position:relative; width:min(1180px,100%); height:min(720px,100%);
+  display:grid; grid-template-columns:minmax(0,1.3fr) minmax(330px,.85fr);
+  background:var(--jn-madera-oscura); border:6px solid var(--jn-madera);
+  box-shadow:0 0 0 3px #0b0705, 0 0 0 6px var(--jn-madera),
+             0 34px 70px rgba(0,0,0,.78), inset 0 0 0 1px rgba(232,192,122,.22);
+  animation:jn-entrar .8s cubic-bezier(.22,.9,.25,1) both;
+}
+@keyframes jn-entrar{ from{ transform:translateY(22px) scale(.984); opacity:0 } to{ transform:none; opacity:1 } }
+
+/* Botones del marco */
+.bar__utfila{
+  position:absolute; top:clamp(10px,2.2vh,22px); right:clamp(12px,3vw,40px);
+  z-index:4; display:flex; gap:8px;
+}
+.bar__ini,.bar__son{
+  font:400 10px/1 var(--jn-display); letter-spacing:.14em; text-transform:uppercase;
+  color:var(--jn-crema); background:#120c09; cursor:pointer;
+  border:2px solid var(--jn-madera-clara); padding:9px 11px;
+  box-shadow:3px 3px 0 rgba(0,0,0,.6);
+  transition:transform .18s, background .18s, color .18s, box-shadow .18s, border-color .18s;
+}
+.bar__ini:hover,.bar__son:hover{ background:var(--jn-rojo); border-color:#e88; color:#fff;
+  transform:translate(-1px,-1px); box-shadow:5px 5px 0 rgba(0,0,0,.6) }
+.bar__ini:active,.bar__son:active{ transform:translate(2px,2px); box-shadow:0 0 0 }
+.bar__son[aria-pressed="true"]{ color:#8fe0a8; border-color:#3f7a4a }
+
+.bar__hint{
+  position:absolute; bottom:clamp(8px,2vh,18px); left:50%; transform:translateX(-50%);
+  margin:0; white-space:nowrap; color:rgba(233,226,207,.4);
+  font:400 15px/1 var(--jn-terminal); letter-spacing:.06em;
+}
+
+/* ── 2. Escena pixel ──────────────────────────────────────────────── */
+.bar__escena{
+  --px:0px; --py:0px; position:relative; overflow:hidden; min-height:0;
+  background:linear-gradient(180deg,#241610,#0d0908);   /* color de reserva si falla el JS */
+}
+.bar__canvas{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  image-rendering:pixelated; image-rendering:crisp-edges;
+  transform:scale(1.06) translate(var(--px),var(--py)); transition:transform .4s ease-out;
+}
+.bar__scan{
+  position:absolute; inset:0; pointer-events:none; z-index:2; opacity:.5;
+  background:repeating-linear-gradient(180deg, rgba(0,0,0,.34) 0 1px, rgba(0,0,0,0) 1px 3px);
+  animation:jn-scan 9s linear infinite;
+}
+@keyframes jn-scan{ to{ background-position:0 6px } }
+.bar__glow{
+  position:absolute; inset:0; pointer-events:none; z-index:2;
+  background:
+    radial-gradient(95% 70% at 32% 18%, rgba(255,178,96,.16), transparent 62%),
+    linear-gradient(180deg, rgba(0,0,0,.42), transparent 22%, transparent 68%, rgba(0,0,0,.55));
+  animation:jn-flick 7s steps(1,end) infinite;
+}
+@keyframes jn-flick{ 0%,100%{opacity:.9} 47%{opacity:.62} 48%{opacity:.95} 73%{opacity:1} 74%{opacity:.86} }
+.bar__neon{
+  position:absolute; top:16px; right:18px; z-index:3; margin:0;
+  font:400 13px/1 var(--jn-display); letter-spacing:.22em; text-transform:uppercase; color:#ffe0b8;
+  text-shadow:0 0 4px #ff8a3c, 0 0 14px #ff6a1a, 0 0 30px rgba(255,106,26,.65);
+  animation:jn-neon 6.4s steps(1,end) infinite;
+}
+@keyframes jn-neon{ 0%,100%{opacity:1} 55%{opacity:.28} 56%{opacity:1} 85%{opacity:.45} 86%{opacity:1} }
+
+/* ── 3. Altavoz del camarero ──────────────────────────────────────── */
+.burbuja{
+  position:absolute; z-index:3; left:clamp(10px,4%,26px); bottom:clamp(10px,5%,24px);
+  max-width:min(62%,430px); padding:11px 14px 13px; cursor:pointer;
+  background:linear-gradient(#fffaf0,#efe4cd); color:#241a12;
+  border:3px solid #241a12; box-shadow:7px 7px 0 rgba(0,0,0,.5);
+  transform:translate(calc(var(--px) * -.7), calc(var(--py) * -.7));
+  transition:transform .4s ease-out;
+}
+.burbuja::after{
+  content:''; position:absolute; top:-14px; right:26%;
+  width:0; height:0; border:7px solid transparent; border-bottom-color:#241a12;
+}
+.burbuja__who{
+  display:flex; align-items:center; gap:7px; margin:0 0 4px;
+  font:400 9px/1.4 var(--jn-display); letter-spacing:.16em; text-transform:uppercase; color:#8a5a3a;
+}
+.burbuja__dot{ width:6px; height:6px; background:#3f9d5c; box-shadow:0 0 0 3px rgba(63,157,92,.22); animation:jn-latido 1.6s ease-in-out infinite }
+@keyframes jn-latido{ 50%{ box-shadow:0 0 0 6px rgba(63,157,92,0) } }
+.burbuja__eco{ margin:0 0 3px; font:400 17px/1.2 var(--jn-terminal); color:#9c7a5c; opacity:.7 }
+.burbuja__txt{ margin:0; min-height:2.2em; font:400 clamp(19px,2.1vw,25px)/1.18 var(--jn-terminal); color:#241a12 }
+.burbuja__txt::after{ content:'▮'; margin-left:3px; color:var(--jn-rojo); animation:jn-bip .85s steps(1,end) infinite }
+@keyframes jn-bip{ 50%{ opacity:0 } }
+
+/* ── 4. Panel: solo una vista a la vez ───────────────────────────── */
+.bar__panel{ position:relative; min-height:0; overflow:hidden; background:var(--jn-humo); border-left:6px solid var(--jn-madera) }
+.pizarra,.servido,.contacto{
+  position:absolute; inset:0; overflow:auto; padding:clamp(18px,2.6vw,32px);
+  visibility:hidden; opacity:0; pointer-events:none; transform:translateX(101%);
+  transition:transform .55s cubic-bezier(.2,.85,.25,1), opacity .35s ease;
+}
+.bar__panel[data-vista="carta"]    .pizarra,
+.bar__panel[data-vista="plato"]    .servido,
+.bar__panel[data-vista="contacto"] .contacto{
+  visibility:visible; opacity:1; pointer-events:auto; transform:none;
+}
+.bar__panel[data-vista="plato"] .pizarra,
+.bar__panel[data-vista="contacto"] .pizarra{ transform:translateX(-16%) }
+.bar__panel ::-webkit-scrollbar{ width:10px }
+.bar__panel ::-webkit-scrollbar-track{ background:rgba(0,0,0,.4) }
+.bar__panel ::-webkit-scrollbar-thumb{ background:var(--jn-madera-clara); border:3px solid var(--jn-humo) }
+
+/* Fondo de tiza compartido: pizarra y contacto */
+.pizarra,.contacto{
+  color:var(--jn-tiza);
+  background:
+    radial-gradient(120% 70% at 18% 0%, rgba(255,255,255,.06), transparent 58%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.022) 0 2px, transparent 2px 5px),
+    var(--jn-pizarra);
+  box-shadow:inset 0 0 0 2px rgba(233,226,207,.13), inset 0 0 60px rgba(0,0,0,.65);
+}
+.pizarra__eyebrow,.contacto__eyebrow{ margin:0 0 10px; font:400 9px/1.5 var(--jn-display); letter-spacing:.2em; text-transform:uppercase; color:rgba(232,192,122,.85) }
+.pizarra__title,.contacto__title{ margin:0 0 6px; font:700 clamp(20px,2.6vw,28px)/1.35 var(--jn-display); color:#fff; text-shadow:0 0 12px rgba(233,226,207,.25) }
+.contacto__title{ margin-bottom:12px }
+.pizarra__sub{ margin:0 0 22px; font:400 19px/1.3 var(--jn-terminal); color:rgba(233,226,207,.72) }
+.pizarra__lista{ list-style:none; margin:0 0 20px; padding:0 }
+.pizarra__lista li{ border-bottom:1px dashed rgba(233,226,207,.16) }
+.pizarra__nota{ margin:0 0 16px; font:400 15px/1.35 var(--jn-terminal); color:rgba(233,226,207,.45) }
+.pizarra__fila{ display:flex; flex-wrap:wrap; gap:10px }
+
+/* Cada plato de la carta */
+.plato{
+  position:relative; width:100%; display:flex; align-items:baseline; gap:.7em;
+  padding:14px 6px 14px 12px; background:none; border:0; cursor:pointer; text-align:left;
+  color:var(--jn-tiza); font-family:var(--jn-display);
+  animation:jn-servir .5s cubic-bezier(.2,.9,.25,1) backwards;
+  animation-delay:calc(var(--i) * 60ms + 200ms);
+  transition:transform .28s cubic-bezier(.2,.9,.25,1), color .2s;
+}
+@keyframes jn-servir{ from{ opacity:0; transform:translateY(12px) } to{ opacity:1; transform:none } }
+.plato::before{
+  content:''; position:absolute; left:0; bottom:6px; width:0; height:2px;
+  background:linear-gradient(90deg,var(--jn-ambar),rgba(255,176,102,.1));
+  transition:width .4s cubic-bezier(.2,.9,.25,1);
+}
+.plato:hover::before,.plato:focus-visible::before{ width:100% }
+.plato:hover,.plato:focus-visible{ transform:translateX(6px); color:#fff }
+.plato__num{ font:700 11px/1 var(--jn-display); color:rgba(232,192,122,.6); transition:color .25s, transform .25s }
+.plato:hover .plato__num{ color:var(--jn-ambar); transform:scale(1.15) }
+.plato__name{ font:400 13px/1.45 var(--jn-display); letter-spacing:.02em; max-width:17ch }
+.plato__dots{ flex:1 1 auto; min-width:16px; border-bottom:2px dotted rgba(233,226,207,.28); transform:translateY(-.32em) }
+.plato__tag{
+  flex:0 0 auto; font:400 10px/1 var(--jn-display); letter-spacing:.08em; text-transform:uppercase;
+  padding:5px 7px; color:rgba(233,226,207,.65); border:1px solid rgba(233,226,207,.22);
+  transition:background .25s, color .25s, border-color .25s;
+}
+.plato:hover .plato__tag{ background:var(--jn-ambar); color:#20140b; border-color:var(--jn-ambar) }
+
+/* Botón latón */
+.bar__full{
+  display:inline-flex; align-items:center; gap:.6em; cursor:pointer;
+  font:700 11px/1 var(--jn-display); letter-spacing:.12em; text-transform:uppercase;
+  color:#20140b; background:var(--jn-laton); border:0; padding:13px 16px;
+  box-shadow:4px 4px 0 rgba(0,0,0,.45); transition:transform .2s, box-shadow .2s, background .2s;
+}
+.bar__full:hover{ background:var(--jn-crema); transform:translate(-2px,-2px); box-shadow:7px 7px 0 rgba(0,0,0,.5) }
+.bar__full:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 }
+
+/* ── 5. Serveta: el texto COMPLETO en papel ──────────────────────── */
+.servido{ padding:clamp(14px,2.2vw,26px) }
+.servido__papel{
+  position:relative; color:var(--jn-tinta);
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.022) 0 3px, transparent 3px 7px),
+    linear-gradient(160deg,#f6efdd,var(--jn-papel) 60%,#e3d7bd);
+  border:2px solid #cbbda0; box-shadow:10px 12px 0 rgba(0,0,0,.4);
+  padding:clamp(20px,3vw,34px);
+}
+.servido__sello{
+  position:absolute; top:12px; right:14px; margin:0; transform:rotate(-9deg);
+  border:2px solid var(--jn-rojo); color:var(--jn-rojo); opacity:.72;
+  font:700 9px/1 var(--jn-display); letter-spacing:.14em; text-transform:uppercase; padding:6px 8px;
+}
+.servido__prev{
+  display:inline-block; margin:0 0 14px; padding:0; background:none; border:0; cursor:pointer;
+  font:400 9px/1 var(--jn-display); letter-spacing:.14em; text-transform:uppercase; color:#8a5a3a;
+  border-bottom:1px solid rgba(138,90,58,.4); transition:color .2s, border-color .2s;
+}
+.servido__prev:hover{ color:var(--jn-rojo); border-color:var(--jn-rojo) }
+
+/* Tipografía del artículo clonado (reemplaza a la del diario) */
+.servido .plato-post{ display:block; margin:0; padding:0; border:0; background:none }
+.servido .plato-post h2{ margin:0 0 6px; font:700 clamp(19px,2.4vw,26px)/1.3 var(--jn-display); color:#1d1410 }
+.servido .plato-post .post__head{ margin:0 0 20px; border:0; padding:0 }
+.servido .plato-post .post__meta{ margin:0; font:400 10px/1 var(--jn-display); letter-spacing:.16em; text-transform:uppercase; color:#9a6b45 }
+.servido .plato-post p{ margin:0 0 1em; font:400 clamp(16px,1.15vw,17.5px)/1.75 Karla,system-ui,sans-serif }
+.servido .plato-post p strong{ color:#5a2a20 }
+.servido .plato-post h3{ margin:1.6em 0 .5em; font:700 13px/1.4 var(--jn-display); color:#5a3a22 }
+.servido .plato-post .list{ margin:0 0 1.2em; padding:0; list-style:none }
+.servido .plato-post .list li{ position:relative; padding-left:22px; margin-bottom:.6em; font:400 16.5px/1.7 Karla,sans-serif }
+.servido .plato-post .list li::before{ content:'◆'; position:absolute; left:0; top:.15em; font-size:11px; color:var(--jn-rojo) }
+.servido .plato-post blockquote{
+  margin:1.4em 0; padding:14px 18px; background:rgba(192,74,58,.08);
+  border-left:5px solid var(--jn-rojo); font:600 17px/1.55 Karla,sans-serif; color:#5a2a20;
+}
+.servido .plato-post a{ color:#8a3a20; text-decoration-thickness:2px; text-underline-offset:3px }
+.servido .plato-post .btn{ display:inline-block; padding:11px 14px; text-decoration:none; color:#20140b; background:#2a1f18; color:#f3ead6 }
+
+/* Los TRES botones de cada plato */
+.servido__fin{
+  display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+  margin-top:28px; padding-top:20px; border-top:2px dashed rgba(42,31,24,.25);
+}
+.jn-btn{
+  display:inline-flex; gap:.5em; align-items:center; cursor:pointer; text-decoration:none;
+  font:700 10px/1 var(--jn-display); letter-spacing:.12em; text-transform:uppercase;
+  padding:13px 15px; color:#f3ead6; background:#2a1f18; border:2px solid #2a1f18;
+  box-shadow:3px 3px 0 rgba(42,31,24,.28);
+  transition:background .2s, color .2s, border-color .2s, transform .2s, box-shadow .2s;
+}
+.jn-btn:hover{ background:var(--jn-rojo); border-color:var(--jn-rojo); color:#fff; transform:translate(-1px,-1px); box-shadow:5px 5px 0 rgba(42,31,24,.3) }
+.jn-btn:active{ transform:translate(2px,2px); box-shadow:0 0 0 }
+.jn-btn--linea{ background:none; color:#5a3a22; border-color:#5a3a22; box-shadow:none }
+.jn-btn--linea:hover{ background:#5a3a22; color:var(--jn-papel); border-color:#5a3a22 }
+.jn-btn--laton{ background:var(--jn-laton); border-color:var(--jn-laton); color:#20140b }
+.jn-btn--laton:hover{ background:var(--jn-crema); border-color:var(--jn-crema); color:#20140b }
+
+/* ── 6. Contacto ─────────────────────────────────────────────────── */
+.contacto__txt{ margin:0 0 22px; font:400 18px/1.45 var(--jn-terminal); color:rgba(233,226,207,.78); max-width:36ch }
+.contacto__mail{ display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:0 0 26px }
+.contacto__mail a{
+  font:400 clamp(19px,2vw,24px)/1.2 var(--jn-terminal); color:var(--jn-ambar);
+  text-decoration:none; border-bottom:2px dotted rgba(255,176,102,.5); transition:color .2s, border-color .2s;
+}
+.contacto__mail a:hover{ color:#fff; border-color:#fff }
+.contacto__mail button{
+  cursor:pointer; background:none; color:var(--jn-tiza); border:1px solid rgba(233,226,207,.3);
+  padding:8px 10px; font:400 9px/1 var(--jn-display); letter-spacing:.14em; text-transform:uppercase;
+  transition:background .2s, color .2s, border-color .2s;
+}
+.contacto__mail button:hover,.contacto__mail button.is-ok{ background:var(--jn-ambar); color:#20140b; border-color:var(--jn-ambar) }
+.contacto__redes{ list-style:none; margin:0 0 20px; padding:0; display:flex; flex-wrap:wrap; gap:10px }
+.contacto__redes a{
+  display:inline-block; padding:9px 11px; text-decoration:none; color:var(--jn-tiza);
+  font:400 10px/1 var(--jn-display); letter-spacing:.12em; text-transform:uppercase;
+  border:1px dashed rgba(233,226,207,.3); transition:background .2s, border-style .2s;
+}
+.contacto__redes a:hover{ background:rgba(233,226,207,.12); border-style:solid }
+.contacto__legal{ margin:0 0 22px; font:400 15px/1.4 var(--jn-terminal); color:rgba(233,226,207,.4) }
+#barContactoBack{ color:var(--jn-tiza); border-color:rgba(233,226,207,.5) }
+#barContactoBack:hover{ background:rgba(233,226,207,.14); color:#fff; border-color:#fff }
+
+/* ── 7. Responsive ───────────────────────────────────────────────── */
+@media (max-width:900px){
+  .bar{ padding:46px 8px 34px }
+  .bar__marco{ grid-template-columns:1fr; grid-template-rows:minmax(170px,28svh) minmax(0,1fr) }
+  .bar__panel{ border-left:0; border-top:6px solid var(--jn-madera) }
+  .burbuja{ max-width:88%; bottom:10px; padding:9px 11px 11px }
+  .plato__name{ max-width:none }
+  .bar__utfila{ top:8px; right:8px; gap:6px }
+  .bar__ini,.bar__son{ padding:8px 7px; letter-spacing:.06em; font-size:9px }
+  .bar__hint{ font-size:12px; white-space:normal; text-align:center; width:94% }
+  .servido__fin .jn-btn{ flex:1 1 auto; justify-content:center }
+}
+@media (max-width:520px){ .bar__neon{ font-size:10px; top:10px; right:10px } }
+
+/* ── 8. Movimiento reducido ──────────────────────────────────────── */
+@media (prefers-reduced-motion:reduce){
+  .bar__marco,.bar__scan,.bar__glow,.bar__neon,.plato,.burbuja__dot,.burbuja__txt::after{
+    animation:none !important; transition-duration:.01ms !important }
+  .bar__canvas{ transform:none }
+}
+/* ══════════════════════════════════════════════════════════════════════
+   BLOQUE v5 — portada + diario + barra de destinos
+   (el bloque v4 del bar se queda tal cual debajo)
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Conmutador de pantallas: solo una visible ────────────────── */
+.portada, .diario, .bar { display:none }
+body[data-pantalla="portada"] .portada { display:grid }
+body[data-pantalla="diario"]  .diario  { display:block }
+body[data-pantalla="bar"]     .bar     { display:grid }
+
+/* El documento solo scrollea en el diario */
+body[data-pantalla="portada"],
+body[data-pantalla="bar"] { overflow:hidden }
+body[data-pantalla="diario"] { overflow-y:auto }
+
+/* ── 2. Portada: el nombre en grande con el estilo del bar ───────── */
+.portada{
+  position:fixed; inset:0; z-index:2; place-items:center; text-align:center;
+  padding:24px;
+  background:radial-gradient(130% 100% at 50% -12%, #3b2417 0%, #160e09 55%, #070505 100%);
+  animation:jn-entrar .7s cubic-bezier(.22,.9,.25,1) both;
+}
+.portada__scan{ /* líneas de barrido, como la pantalla del bar */
+  position:absolute; inset:0; pointer-events:none; opacity:.35;
+  background:repeating-linear-gradient(180deg, rgba(0,0,0,.34) 0 1px, transparent 1px 3px);
+}
+.portada__eyebrow{
+  position:relative; margin:0 0 18px;
+  font:400 clamp(9px,1.4vw,12px)/1 var(--jn-display); letter-spacing:.24em; text-transform:uppercase;
+  color:var(--jn-laton);
+}
+.portada__name{
+  position:relative; margin:0;
+  font:700 clamp(34px,8.4vw,96px)/1.15 var(--jn-display);
+  color:#ffe6c2;
+  text-shadow:0 0 6px rgba(255,138,60,.9), 0 0 26px rgba(255,106,26,.55), 0 0 70px rgba(255,106,26,.35);
+  animation:jn-neon 6.4s steps(1,end) infinite;
+}
+.portada__name .gold{ color:var(--jn-ambar) }
+.portada__desc{
+  position:relative; margin:22px auto 34px; max-width:46ch;
+  font:400 clamp(17px,2.2vw,23px)/1.4 var(--jn-terminal); color:rgba(255,243,221,.8);
+}
+.portada__cta{ position:relative; display:flex; flex-wrap:wrap; gap:14px; justify-content:center }
+.portada__nota{
+  position:absolute; bottom:18px; left:50%; transform:translateX(-50%); margin:0;
+  font:400 14px/1 var(--jn-terminal); letter-spacing:.08em; color:rgba(233,226,207,.35);
+}
+
+/* Botones grandes de la portada */
+.btn3{
+  cursor:pointer; font:700 clamp(11px,1.3vw,13px)/1 var(--jn-display);
+  letter-spacing:.14em; text-transform:uppercase;
+  color:var(--jn-crema); background:#120c09; border:3px solid var(--jn-madera-clara);
+  padding:16px 24px; box-shadow:5px 5px 0 rgba(0,0,0,.6);
+  transition:transform .2s, box-shadow .2s, background .2s, color .2s, border-color .2s;
+}
+.btn3:hover{ background:var(--jn-rojo); border-color:#e88; color:#fff; transform:translate(-2px,-2px); box-shadow:8px 8px 0 rgba(0,0,0,.6) }
+.btn3:active{ transform:translate(3px,3px); box-shadow:0 0 0 }
+.btn3--laton{ background:var(--jn-laton); border-color:#20140b; color:#20140b }
+.btn3--laton:hover{ background:var(--jn-crema); border-color:#20140b; color:#20140b }
+
+/* ── 3. Diario: la web entera en papel sobre madera ──────────────── */
+.diario{
+  min-height:100%; padding-bottom:60px;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.14) 0 130px, rgba(0,0,0,0) 130px 260px),
+    linear-gradient(180deg, #241610, #120c09 70%);
+  animation:jn-entrar .5s ease both;
+}
+.diario__barra{
+  position:sticky; top:0; z-index:5; display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+  padding:12px clamp(12px,3vw,26px);
+  background:rgba(18,12,9,.92); border-bottom:3px solid var(--jn-madera);
+  box-shadow:0 8px 22px rgba(0,0,0,.5); backdrop-filter:blur(4px);
+}
+.diario__marca{
+  margin-right:auto; text-decoration:none; color:var(--jn-ambar);
+  font:700 11px/1 var(--jn-display); letter-spacing:.14em; text-transform:uppercase;
+}
+.diario__marca:hover{ color:#fff }
+.btn4{
+  cursor:pointer; font:400 9px/1 var(--jn-display); letter-spacing:.12em; text-transform:uppercase;
+  color:var(--jn-crema); background:#120c09; border:2px solid var(--jn-madera-clara);
+  padding:9px 10px; box-shadow:3px 3px 0 rgba(0,0,0,.5);
+  transition:background .2s, color .2s, transform .2s, box-shadow .2s;
+}
+.btn4:hover{ background:var(--jn-rojo); color:#fff; transform:translate(-1px,-1px); box-shadow:5px 5px 0 rgba(0,0,0,.5) }
+.btn4:active{ transform:translate(2px,2px); box-shadow:0 0 0 }
+.btn4[aria-current="page"]{ opacity:.4; pointer-events:none }
+
+.diario__top{
+  max-width:860px; margin:clamp(30px,6vh,60px) auto 40px; padding:0 clamp(16px,4vw,24px); text-align:center;
+}
+.diario__eyebrow{ margin:0 0 10px; font:400 10px/1 var(--jn-display); letter-spacing:.22em; text-transform:uppercase; color:var(--jn-laton) }
+.diario__title{
+  margin:0 0 12px; font:700 clamp(24px,5vw,44px)/1.2 var(--jn-display); color:#ffe6c2;
+  text-shadow:0 0 6px rgba(255,138,60,.7), 0 0 24px rgba(255,106,26,.4);
+}
+.diario__phrase{ margin:0 auto 26px; max-width:52ch; font:400 clamp(16px,2vw,20px)/1.4 var(--jn-terminal); color:rgba(255,243,221,.72) }
+.sumario{ display:inline-block; text-align:left }
+.sumario__label{ margin:0 0 8px; font:400 9px/1 var(--jn-display); letter-spacing:.18em; text-transform:uppercase; color:rgba(232,192,122,.7) }
+.sumario__lista{ list-style:none; margin:0; padding:0; columns:2; column-gap:34px; max-width:520px }
+.sumario__lista li{ break-inside:avoid; margin-bottom:6px }
+.sumario__lista a{
+  display:flex; gap:8px; align-items:baseline; text-decoration:none; color:var(--jn-tiza);
+  font:400 15px/1.3 var(--jn-terminal);
+}
+.sumario__lista a::before{ content:counter(listi,decimal-leading-zero); font:700 10px/1 var(--jn-display); color:var(--jn-ambar) }
+.sumario__lista{ counter-reset:listi }
+.sumario__lista li{ counter-increment:listi }
+.sumario__lista a:hover{ color:var(--jn-ambar) }
+
+.diario__cuerpo{ max-width:860px; margin:0 auto; padding:0 clamp(14px,4vw,24px) }
+
+/* Cada entrada = una serveta apilada, igual que en el bar */
+.entrada{
+  position:relative; color:var(--jn-tinta); margin:0 0 26px;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.022) 0 3px, transparent 3px 7px),
+    linear-gradient(160deg,#f6efdd,var(--jn-papel) 60%,#e3d7bd);
+  border:2px solid #cbbda0; box-shadow:8px 10px 0 rgba(0,0,0,.45);
+  padding:clamp(20px,4vw,36px);
+  scroll-margin-top:80px;
+}
+.entrada h2{ margin:0 0 6px; font:700 clamp(19px,3vw,26px)/1.3 var(--jn-display); color:#1d1410 }
+.entrada .post__meta{ margin:0 0 20px; font:400 10px/1 var(--jn-display); letter-spacing:.16em; text-transform:uppercase; color:#9a6b45 }
+.entrada p{ margin:0 0 1em; font:400 clamp(16px,1.2vw,17.5px)/1.75 Karla,system-ui,sans-serif }
+.entrada p strong{ color:#5a2a20 }
+.entrada h3{ margin:1.6em 0 .5em; font:700 13px/1.4 var(--jn-display); color:#5a3a22 }
+.entrada .list{ margin:0 0 1.2em; padding:0; list-style:none }
+.entrada .list li{ position:relative; padding-left:22px; margin-bottom:.6em; font:400 16.5px/1.7 Karla,sans-serif }
+.entrada .list li::before{ content:'◆'; position:absolute; left:0; top:.15em; font-size:11px; color:var(--jn-rojo) }
+.entrada blockquote{
+  margin:1.4em 0; padding:14px 18px; background:rgba(192,74,58,.08);
+  border-left:5px solid var(--jn-rojo); font:600 17px/1.55 Karla,sans-serif; color:#5a2a20;
+}
+.entrada a{ color:#8a3a20; text-decoration-thickness:2px; text-underline-offset:3px }
+.entrada .num{
+  position:absolute; top:-14px; left:18px; margin:0; transform:rotate(-2deg);
+  background:var(--jn-rojo); color:#fff; padding:6px 9px;
+  font:700 10px/1 var(--jn-display); letter-spacing:.12em;
+}
+.entrada--contacto{ background:linear-gradient(160deg,#233029,#161f1b); color:var(--jn-tiza); border-color:#3a4a42 }
+.entrada--contacto h2{ color:#fff; font-family:var(--jn-display); font-size:clamp(20px,3vw,28px) }
+.entrada--contacto p{ color:rgba(233,226,207,.85) }
+.diario__legal{ margin:26px 0 0; font:400 15px/1.4 var(--jn-terminal); color:rgba(233,226,207,.45) }
+
+/* ── 4. Barra de destinos: "los otros dos" en cada apartado ──────── */
+/* Se rellena por JS con botonera(); el destino actual sale deshabilitado */
+.nav3{
+  display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+  margin-top:26px; padding-top:18px; border-top:2px dashed rgba(42,31,24,.25);
+}
+.entrada--contacto .nav3{ border-top-color:rgba(233,226,207,.25) }
+.jn-btn[aria-current="page"]{ opacity:.35; pointer-events:none }
+
+/* ── 5. Responsive ───────────────────────────────────────────────── */
+@media (max-width:700px){
+  .sumario__lista{ columns:1 }
+  .diario__barra{ gap:6px }
+  .diario__marca{ width:100%; margin-bottom:4px }
+  .entrada .nav3 .jn-btn{ flex:1 1 auto; justify-content:center }
+}
+@media (prefers-reduced-motion:reduce){
+  .portada,.diario{ animation:none !important }
+}
+

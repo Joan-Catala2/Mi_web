@@ -745,10 +745,229 @@ function copiar(btn) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
+   7b. PANTALLA DE CARGA
+   Se muestra al pulsar los botones de navegación y luego ejecuta la acción.
+   ══════════════════════════════════════════════════════════════════════ */
+var cargaOcupada = false;
+
+modulo('carga', function () {
+  var cargaEl = document.getElementById('carga');
+  var msgEl   = document.getElementById('cargaMsg');
+  var pistaEl = document.getElementById('cargaPista');
+
+  if (!cargaEl || !msgEl || !pistaEl) return;
+
+  function pick(a) {
+    return a[Math.floor(Math.random() * a.length)];
+  }
+
+  function accionDesdeBoton(b) {
+    if (!b) return null;
+
+    if (b.hasAttribute('data-ir')) {
+      var d = DESTINOS[b.getAttribute('data-ir')];
+      return d ? function () { d.acc(); } : null;
+    }
+
+    if (b.classList.contains('plato')) {
+      var i = parseInt(b.dataset.i, 10);
+      return isNaN(i) ? null : function () { servirPlato(i); };
+    }
+
+    if (b.hasAttribute('data-siguiente')) {
+      var s = parseInt(b.dataset.siguiente, 10);
+      return isNaN(s) ? null : function () { servirPlato(s); };
+    }
+
+    if (b.hasAttribute('data-anterior')) {
+      var a = parseInt(b.dataset.anterior, 10);
+      return isNaN(a) ? null : function () { servirPlato(a); };
+    }
+
+    if (b.id === 'barPrev') {
+      return function () {
+        servirPlato((actual - 1 + PLATOS.length) % PLATOS.length);
+      };
+    }
+
+    if (b.id === 'barContactoBack' || b.id === 'barInicio') {
+      return function () { irCarta(); };
+    }
+
+    return null;
+  }
+
+  function esBotonCarga(b) {
+    if (!b || b.tagName !== 'BUTTON') return false;
+    if (b.getAttribute('data-carga') === 'no') return false;
+    if (b.hasAttribute('data-copy')) return false;
+    if (b.id === 'barSon') return false;
+    if (b.disabled) return false;
+    return !!accionDesdeBoton(b);
+  }
+
+  function mensajeDe(b) {
+    var ir = b.getAttribute('data-ir');
+
+    if (ir === 'portada') {
+      return pick([
+        'Encendiendo la portada…',
+        'Poniendo el nombre en neón…',
+        'Volviendo a la puerta de la casa…'
+      ]);
+    }
+
+    if (ir === 'diario') {
+      return pick([
+        'Abriendo el diario entero…',
+        'Pasando servilletas…',
+        'Compilando la vida de Joan…'
+      ]);
+    }
+
+    if (ir === 'bar') {
+      return pick([
+        'Empujando la puerta del bar…',
+        'Encendiendo el ABIERTO…',
+        'El camarero se acerca…'
+      ]);
+    }
+
+    if (ir === 'contacto') {
+      return pick([
+        'Llamando al camarero…',
+        'Pidiendo la cuenta…',
+        'Buscando papel y boli…'
+      ]);
+    }
+
+    if (ir === 'carta') {
+      return pick([
+        'Volvendo a la pizarra…',
+        'Repasando la carta…'
+      ]);
+    }
+
+    if (b.classList.contains('plato')) {
+      var nameEl = $('.plato__name', b);
+      var name = nameEl ? nameEl.textContent.trim() : 'un plato';
+      return pick([
+        'Sirviendo ' + name + '…',
+        'Buscando la servilleta de ' + name + '…',
+        'El camarero trae ' + name + '…',
+        'Afinando el sable antes de ' + name + '…'
+      ]);
+    }
+
+    if (b.hasAttribute('data-siguiente')) {
+      var txt = b.textContent.trim();
+      var siguiente = txt
+        .replace(/^Siguiente\s*·\s*/, '')
+        .replace(/\s*→\s*$/, '')
+        .trim() || 'el siguiente plato';
+      return pick([
+        'Pasando a ' + siguiente + '…',
+        'Sirviendo el siguiente…',
+        'El camarero apunta la comanda…'
+      ]);
+    }
+
+    if (b.id === 'barPrev') {
+      return pick([
+        'Volviendo al plato anterior…',
+        'Recogiendo la taza…'
+      ]);
+    }
+
+    if (b.id === 'barContactoBack' || b.id === 'barInicio') {
+      return pick([
+        'Volvendo a la carta…',
+        'Dejando la cuenta sobre la barra…'
+      ]);
+    }
+
+    return pick([
+      'Cargando Casa Joan…',
+      'Encendiendo la madera…',
+      'Puliendo la florete…',
+      'Guardando el C1 en la pared…',
+      'Mirando el tiempo por la ventana…',
+      'Un prototipo con IA…'
+    ]);
+  }
+
+  function mostrarCarga(msg, fn) {
+    if (cargaOcupada) return;
+
+    cargaOcupada = true;
+
+    msgEl.textContent = msg;
+    cargaEl.hidden = false;
+    cargaEl.setAttribute('aria-hidden', 'false');
+
+    /* Fuerza reflow para que la transición funcione */
+    void cargaEl.offsetWidth;
+
+    cargaEl.classList.add('is-visible');
+    pistaEl.style.transform = 'scaleX(0)';
+
+    var dur = REDUCED ? 220 : (520 + Math.random() * 380);
+    var t0 = performance.now();
+
+    function frame(now) {
+      var p = Math.min(1, (now - t0) / dur);
+      var e = 1 - Math.pow(1 - p, 3); /* easeOutCubic */
+
+      pistaEl.style.transform = 'scaleX(' + e + ')';
+
+      if (p < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        cargaEl.classList.remove('is-visible');
+        cargaEl.classList.add('is-salida');
+
+        setTimeout(function () {
+          cargaEl.hidden = true;
+          cargaEl.setAttribute('aria-hidden', 'true');
+          cargaEl.classList.remove('is-salida');
+          cargaOcupada = false;
+          fn();
+        }, REDUCED ? 0 : 230);
+      }
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  document.addEventListener('click', function (e) {
+    if (cargaOcupada) {
+      var bloqueado = e.target.closest && e.target.closest('button');
+      if (bloqueado) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      return;
+    }
+
+    var b = e.target.closest && e.target.closest('button');
+    if (!b || !esBotonCarga(b)) return;
+
+    var accion = accionDesdeBoton(b);
+    if (!accion) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    mostrarCarga(mensajeDe(b), accion);
+  }, true);
+});
+
+/* ══════════════════════════════════════════════════════════════════════
    8. TECLADO y arranque
    ══════════════════════════════════════════════════════════════════════ */
 modulo('teclado', function () {
   document.addEventListener('keydown', function (e) {
+    if (cargaOcupada) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     var pantalla = document.body.dataset.pantalla;
     if (e.key === 'Escape') { setPantalla('portada'); return; }

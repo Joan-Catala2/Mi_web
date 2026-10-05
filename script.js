@@ -1,8 +1,8 @@
 /* ══════════════════════════════════════════════════════════════════════
-   script.js v6 · Joan Català Mateu
+   script.js v7 · Joan Català Mateu
    ──────────────────────────────────────────────────────────────────────
-   v6 = v5 + botón "← atrás" en cada plato del bar (vuelve a la carta
-        donde está el camarero). Ver marcas [v6] en el código.
+   v7 = v6 + pantalla de carga también AL ENTRAR en la web + 1,5 s extra
+        de duración. Ver marcas [v7] en el código.
    ──────────────────────────────────────────────────────────────────────
    TRES PANTALLAS en la misma página (body[data-pantalla]):
      portada → nombre grande + Conóceme / Contactar / Entrar
@@ -22,6 +22,21 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 function modulo(nombre, fn) {
   try { fn(); } catch (e) { console.error('[web] módulo "' + nombre + '":', e); }
 }
+/* [v7] pick pasa al ámbito exterior: lo usan el módulo de carga y el arranque */
+function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+
+/* [v7] Mensajes que pueden salir en la carga de entrada */
+var MENSAJES_ENTRADA = [
+  'Entrando en Casa Joan…',
+  'Encendiendo el neón…',
+  'Abriendo la puerta del bar…',
+  'Poniendo el sable en su sitio…',
+  'Cargando el diario…',
+  'Guardando el C1 en la pared…'
+];
+
+/* [v7] Función expuesta por el módulo de carga para lanzar la carga de entrada */
+var correrCarga = null;
 
 /* Año en portada/diario */
 modulo('year', function () {
@@ -234,7 +249,7 @@ var DESTINOS = {
     else { setPantalla('diario'); var c = document.getElementById('contacto');
            if (c) c.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth' }); }
   } },
-  /* [v6] ← atrás: dentro del bar, volver a la pizarra donde está el camarero */
+  /* [v6] ← atrás: dentro del bar, volver a la carta donde está el camarero */
   carta   : { txt:'← atrás',      acc:function(){ irCarta(); } }
 };
 
@@ -746,7 +761,8 @@ function copiar(btn) {
 
 /* ══════════════════════════════════════════════════════════════════════
    7b. PANTALLA DE CARGA
-   Se muestra al pulsar los botones de navegación y luego ejecuta la acción.
+   Sale al entrar en la web y al pulsar los botones de navegación.
+   [v7] +1,5 s extra de duración (CARGA_EXTRA) y carga de entrada.
    ══════════════════════════════════════════════════════════════════════ */
 var cargaOcupada = false;
 
@@ -754,12 +770,12 @@ modulo('carga', function () {
   var cargaEl = document.getElementById('carga');
   var msgEl   = document.getElementById('cargaMsg');
   var pistaEl = document.getElementById('cargaPista');
-
   if (!cargaEl || !msgEl || !pistaEl) return;
 
-  function pick(a) {
-    return a[Math.floor(Math.random() * a.length)];
-  }
+  /* [v7] Duración = base aleatoria + 1,5 s extra. Ajusta CARGA_EXTRA a tu gusto. */
+  var CARGA_BASE  = 520;
+  var CARGA_EXTRA = 3000;
+  function durCarga() { return REDUCED ? 1220 : (CARGA_BASE + Math.random() * 380) + CARGA_EXTRA; }
 
   function accionDesdeBoton(b) {
     if (!b) return null;
@@ -896,24 +912,11 @@ modulo('carga', function () {
     ]);
   }
 
-  function mostrarCarga(msg, fn) {
-    if (cargaOcupada) return;
-
+  /* [v7] Anima la barra y oculta la pantalla; luego ejecuta fn.
+     Reutilizada por mostrarCarga() y por la carga de entrada. */
+  function correr(dur, fn) {
     cargaOcupada = true;
-
-    msgEl.textContent = msg;
-    cargaEl.hidden = false;
-    cargaEl.setAttribute('aria-hidden', 'false');
-
-    /* Fuerza reflow para que la transición funcione */
-    void cargaEl.offsetWidth;
-
-    cargaEl.classList.add('is-visible');
-    pistaEl.style.transform = 'scaleX(0)';
-
-    var dur = REDUCED ? 220 : (520 + Math.random() * 380);
     var t0 = performance.now();
-
     function frame(now) {
       var p = Math.min(1, (now - t0) / dur);
       var e = 1 - Math.pow(1 - p, 3); /* easeOutCubic */
@@ -931,13 +934,35 @@ modulo('carga', function () {
           cargaEl.setAttribute('aria-hidden', 'true');
           cargaEl.classList.remove('is-salida');
           cargaOcupada = false;
-          fn();
+          if (fn) fn();
         }, REDUCED ? 0 : 230);
       }
     }
-
     requestAnimationFrame(frame);
   }
+
+  function mostrarCarga(msg, fn) {
+    if (cargaOcupada) return;
+    msgEl.textContent = msg;
+    cargaEl.hidden = false;
+    cargaEl.setAttribute('aria-hidden', 'false');
+    void cargaEl.offsetWidth;
+    cargaEl.classList.add('is-visible');
+    pistaEl.style.transform = 'scaleX(0)';
+    correr(durCarga(), fn);
+  }
+
+  /* [v7] Expuesta para el módulo de arranque: la pantalla ya está visible
+     desde el HTML; solo la animamos y la ocultamos. */
+  correrCarga = function (msg, fn) {
+    if (msg) msgEl.textContent = msg;
+    cargaEl.hidden = false;
+    cargaEl.setAttribute('aria-hidden', 'false');
+    void cargaEl.offsetWidth;
+    cargaEl.classList.add('is-visible');
+    pistaEl.style.transform = 'scaleX(0)';
+    correr(durCarga(), fn);
+  };
 
   document.addEventListener('click', function (e) {
     if (cargaOcupada) {
@@ -989,16 +1014,22 @@ modulo('teclado', function () {
   });
 });
 
-/* Arranque: portada. Si vienes con #contacto o un #apartado, respeta el enlace. */
+/* Arranque: portada. Si vienes con #contacto o un #apartado, respeta el enlace.
+   [v7] Todo el arranque va envuelto en la pantalla de carga de entrada. */
 modulo('arranque', function () {
   var hash = location.hash.replace('#', '');
-  if (hash === 'contacto') { DESTINOS.contacto.acc(); return; }
-  var directo = PLATOS.filter(function (p) { return p.id === hash; })[0];
-  if (directo) {
-    setPantalla('diario');
-    var t = document.getElementById(directo.id);
-    if (t) setTimeout(function () { t.scrollIntoView({ behavior: 'smooth' }); }, 120);
+  function destino() {
+    if (hash === 'contacto') { DESTINOS.contacto.acc(); return; }
+    var directo = PLATOS.filter(function (p) { return p.id === hash; })[0];
+    if (directo) {
+      setPantalla('diario');
+      var t = document.getElementById(directo.id);
+      if (t) setTimeout(function () { t.scrollIntoView({ behavior: 'smooth' }); }, 120);
+    }
+    /* Sin hash: al quitar la carga aparece la portada (ya visible bajo ella) */
   }
+  if (correrCarga) correrCarga(pick(MENSAJES_ENTRADA), destino);
+  else destino();
 });
 
 /* Carga del clima OpenWeather */
@@ -1010,6 +1041,6 @@ modulo('clima', function () {
   }
 });
 
-console.log('%c[web] v6 cargada · ' + PLATOS.length + ' apartados', 'color:#ffb066;font-weight:700');
+console.log('%c[web] v7 cargada · ' + PLATOS.length + ' apartados', 'color:#ffb066;font-weight:700');
 
 })();

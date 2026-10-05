@@ -548,3 +548,104 @@ body[data-pantalla="diario"] { overflow-y:auto }
   .portada,.diario{ animation:none !important }
 }
 
+
+/* ══════════════════════════════════════════════════════════════════════
+   BLOQUE CLIMA OPENWEATHER
+   Sencillo, gratuito y sin base de datos.
+   ══════════════════════════════════════════════════════════════════════ */
+.clima{
+  margin:18px 0 22px;
+  padding:16px 16px 12px;
+  border:2px dashed rgba(90,42,32,.28);
+  background:rgba(255,255,255,.32);
+}
+
+.clima p{
+  max-width:none;
+}
+
+.clima__estado{
+  margin:0 0 6px;
+  font:400 20px/1.2 var(--jn-terminal);
+  color:#5a2a20;
+}
+
+.clima__temp{
+  margin:0 0 8px;
+  font:700 clamp(28px,5vw,46px)/1 var(--jn-display);
+  color:#2a1f18;
+}
+
+.clima__extra{
+  margin:0 0 8px;
+  font:400 14px/1.45 Karla,system-ui,sans-serif;
+  color:#5a3a22;
+}
+
+.clima__nota{
+  margin:0;
+  font:400 13px/1.3 var(--jn-terminal);
+  color:rgba(90,42,32,.65);
+}
+
+/* En el diario */
+.entrada .clima{
+  border-color:rgba(90,42,32,.28);
+  background:rgba(255,255,255,.32);
+}
+
+.entrada .clima__estado{
+  font:400 20px/1.2 var(--jn-terminal);
+  color:#5a2a20;
+}
+
+.entrada .clima__temp{
+  font:700 clamp(28px,5vw,46px)/1 var(--jn-display);
+  color:#2a1f18;
+}
+
+.entrada .clima__extra{
+  font:400 14px/1.45 Karla,system-ui,sans-serif;
+  color:#5a3a22;
+}
+
+.entrada .clima__nota{
+  font:400 13px/1.3 var(--jn-terminal);
+  color:rgba(90,42,32,.65);
+}
+
+/* En el bar servido */
+.servido .plato-post .clima{
+  border-color:rgba(90,42,32,.28);
+  background:rgba(255,255,255,.32);
+}
+
+.servido .plato-post .clima__estado{
+  font:400 20px/1.2 var(--jn-terminal);
+  color:#5a2a20;
+}
+
+.servido .plato-post .clima__temp{
+  font:700 clamp(28px,5vw,46px)/1 var(--jn-display);
+  color:#2a1f18;
+}
+
+.servido .plato-post .clima__extra{
+  font:400 14px/1.45 Karla,system-ui,sans-serif;
+  color:#5a3a22;
+}
+
+.servido .plato-post .clima__nota{
+  font:400 13px/1.3 var(--jn-terminal);
+  color:rgba(90,42,32,.65);
+}
+
+@media (max-width:520px){
+  .clima{
+    padding:14px;
+  }
+
+  .clima__temp{
+    font-size:34px;
+  }
+}

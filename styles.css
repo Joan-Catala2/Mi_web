@@ -649,3 +649,99 @@ body[data-pantalla="diario"] { overflow-y:auto }
     font-size:34px;
   }
 }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   PANTALLA DE CARGA
+   ══════════════════════════════════════════════════════════════════════ */
+.carga{
+  position:fixed;
+  inset:0;
+  z-index:999;
+  display:grid;
+  place-items:center;
+  background:
+    radial-gradient(120% 90% at 50% 0%, #3b2417 0%, #160e09 58%, #070505 100%);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .22s ease;
+}
+.carga[hidden]{ display:none }
+.carga.is-visible{
+  opacity:1;
+  pointer-events:auto;
+}
+.carga.is-salida{
+  opacity:0;
+}
+
+.carga__caja{
+  width:min(420px, calc(100% - 36px));
+  text-align:center;
+  padding:28px 24px 24px;
+  background:rgba(13,9,8,.82);
+  border:3px solid var(--jn-madera-clara);
+  box-shadow:
+    0 0 0 4px #0b0705,
+    0 0 0 7px var(--jn-madera),
+    8px 10px 0 rgba(0,0,0,.55),
+    inset 0 0 40px rgba(0,0,0,.6);
+}
+
+.carga__marca{
+  margin:0 0 12px;
+  font:700 11px/1 var(--jn-display);
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--jn-ambar);
+  text-shadow:0 0 8px rgba(255,176,102,.6);
+}
+
+.carga__msg{
+  margin:0 0 18px;
+  min-height:2.4em;
+  font:400 clamp(19px,3vw,26px)/1.2 var(--jn-terminal);
+  color:var(--jn-crema);
+}
+
+.carga__barra{
+  height:10px;
+  background:#1b120d;
+  border:2px solid #2a1a12;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.6);
+  overflow:hidden;
+}
+
+.carga__pista{
+  display:block;
+  width:100%;
+  height:100%;
+  transform-origin:left center;
+  transform:scaleX(0);
+  background:linear-gradient(90deg, var(--jn-laton), var(--jn-ambar), #ffe0b8);
+  box-shadow:0 0 12px rgba(255,176,102,.65);
+}
+
+.carga__nota{
+  margin:14px 0 0;
+  font:400 14px/1.2 var(--jn-terminal);
+  color:rgba(233,226,207,.45);
+}
+
+@media (max-width:520px){
+  .carga__caja{
+    padding:22px 18px 18px;
+  }
+  .carga__nota{
+    font-size:13px;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .carga{
+    transition:none;
+  }
+  .carga__pista{
+    transition:none;
+  }
+}

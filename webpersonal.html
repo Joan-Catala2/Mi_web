@@ -171,7 +171,7 @@
       </div>
     </div>
 
-    <p class="bar__hint" aria-hidden="true">1–8 saltar a un plato · c carta · s siguiente · m contactar · esc carta</p>
+    <p class="bar__hint" aria-hidden="true">1–9 saltar a un plato · c carta · s siguiente · m contactar · esc carta</p>
     </section>
 
   <!-- ════════════════════════════════════════════════════════════════
@@ -325,11 +325,34 @@
       </p>
     </article>
 
+    <article class="post" id="clima">
+      <header class="post__head">
+        <h2>El tiempo ahora</h2>
+        <p class="post__meta">OpenWeather · en vivo</p>
+      </header>
+
+      <div class="clima" data-clima>
+        <p class="clima__estado" data-clima-estado>Cargando el tiempo…</p>
+        <p class="clima__temp" data-clima-temp>— °C</p>
+        <p class="clima__extra" data-clima-extra>
+          Temperatura, sensación, viento y humedad aparecerán aquí.
+        </p>
+        <p class="clima__nota" data-clima-nota>
+          Configura tu API key en script.js.
+        </p>
+      </div>
+
+      <p>
+        Este apartado no lo he escrito a mano: se rellena solo con la API gratuita de OpenWeather.
+        No necesita base de datos.
+      </p>
+    </article>
+
   </template>
 
   <noscript>
     <p class="sin-js">Esta web es un bar con escena animada: necesita JavaScript. Con JavaScript
-    activado verás la pizarra y los ocho apartados completos.</p>
+    activado verás la pizarra y los apartados completos.</p>
   </noscript>
 
   <script src="script.js" defer></script>

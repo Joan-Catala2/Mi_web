@@ -653,6 +653,7 @@ body[data-pantalla="diario"] { overflow-y:auto }
 
 /* ══════════════════════════════════════════════════════════════════════
    PANTALLA DE CARGA
+   Sale al entrar en la web y al pulsar los botones de navegación.
    ══════════════════════════════════════════════════════════════════════ */
 .carga{
   position:fixed;

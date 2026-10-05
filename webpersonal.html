@@ -18,12 +18,14 @@
 
   <!-- ================================================================
        PANTALLA DE CARGA
-       Aparece al pulsar los botones de navegación.
+       Sale al entrar en la web y al pulsar los botones de navegación.
+       Arranca visible (is-visible, sin hidden) para tapar la portada
+       desde el primer render; el JS la anima y la oculta.
        ================================================================ -->
-  <div class="carga" id="carga" hidden aria-hidden="true">
+  <div class="carga is-visible" id="carga" aria-hidden="true">
     <div class="carga__caja">
       <p class="carga__marca">Casa Joan</p>
-      <p class="carga__msg" id="cargaMsg" role="status" aria-live="polite">Abriendo la casa…</p>
+      <p class="carga__msg" id="cargaMsg" role="status" aria-live="polite">Entrando en Casa Joan…</p>
       <div class="carga__barra" aria-hidden="true">
         <span class="carga__pista" id="cargaPista"></span>
       </div>
@@ -367,6 +369,7 @@
   </template>
 
   <noscript>
+    <style>.carga{display:none!important}</style>
     <p class="sin-js">Esta web es un bar con escena animada: necesita JavaScript. Con JavaScript
     activado verás la pizarra y los apartados completos.</p>
   </noscript>

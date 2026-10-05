@@ -44,7 +44,8 @@ var CARTA = {
   'ingles'   : { precio:'B2 en curso',    dicho:'Inglés por independencia. Se equivoca uno hablando y deja de equivocarse leyendo.' },
   'estudios' : { precio:'DAM · C1',       dicho:'Bachillerato, primero de DAM en el Simarro y el C1 de valencià enmarcado en la pared.' },
   'ia'       : { precio:'a futuro',       dicho:'Esto es lo serio: vivir de crear con IA. Un prototipo al día, criterio el primero.' },
-  'proyectos': { precio:'en marcha',      dicho:'De postre, lo que estoy construyendo ahora mismo. Café y código.' }
+  'proyectos': { precio:'en marcha',      dicho:'De postre, lo que estoy construyendo ahora mismo. Café y código.' },
+  'clima'    : { precio:'en vivo',        dicho:'Esto lo pide la casa: el tiempo de ahora, sin salir del bar.' }
 };
 var SALUDO = [
   'Buenas. Siéntate donde quieras, hoy no hay prisa.',
@@ -67,6 +68,148 @@ function leerPlatos() {
   });
 }
 PLATOS = leerPlatos();   /* se lee una sola vez: mismo orden en bar y diario */
+
+/* ══════════════════════════════════════════════════════════════════════
+   1b. CLIMA OPENWEATHER — sencillo, gratuito y sin base de datos
+   Cambia solo CLIMA.key por tu API key real.
+   ══════════════════════════════════════════════════════════════════════ */
+var CLIMA = {
+  key: '5796a0d1d068a83ebae6d0f194fce351',
+  ciudad: 'Valencia,ES',
+  lat: null,
+  lon: null,
+  unidades: 'metric',
+  lang: 'es',
+  cadaMinutos: 10
+};
+
+var ultimaData = null;
+
+function unidadTemp() {
+  return CLIMA.unidades === 'imperial' ? '°F' : '°C';
+}
+
+function iconoClima(code) {
+  var m = {
+    '01d': '☀️',
+    '01n': '🌙',
+    '02d': '⛅',
+    '02n': '☁️',
+    '03d': '☁️',
+    '03n': '☁️',
+    '04d': '☁️',
+    '04n': '☁️',
+    '09d': '🌧️',
+    '09n': '🌧️',
+    '10d': '🌦️',
+    '10n': '🌧️',
+    '11d': '⛈️',
+    '11n': '⛈️',
+    '13d': '❄️',
+    '13n': '❄️',
+    '50d': '🌫️',
+    '50n': '🌫️'
+  };
+
+  return m[code] || '🌡️';
+}
+
+function climaUrl() {
+  var params = new URLSearchParams();
+
+  params.set('units', CLIMA.unidades);
+  params.set('lang', CLIMA.lang);
+  params.set('appid', CLIMA.key);
+
+  if (CLIMA.lat != null && CLIMA.lon != null) {
+    params.set('lat', CLIMA.lat);
+    params.set('lon', CLIMA.lon);
+  } else {
+    params.set('q', CLIMA.ciudad);
+  }
+
+  return 'https://api.openweathermap.org/data/2.5/weather?' + params.toString();
+}
+
+function pintarClima(data) {
+  if (data) ultimaData = data;
+  if (!ultimaData) return;
+
+  var w = ultimaData.weather && ultimaData.weather[0] ? ultimaData.weather[0] : {};
+
+  var estado = w.description
+    ? w.description.charAt(0).toUpperCase() + w.description.slice(1)
+    : 'Sin descripción';
+
+  var icon = iconoClima(w.icon);
+
+  var temp = ultimaData.main && ultimaData.main.temp != null ? Math.round(ultimaData.main.temp) : null;
+  var sens = ultimaData.main && ultimaData.main.feels_like != null ? Math.round(ultimaData.main.feels_like) : null;
+  var min = ultimaData.main && ultimaData.main.temp_min != null ? Math.round(ultimaData.main.temp_min) : null;
+  var max = ultimaData.main && ultimaData.main.temp_max != null ? Math.round(ultimaData.main.temp_max) : null;
+  var humedad = ultimaData.main ? ultimaData.main.humidity : null;
+  var viento = ultimaData.wind ? ultimaData.wind.speed : null;
+  var ciudad = ultimaData.name || CLIMA.ciudad;
+  var hora = new Date().toLocaleString('es-ES');
+
+  $$('[data-clima]').forEach(function (bloque) {
+    var e = bloque.querySelector('[data-clima-estado]');
+    var t = bloque.querySelector('[data-clima-temp]');
+    var x = bloque.querySelector('[data-clima-extra]');
+    var n = bloque.querySelector('[data-clima-nota]');
+
+    if (e) e.textContent = icon + ' ' + estado;
+
+    if (t) {
+      t.textContent = (temp != null ? temp : '—') + ' ' + unidadTemp();
+    }
+
+    if (x) {
+      x.textContent =
+        'Sensación ' + (sens != null ? sens : '—') + ' ' + unidadTemp() +
+        ' · mín ' + (min != null ? min : '—') +
+        ' · máx ' + (max != null ? max : '—') +
+        ' · humedad ' + (humedad != null ? humedad : '—') + '%' +
+        ' · viento ' + (viento != null ? viento : '—') + ' m/s';
+    }
+
+    if (n) {
+      n.textContent = 'Ciudad: ' + ciudad + ' · Actualizado: ' + hora;
+    }
+  });
+}
+
+function pintarErrorClima(mensaje) {
+  $$('[data-clima]').forEach(function (bloque) {
+    var e = bloque.querySelector('[data-clima-estado]');
+    var t = bloque.querySelector('[data-clima-temp]');
+    var x = bloque.querySelector('[data-clima-extra]');
+    var n = bloque.querySelector('[data-clima-nota]');
+
+    if (e) e.textContent = '☁️ Tiempo no disponible';
+    if (t) t.textContent = '— ' + unidadTemp();
+    if (x) x.textContent = 'Revisa la API key, la ciudad o la conexión.';
+    if (n) n.textContent = mensaje || 'Error desconocido';
+  });
+}
+
+function cargarClima() {
+  if (!CLIMA.key || CLIMA.key.indexOf('TU_API_KEY') > -1) {
+    pintarErrorClima('Falta la API key en script.js.');
+    return;
+  }
+
+  fetch(climaUrl())
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(pintarClima)
+    .catch(function (e) {
+      console.error('[clima]', e);
+      pintarErrorClima(e.message);
+    });
+}
 
 /* ══════════════════════════════════════════════════════════════════════
    2. EL CONMUTADOR DE PANTALLAS
@@ -138,6 +281,9 @@ modulo('diario', function () {
            '</section>';
   }).join('');
 
+  /* Rellena el clima si ya lo teníamos cargado */
+  pintarClima(ultimaData);
+
   /* Enlaces internos (#) con scroll suave, sin recargar */
   on(document.getElementById('diario'), 'click', function (e) {
     var a = e.target.closest && e.target.closest('a[href^="#"]');
@@ -169,6 +315,14 @@ function construirCarta() {
   }).join('');
   var total = document.getElementById('barTotal');
   if (total) total.textContent = PLATOS.length;
+
+  /* Actualiza el texto del hint según el número real de platos */
+  var hint = document.querySelector('.bar__hint');
+  if (hint) {
+    hint.textContent =
+      '1–' + PLATOS.length +
+      ' saltar a un plato · c carta · s siguiente · m contactar · esc carta';
+  }
 }
 
 function verVista(v) { if (panel) panel.dataset.vista = v; }
@@ -192,6 +346,9 @@ function servirPlato(i) {
     '<button class="jn-btn" type="button" data-siguiente="' + PLATOS.indexOf(sig) + '">Siguiente · ' + sig.name + ' →</button>' +
     botonera('bar');                                  /* 📖 el diario · ✉ contactar */
   cuerpo.appendChild(fin);
+
+  /* Importante: como el artículo se clona, hay que volver a pintar el clima */
+  pintarClima(ultimaData);
 
   if (sello) sello.textContent = 'plato ' + ('0' + p.n).slice(-2) + ' · ' + p.min + ' min';
   verVista('plato');
@@ -596,7 +753,14 @@ modulo('teclado', function () {
     var pantalla = document.body.dataset.pantalla;
     if (e.key === 'Escape') { setPantalla('portada'); return; }
     if (pantalla !== 'bar') return;
-    if (/^[1-8]$/.test(e.key) && PLATOS[+e.key - 1]) { servirPlato(+e.key - 1); return; }
+
+    /* Ahora funciona con cualquier número de platos, no solo 1-8 */
+    var n = parseInt(e.key, 10);
+    if (n >= 1 && n <= PLATOS.length) {
+      servirPlato(n - 1);
+      return;
+    }
+
     var t = document.activeElement && document.activeElement.tagName;
     if (/^(BUTTON|A|INPUT|TEXTAREA)$/.test(t)) return;   /* no pisar al foco del teclado */
     var k = e.key.toLowerCase();
@@ -615,6 +779,15 @@ modulo('arranque', function () {
     setPantalla('diario');
     var t = document.getElementById(directo.id);
     if (t) setTimeout(function () { t.scrollIntoView({ behavior: 'smooth' }); }, 120);
+  }
+});
+
+/* Carga del clima OpenWeather */
+modulo('clima', function () {
+  cargarClima();
+
+  if (CLIMA.cadaMinutos > 0) {
+    setInterval(cargarClima, CLIMA.cadaMinutos * 60000);
   }
 });
 

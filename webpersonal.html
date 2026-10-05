@@ -15,6 +15,22 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body data-pantalla="portada">
+
+  <!-- ================================================================
+       PANTALLA DE CARGA
+       Aparece al pulsar los botones de navegación.
+       ================================================================ -->
+  <div class="carga" id="carga" hidden aria-hidden="true">
+    <div class="carga__caja">
+      <p class="carga__marca">Casa Joan</p>
+      <p class="carga__msg" id="cargaMsg" role="status" aria-live="polite">Abriendo la casa…</p>
+      <div class="carga__barra" aria-hidden="true">
+        <span class="carga__pista" id="cargaPista"></span>
+      </div>
+      <p class="carga__nota">Joan Català Mateu · esgrima · DAM · proyectos con IA</p>
+    </div>
+  </div>
+
     <!-- ================================================================
        PORTADA — lo primero que se ve. Nombre en grande con el estilo
        del bar + 3 botones: Conóceme (diario entero) · Contactar · Entrar (bar).
@@ -76,7 +92,7 @@
       </p>
       <p class="contacto__mail">
         <a href="mailto:catalajoan19@gmail.com">catalajoan19@gmail.com</a>
-        <button type="button" id="diarioCopyMail" data-copy="catalajoan19@gmail.com">copiar</button>
+        <button type="button" id="diarioCopyMail" data-copy="catalajoan19@gmail.com" data-carga="no">copiar</button>
       </p>
       <ul class="contacto__redes">
         <li><a href="https://github.com/" target="_blank" rel="noopener">GitHub</a></li>
@@ -99,7 +115,7 @@
       <button class="bar__ini" type="button" data-ir="portada">⌂ portada</button>
       <button class="bar__ini" type="button" data-ir="diario">📖 diario</button>
       <button class="bar__ini" type="button" data-ir="contacto">✉ contactar</button>
-      <button class="bar__son" id="barSon" type="button" aria-pressed="false">sonido: off</button>
+      <button class="bar__son" id="barSon" type="button" aria-pressed="false" data-carga="no">sonido: off</button>
     </div>
 
     <div class="bar__marco">
@@ -157,7 +173,7 @@
           </p>
           <p class="contacto__mail">
             <a id="barMail" href="mailto:catalajoan19@gmail.com">catalajoan19@gmail.com</a>
-            <button type="button" id="barCopyMail" data-copy="catalajoan19@gmail.com">copiar</button>
+            <button type="button" id="barCopyMail" data-copy="catalajoan19@gmail.com" data-carga="no">copiar</button>
           </p>
           <ul class="contacto__redes">
             <li><a href="https://github.com/" target="_blank" rel="noopener">GitHub</a></li>

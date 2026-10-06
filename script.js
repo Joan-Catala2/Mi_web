@@ -1,8 +1,9 @@
 /* ══════════════════════════════════════════════════════════════════════
-   script.js v7 · Joan Català Mateu
+   script.js v8 · Joan Català Mateu
    ──────────────────────────────────────────────────────────────────────
-   v7 = v6 + pantalla de carga también AL ENTRAR en la web + 1,5 s extra
-        de duración. Ver marcas [v7] en el código.
+   v8 = v7 + carga SOLO en entrada/portada/diario/contactar (no en el bar)
+        + portada con encendido aleatorio del nombre y parpadeo final.
+        Ver marcas [v8] en el código.
    ──────────────────────────────────────────────────────────────────────
    TRES PANTALLAS en la misma página (body[data-pantalla]):
      portada → nombre grande + Conóceme / Contactar / Entrar
@@ -235,6 +236,7 @@ function setPantalla(p) {
   document.body.dataset.pantalla = p;
   Escena.corriendo(p === 'bar');                 /* la escena solo gasta CPU si se ve */
   if (p === 'diario') window.scrollTo(0, 0);
+  if (p === 'portada') animarPortada();          /* [v8] cada vez que se ve la portada, se enciende */
 }
 
 /* Los destinos. "contacto" se comporta distinto según dónde estés:
@@ -271,6 +273,81 @@ document.addEventListener('click', function (e) {
   var d = DESTINOS[b.getAttribute('data-ir')];
   if (d) d.acc();
 });
+
+/* ══════════════════════════════════════════════════════════════════════
+   2b. [v8] PORTADA: encendido aleatorio del nombre + parpadeo final
+   ══════════════════════════════════════════════════════════════════════ */
+var letrasPortada = [];   /* todas las letras (sin espacios) */
+var portadaTimer  = null;
+
+/* Parte cada .palabra del nombre en <span class="letra"> (una sola vez) */
+function prepararLetrasPortada() {
+  var h1 = document.getElementById('portada-title');
+  if (!h1 || h1.dataset.partido === '1') return;
+  var palabras = $$('.palabra', h1);
+  var todas = [];
+  palabras.forEach(function (p) {
+    var esGold = p.classList.contains('gold');
+    var txt = p.textContent;
+    p.textContent = '';
+    for (var i = 0; i < txt.length; i++) {
+      var ch = txt.charAt(i);
+      var s = document.createElement('span');
+      s.className = 'letra' + (esGold ? ' gold' : '');
+      if (ch === ' ') { s.classList.add('espacio'); s.innerHTML = '&nbsp;'; }
+      else { s.textContent = ch; todas.push(s); }
+      p.appendChild(s);
+    }
+  });
+  h1.dataset.partido = '1';
+  letrasPortada = todas;
+}
+
+/* Enciende las letras en orden aleatorio; al terminar, parpadea el nombre */
+function animarPortada() {
+  prepararLetrasPortada();
+  var h1 = document.getElementById('portada-title');
+  var portadaEl = document.getElementById('portada');
+  if (!h1 || !letrasPortada.length) return;
+
+  /* reset: todo apagado y sin parpadeo */
+  h1.classList.remove('is-parpadeo');
+  letrasPortada.forEach(function (l) { l.classList.remove('is-on'); });
+  clearTimeout(portadaTimer);
+
+  /* con movimiento reducido: todo encendido de golpe, sin parpadeo */
+  if (REDUCED) {
+    letrasPortada.forEach(function (l) { l.classList.add('is-on'); });
+    return;
+  }
+
+  /* destello de "abrir la luz" */
+  if (portadaEl) {
+    portadaEl.classList.remove('is-encendiendo');
+    void portadaEl.offsetWidth;            /* reinicia la animación del flash */
+    portadaEl.classList.add('is-encendiendo');
+  }
+
+  /* orden aleatorio de las letras (Fisher–Yates) */
+  var orden = letrasPortada.slice();
+  for (var i = orden.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = orden[i]; orden[i] = orden[j]; orden[j] = t;
+  }
+
+  var k = 0;
+  function encender() {
+    if (k < orden.length) {
+      orden[k].classList.add('is-on');
+      k++;
+      portadaTimer = setTimeout(encender, 55 + Math.random() * 80);   /* ritmo aleatorio */
+    } else {
+      if (portadaEl) portadaEl.classList.remove('is-encendiendo');
+      h1.classList.add('is-parpadeo');                                /* todas on → parpadea */
+    }
+  }
+  portadaTimer = setTimeout(encender, 140);   /* pequeño retardo para ver el apagón */
+}
 
 /* ══════════════════════════════════════════════════════════════════════
    3. EL DIARIO — se construye entero desde el template
@@ -761,8 +838,8 @@ function copiar(btn) {
 
 /* ══════════════════════════════════════════════════════════════════════
    7b. PANTALLA DE CARGA
-   Sale al entrar en la web y al pulsar los botones de navegación.
-   [v7] +1,5 s extra de duración (CARGA_EXTRA) y carga de entrada.
+   Sale al entrar en la web y al ir a portada / diario / contactar.
+   [v8] Ya NO sale dentro del bar (platos, siguiente, ← atrás, entrar al bar).
    ══════════════════════════════════════════════════════════════════════ */
 var cargaOcupada = false;
 
@@ -772,54 +849,34 @@ modulo('carga', function () {
   var pistaEl = document.getElementById('cargaPista');
   if (!cargaEl || !msgEl || !pistaEl) return;
 
-  /* [v7] Duración = base aleatoria + 1,5 s extra. Ajusta CARGA_EXTRA a tu gusto. */
+  /* [v7] Duración = base aleatoria + CARGA_EXTRA. Ajusta CARGA_EXTRA a tu gusto. */
   var CARGA_BASE  = 520;
-  var CARGA_EXTRA = 3000;
-  function durCarga() { return REDUCED ? 1220 : (CARGA_BASE + Math.random() * 380) + CARGA_EXTRA; }
+  var CARGA_EXTRA = 1500;
+  function durCarga() { return REDUCED ? Math.max(CARGA_EXTRA, 400) : (CARGA_BASE + Math.random() * 380) + CARGA_EXTRA; }
+
+  /* [v8] Destinos que SÍ muestran la pantalla de carga. Todo lo demás
+     (bar, carta, platos, siguiente, anterior…) navega sin carga. */
+  var DESTINOS_CON_CARGA = ['portada', 'diario', 'contacto'];
 
   function accionDesdeBoton(b) {
     if (!b) return null;
-
     if (b.hasAttribute('data-ir')) {
       var d = DESTINOS[b.getAttribute('data-ir')];
       return d ? function () { d.acc(); } : null;
     }
-
-    if (b.classList.contains('plato')) {
-      var i = parseInt(b.dataset.i, 10);
-      return isNaN(i) ? null : function () { servirPlato(i); };
-    }
-
-    if (b.hasAttribute('data-siguiente')) {
-      var s = parseInt(b.dataset.siguiente, 10);
-      return isNaN(s) ? null : function () { servirPlato(s); };
-    }
-
-    if (b.hasAttribute('data-anterior')) {
-      var a = parseInt(b.dataset.anterior, 10);
-      return isNaN(a) ? null : function () { servirPlato(a); };
-    }
-
-    if (b.id === 'barPrev') {
-      return function () {
-        servirPlato((actual - 1 + PLATOS.length) % PLATOS.length);
-      };
-    }
-
-    if (b.id === 'barContactoBack' || b.id === 'barInicio') {
-      return function () { irCarta(); };
-    }
-
     return null;
   }
 
+  /* [v8] Solo cargan los botones de portada / diario / contactar */
   function esBotonCarga(b) {
     if (!b || b.tagName !== 'BUTTON') return false;
     if (b.getAttribute('data-carga') === 'no') return false;
     if (b.hasAttribute('data-copy')) return false;
     if (b.id === 'barSon') return false;
     if (b.disabled) return false;
-    return !!accionDesdeBoton(b);
+    var ir = b.getAttribute('data-ir');
+    if (!ir) return false;                                   /* platos, siguiente… → sin carga */
+    return DESTINOS_CON_CARGA.indexOf(ir) !== -1;
   }
 
   function mensajeDe(b) {
@@ -875,33 +932,6 @@ modulo('carga', function () {
       ]);
     }
 
-    if (b.hasAttribute('data-siguiente')) {
-      var txt = b.textContent.trim();
-      var siguiente = txt
-        .replace(/^Siguiente\s*·\s*/, '')
-        .replace(/\s*→\s*$/, '')
-        .trim() || 'el siguiente plato';
-      return pick([
-        'Pasando a ' + siguiente + '…',
-        'Sirviendo el siguiente…',
-        'El camarero apunta la comanda…'
-      ]);
-    }
-
-    if (b.id === 'barPrev') {
-      return pick([
-        'Volviendo al plato anterior…',
-        'Recogiendo la taza…'
-      ]);
-    }
-
-    if (b.id === 'barContactoBack' || b.id === 'barInicio') {
-      return pick([
-        'Volvendo a la carta…',
-        'Dejando la cuenta sobre la barra…'
-      ]);
-    }
-
     return pick([
       'Cargando Casa Joan…',
       'Encendiendo la madera…',
@@ -912,8 +942,7 @@ modulo('carga', function () {
     ]);
   }
 
-  /* [v7] Anima la barra y oculta la pantalla; luego ejecuta fn.
-     Reutilizada por mostrarCarga() y por la carga de entrada. */
+  /* [v7] Anima la barra y oculta la pantalla; luego ejecuta fn. */
   function correr(dur, fn) {
     cargaOcupada = true;
     var t0 = performance.now();
@@ -1015,7 +1044,7 @@ modulo('teclado', function () {
 });
 
 /* Arranque: portada. Si vienes con #contacto o un #apartado, respeta el enlace.
-   [v7] Todo el arranque va envuelto en la pantalla de carga de entrada. */
+   [v8] Tras la carga de entrada, si caemos en portada se anima el nombre. */
 modulo('arranque', function () {
   var hash = location.hash.replace('#', '');
   function destino() {
@@ -1025,8 +1054,9 @@ modulo('arranque', function () {
       setPantalla('diario');
       var t = document.getElementById(directo.id);
       if (t) setTimeout(function () { t.scrollIntoView({ behavior: 'smooth' }); }, 120);
+    } else {
+      animarPortada();          /* [v8] sin hash: aparece la portada y se enciende */
     }
-    /* Sin hash: al quitar la carga aparece la portada (ya visible bajo ella) */
   }
   if (correrCarga) correrCarga(pick(MENSAJES_ENTRADA), destino);
   else destino();
@@ -1041,6 +1071,6 @@ modulo('clima', function () {
   }
 });
 
-console.log('%c[web] v7 cargada · ' + PLATOS.length + ' apartados', 'color:#ffb066;font-weight:700');
+console.log('%c[web] v8 cargada · ' + PLATOS.length + ' apartados', 'color:#ffb066;font-weight:700');
 
 })();

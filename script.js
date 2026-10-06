@@ -1,9 +1,8 @@
 /* ══════════════════════════════════════════════════════════════════════
-   script.js v8 · Joan Català Mateu
+   script.js v9 · Joan Català Mateu
    ──────────────────────────────────────────────────────────────────────
-   v8 = v7 + carga SOLO en entrada/portada/diario/contactar (no en el bar)
-        + portada con encendido aleatorio del nombre y parpadeo final.
-        Ver marcas [v8] en el código.
+   v9 = v8 + conversor de divisas con ExchangeRate-API (gratis, con clave,
+        sin base de datos). Ver marcas [v9].
    ──────────────────────────────────────────────────────────────────────
    TRES PANTALLAS en la misma página (body[data-pantalla]):
      portada → nombre grande + Conóceme / Contactar / Entrar
@@ -61,7 +60,8 @@ var CARTA = {
   'estudios' : { precio:'DAM · C1',       dicho:'Bachillerato, primero de DAM en el Simarro y el C1 de valencià enmarcado en la pared.' },
   'ia'       : { precio:'a futuro',       dicho:'Esto es lo serio: vivir de crear con IA. Un prototipo al día, criterio el primero.' },
   'proyectos': { precio:'en marcha',      dicho:'De postre, lo que estoy construyendo ahora mismo. Café y código.' },
-  'clima'    : { precio:'en vivo',        dicho:'Esto lo pide la casa: el tiempo de ahora, sin salir del bar.' }
+  'clima'    : { precio:'en vivo',        dicho:'Esto lo pide la casa: el tiempo de ahora, sin salir del bar.' },
+  'monedas'  : { precio:'con clave',      dicho:'Cambio de moneda al momento, con tasas reales de ExchangeRate-API.' }
 };
 var SALUDO = [
   'Buenas. Siéntate donde quieras, hoy no hay prisa.',
@@ -228,6 +228,220 @@ function cargarClima() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
+   1c. [v9] DIVISAS · ExchangeRate-API
+   Gratis, con clave, sin base de datos.
+   Endpoint: https://v6.exchangerate-api.com/v6/TU_KEY/latest/BASE
+   ══════════════════════════════════════════════════════════════════════ */
+var MONEDAS = {
+  key: '26b774ebd2e1fc8cd152b215',   /* <-- cambia esto */
+  base: 'EUR',                              /* moneda base de la petición */
+  cadaMinutos: 30                           /* refresco automático */
+};
+
+/* Lista de monedas que mostramos en los selects (código ISO + nombre en español) */
+var LISTA_MONEDAS = [
+  { code: 'EUR', name: 'Euro' },
+  { code: 'USD', name: 'Dólar estadounidense' },
+  { code: 'GBP', name: 'Libra esterlina' },
+  { code: 'JPY', name: 'Yen japonés' },
+  { code: 'MXN', name: 'Peso mexicano' },
+  { code: 'ARS', name: 'Peso argentino' },
+  { code: 'COP', name: 'Peso colombiano' },
+  { code: 'CLP', name: 'Peso chileno' },
+  { code: 'PEN', name: 'Sol peruano' },
+  { code: 'BRL', name: 'Real brasileño' },
+  { code: 'CAD', name: 'Dólar canadiense' },
+  { code: 'CHF', name: 'Franco suizo' },
+  { code: 'CNY', name: 'Yuan chino' },
+  { code: 'AUD', name: 'Dólar australiano' },
+  { code: 'KRW', name: 'Won surcoreano' },
+  { code: 'INR', name: 'Rupia india' },
+  { code: 'TRY', name: 'Lira turca' },
+  { code: 'MAD', name: 'Dírham marroquí' }
+];
+
+/* Símbolos rápidos para mostrar el resultado con aspecto de dinero */
+var SIMBOLOS = {
+  EUR: '€', USD: '$', GBP: '£', JPY: '¥', MXN: '$', ARS: '$', COP: '$',
+  CLP: '$', PEN: 'S/', BRL: 'R$', CAD: '$', CHF: 'CHF', CNY: '¥',
+  AUD: '$', KRW: '₩', INR: '₹', TRY: '₺', MAD: 'DH'
+};
+
+var ultimaTasas = null;   /* { base, conversion_rates } */
+
+function monedasUrl(base) {
+  return 'https://v6.exchangerate-api.com/v6/' + MONEDAS.key + '/latest/' + base;
+}
+
+function nombreMoneda(code) {
+  var m = LISTA_MONEDAS.filter(function (x) { return x.code === code; })[0];
+  return m ? m.name : code;
+}
+
+function simboloMoneda(code) {
+  return SIMBOLOS[code] || code;
+}
+
+function formatearImporte(valor, code) {
+  if (valor == null || isNaN(valor)) return '—';
+  var decimales = (code === 'JPY' || code === 'KRW' || code === 'CLP' || code === 'COP' || code === 'ARS' || code === 'INR') ? 0 : 2;
+  return new Intl.NumberFormat('es-ES', {
+    minimumFractionDigits: decimales,
+    maximumFractionDigits: decimales
+  }).format(valor);
+}
+
+/* Rellena los selects de un bloque [data-monedas] (se llama en cada clon) */
+function poblarSelects(bloque) {
+  var selO = bloque.querySelector('[data-m-origen]');
+  var selD = bloque.querySelector('[data-m-destino]');
+  if (!selO || !selD || selO.options.length) return;   /* ya poblado */
+
+  var html = LISTA_MONEDAS.map(function (m) {
+    return '<option value="' + m.code + '">' + m.code + ' · ' + m.name + '</option>';
+  }).join('');
+
+  selO.innerHTML = html;
+  selD.innerHTML = html;
+
+  selO.value = MONEDAS.base;
+  selD.value = 'USD';
+}
+
+/* Calcula la conversión cruzada a partir de las tasas de la base */
+function calcularConversion(cantidad, origen, destino) {
+  if (!ultimaTasas || !ultimaTasas.conversion_rates) return null;
+
+  var tasas = ultimaTasas.conversion_rates;
+  var base = ultimaTasas.base;
+
+  var tOrigen  = tasas[origen];
+  var tDestino = tasas[destino];
+
+  if (tOrigen == null || tDestino == null) return null;
+
+  /* Si la base no es el origen, normalizamos: */
+  /* cantidad_en_base = cantidad / tOrigen ; resultado = cantidad_en_base * tDestino */
+  var enBase = cantidad / tOrigen;
+  var resultado = enBase * tDestino;
+  var tasaUnitaria = tDestino / tOrigen;   /* 1 origen = X destino */
+
+  return { resultado: resultado, tasaUnitaria: tasaUnitaria };
+}
+
+/* Pinta el resultado en un bloque concreto */
+function pintarBloqueMonedas(bloque) {
+  var cantidadEl = bloque.querySelector('[data-m-cantidad]');
+  var origenEl   = bloque.querySelector('[data-m-origen]');
+  var destinoEl  = bloque.querySelector('[data-m-destino]');
+  var resEl      = bloque.querySelector('[data-m-resultado]');
+  var tasaEl     = bloque.querySelector('[data-m-tasa]');
+
+  if (!resEl || !tasaEl) return;
+
+  if (!ultimaTasas) {
+    resEl.textContent = '—';
+    tasaEl.textContent = 'Cargando tasas…';
+    return;
+  }
+
+  var cantidad = parseFloat(cantidadEl && cantidadEl.value);
+  if (isNaN(cantidad)) cantidad = 0;
+
+  var origen  = origenEl  ? origenEl.value  : MONEDAS.base;
+  var destino = destinoEl ? destinoEl.value : 'USD';
+
+  var conv = calcularConversion(cantidad, origen, destino);
+
+  if (!conv) {
+    resEl.textContent = '—';
+    tasaEl.textContent = 'No hay tasa para ' + origen + ' → ' + destino;
+    return;
+  }
+
+  resEl.textContent =
+    cantidad + ' ' + origen + ' = ' +
+    formatearImporte(conv.resultado, destino) + ' ' +
+    simboloMoneda(destino);
+
+  tasaEl.textContent =
+    '1 ' + origen + ' = ' + formatearImporte(conv.tasaUnitaria, destino) + ' ' + simboloMoneda(destino) +
+    ' · base ' + ultimaTasas.base + ' · actualizado ' +
+    new Date(ultimaTasas.time_last_update_utc || Date.now()).toLocaleString('es-ES');
+}
+
+/* Rellena TODOS los bloques [data-monedas] del DOM (diario + bar) */
+function pintarMonedas() {
+  $$('[data-monedas]').forEach(pintarBloqueMonedas);
+}
+
+function pintarErrorMonedas(mensaje) {
+  $$('[data-monedas]').forEach(function (bloque) {
+    var resEl  = bloque.querySelector('[data-m-resultado]');
+    var tasaEl = bloque.querySelector('[data-m-tasa]');
+    if (resEl)  resEl.textContent  = '—';
+    if (tasaEl) tasaEl.textContent = mensaje || 'Error al cargar las tasas.';
+  });
+}
+
+function cargarTasas() {
+  if (!MONEDAS.key || MONEDAS.key.indexOf('PEGA_TU_KEY') > -1) {
+    pintarErrorMonedas('Falta la API key de ExchangeRate-API en script.js.');
+    return;
+  }
+
+  fetch(monedasUrl(MONEDAS.base))
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function (data) {
+      if (data.result && data.result !== 'success') {
+        throw new Error(data['error-type'] || 'respuesta de error');
+      }
+      ultimaTasas = data;
+      pintarMonedas();
+    })
+    .catch(function (e) {
+      console.error('[monedas]', e);
+      pintarErrorMonedas('No se pudieron cargar las tasas: ' + e.message);
+    });
+}
+
+/* Engancha los listeners de un bloque [data-monedas] (se llama en cada clon) */
+function inicializarBloqueMonedas(bloque) {
+  if (bloque.dataset.monedasListo === '1') return;
+
+  poblarSelects(bloque);
+
+  var cantidadEl = bloque.querySelector('[data-m-cantidad]');
+  var origenEl   = bloque.querySelector('[data-m-origen]');
+  var destinoEl  = bloque.querySelector('[data-m-destino]');
+  var cambiarEl  = bloque.querySelector('[data-m-cambiar]');
+
+  var refrescar = function () { pintarBloqueMonedas(bloque); };
+
+  on(cantidadEl, 'input',  refrescar);
+  on(origenEl,   'change', refrescar);
+  on(destinoEl,  'change', refrescar);
+
+  on(cambiarEl, 'click', function () {
+    var a = origenEl.value;
+    origenEl.value = destinoEl.value;
+    destinoEl.value = a;
+    refrescar();
+  });
+
+  bloque.dataset.monedasListo = '1';
+  pintarBloqueMonedas(bloque);
+}
+
+/* Inicializa todos los bloques presentes en el DOM */
+function inicializarMonedas() {
+  $$('[data-monedas]').forEach(inicializarBloqueMonedas);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
    2. EL CONMUTADOR DE PANTALLAS
    ══════════════════════════════════════════════════════════════════════ */
 var bar, panel, listaEl, cuerpo, sello, txtEl, ecoEl;
@@ -376,6 +590,10 @@ modulo('diario', function () {
   /* Rellena el clima si ya lo teníamos cargado */
   pintarClima(ultimaData);
 
+  /* [v9] Rellena y engancha los conversores del diario */
+  inicializarMonedas();
+  pintarMonedas();
+
   /* Enlaces internos (#) con scroll suave, sin recargar */
   on(document.getElementById('diario'), 'click', function (e) {
     var a = e.target.closest && e.target.closest('a[href^="#"]');
@@ -441,6 +659,13 @@ function servirPlato(i) {
 
   /* Importante: como el artículo se clona, hay que volver a pintar el clima */
   pintarClima(ultimaData);
+
+  /* [v9] Y a inicializar el conversor si es el plato de divisas */
+  var bloqueM = cuerpo.querySelector('[data-monedas]');
+  if (bloqueM) {
+    bloqueM.dataset.monedasListo = '';   /* fuerza reenganche en el clon */
+    inicializarBloqueMonedas(bloqueM);
+  }
 
   if (sello) sello.textContent = 'plato ' + ('0' + p.n).slice(-2) + ' · ' + p.min + ' min';
   verVista('plato');
@@ -1071,6 +1296,17 @@ modulo('clima', function () {
   }
 });
 
-console.log('%c[web] v8 cargada · ' + PLATOS.length + ' apartados', 'color:#ffb066;font-weight:700');
+/* [v9] Carga de divisas ExchangeRate-API */
+modulo('monedas', function () {
+  /* Primero pintamos con lo que haya (aunque no estén cargadas aún) */
+  inicializarMonedas();
+  cargarTasas();
+
+  if (MONEDAS.cadaMinutos > 0) {
+    setInterval(cargarTasas, MONEDAS.cadaMinutos * 60000);
+  }
+});
+
+console.log('%c[web] v9 cargada · ' + PLATOS.length + ' apartados', 'color:#ffb066;font-weight:700');
 
 })();

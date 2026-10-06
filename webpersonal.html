@@ -192,7 +192,7 @@
       </div>
     </div>
 
-    <p class="bar__hint" aria-hidden="true">1–10 saltar a un plato · c carta · s siguiente · m contactar · esc carta</p>
+    <p class="bar__hint" aria-hidden="true">1–11 saltar a un plato · c carta · s siguiente · m contactar · esc carta</p>
     </section>
 
   <!-- ════════════════════════════════════════════════════════════════
@@ -363,7 +363,10 @@
         </p>
       </div>
 
-      
+      <p>
+        Este apartado no lo he escrito a mano: se rellena solo con la API gratuita de OpenWeather.
+        No necesita base de datos.
+      </p>
     </article>
 
     <article class="post" id="monedas">
@@ -396,7 +399,49 @@
         <p class="monedas__tasa" data-m-tasa>Cargando tasas…</p>
       </div>
 
-      
+      <p>
+        Este conversor usa la API gratuita de ExchangeRate-API con clave.
+        Las tasas se actualizan solas y no hace falta base de datos.
+      </p>
+    </article>
+
+    <article class="post" id="paises">
+      <header class="post__head">
+        <h2>Países del mundo</h2>
+        <p class="post__meta">Abstract API · en vivo</p>
+      </header>
+
+      <div class="paises" data-paises>
+        <div class="paises__buscador">
+          <label class="paises__campo">
+            <span>Código ISO (3 letras)</span>
+            <input type="text" data-p-codigo value="ESP" maxlength="3" placeholder="ESP" autocomplete="off">
+          </label>
+          <button class="paises__btn" type="button" data-p-buscar>Buscar</button>
+          <button class="paises__btn paises__btn--aleatorio" type="button" data-p-aleatorio>🎲 Aleatorio</button>
+        </div>
+
+        <div class="paises__tarjeta" data-p-tarjeta>
+          <div class="paises__bandera" data-p-bandera></div>
+          <p class="paises__nombre" data-p-nombre>—</p>
+          <dl class="paises__datos">
+            <div class="paises__dato"><dt>Capital</dt><dd data-p-capital>—</dd></div>
+            <div class="paises__dato"><dt>Población</dt><dd data-p-poblacion>—</dd></div>
+            <div class="paises__dato"><dt>Región</dt><dd data-p-region>—</dd></div>
+            <div class="paises__dato"><dt>Subregión</dt><dd data-p-subregion>—</dd></div>
+            <div class="paises__dato"><dt>Idiomas</dt><dd data-p-idiomas>—</dd></div>
+            <div class="paises__dato"><dt>Moneda</dt><dd data-p-moneda>—</dd></div>
+            <div class="paises__dato"><dt>Área</dt><dd data-p-area>—</dd></div>
+          </dl>
+        </div>
+
+        <p class="paises__error" data-p-error hidden></p>
+      </div>
+
+      <p>
+        Este apartado usa la API gratuita de Abstract API Countries con clave.
+        Banderas, población, capital, idiomas y más, sin base de datos.
+      </p>
     </article>
 
   </template>

@@ -778,6 +778,183 @@ body[data-pantalla="diario"] { overflow-y:auto }
 
 
 /* ══════════════════════════════════════════════════════════════════════
+   BLOQUE PAÍSES · Abstract API Countries (gratis, con clave, sin base de datos)
+   ══════════════════════════════════════════════════════════════════════ */
+.paises{
+  margin:18px 0 22px;
+  padding:16px;
+  border:2px dashed rgba(90,42,32,.28);
+  background:rgba(255,255,255,.32);
+}
+
+.paises__buscador{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:end;
+  margin-bottom:18px;
+}
+
+.paises__campo{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  font:400 11px/1 var(--jn-display);
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:#5a3a22;
+  flex:1 1 160px;
+}
+
+.paises__campo input{
+  width:100%;
+  padding:10px;
+  border:2px solid rgba(90,42,32,.35);
+  border-radius:0;
+  background:#fffdf6;
+  color:#2a1f18;
+  font:400 17px/1 var(--jn-terminal);
+  text-transform:uppercase;
+}
+
+.paises__campo input:focus{
+  outline:2px solid var(--jn-ambar);
+  outline-offset:1px;
+}
+
+.paises__btn{
+  cursor:pointer;
+  padding:11px 16px;
+  border:2px solid #5a3a22;
+  background:#5a3a22;
+  color:#fffdf6;
+  font:700 10px/1 var(--jn-display);
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  transition:background .2s, color .2s, transform .2s;
+}
+
+.paises__btn:hover{
+  background:var(--jn-rojo);
+  border-color:var(--jn-rojo);
+  transform:translate(-1px,-1px);
+}
+
+.paises__btn:active{
+  transform:translate(1px,1px);
+}
+
+.paises__btn--aleatorio{
+  background:#fffdf6;
+  color:#5a2a20;
+  border-color:#5a3a22;
+}
+
+.paises__btn--aleatorio:hover{
+  background:var(--jn-laton);
+  border-color:#20140b;
+  color:#20140b;
+}
+
+.paises__tarjeta{
+  border:2px solid rgba(90,42,32,.2);
+  background:#fffdf6;
+  padding:16px;
+}
+
+.paises__bandera{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:80px;
+  margin-bottom:14px;
+}
+
+.paises__bandera img{
+  width:100%;
+  max-width:260px;
+  height:auto;
+  border:1px solid rgba(90,42,32,.2);
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+
+.paises__bandera .paises__bandera-vacia{
+  font:400 14px/1.3 var(--jn-terminal);
+  color:rgba(90,42,32,.5);
+}
+
+.paises__nombre{
+  margin:0 0 14px;
+  text-align:center;
+  font:700 clamp(18px,3vw,26px)/1.2 var(--jn-display);
+  color:#2a1f18;
+}
+
+.paises__datos{
+  margin:0;
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+  gap:10px 16px;
+}
+
+.paises__dato{
+  margin:0;
+  padding:8px 10px;
+  background:rgba(90,42,32,.04);
+  border-left:3px solid var(--jn-laton);
+}
+
+.paises__dato dt{
+  margin:0 0 3px;
+  font:400 10px/1 var(--jn-display);
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:#9a6b45;
+}
+
+.paises__dato dd{
+  margin:0;
+  font:400 15px/1.35 Karla,system-ui,sans-serif;
+  color:#2a1f18;
+}
+
+.paises__error{
+  margin:14px 0 0;
+  padding:10px 12px;
+  background:rgba(192,74,58,.1);
+  border:1px solid rgba(192,74,58,.4);
+  color:#8a2a20;
+  font:400 14px/1.3 Karla,system-ui,sans-serif;
+}
+
+/* En el diario */
+.entrada .paises{
+  border-color:rgba(90,42,32,.28);
+  background:rgba(255,255,255,.32);
+}
+
+/* En el bar servido */
+.servido .plato-post .paises{
+  border-color:rgba(90,42,32,.28);
+  background:rgba(255,255,255,.32);
+}
+
+@media (max-width:560px){
+  .paises__buscador{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .paises__btn{
+    width:100%;
+    justify-content:center;
+  }
+  .paises__datos{
+    grid-template-columns:1fr;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
    PANTALLA DE CARGA
    Sale al entrar en la web y al ir a portada / diario / contactar.
    ══════════════════════════════════════════════════════════════════════ */

@@ -406,26 +406,53 @@ body[data-pantalla="diario"] { overflow-y:auto }
   position:absolute; inset:0; pointer-events:none; opacity:.35;
   background:repeating-linear-gradient(180deg, rgba(0,0,0,.34) 0 1px, transparent 1px 3px);
 }
+/* Destello de "abrir la luz": capa cálida que estalla y se desvanece */
+.portada__luz{
+  position:absolute; inset:0; z-index:0; pointer-events:none; opacity:0;
+  background:radial-gradient(circle at 50% 42%, rgba(255,232,184,.95), rgba(255,176,102,.4) 36%, transparent 70%);
+  mix-blend-mode:screen;
+}
+.portada.is-encendiendo .portada__luz{ animation:jn-luz 1.25s ease-out forwards }
+@keyframes jn-luz{
+  0%   { opacity:0; transform:scale(.35); }
+  14%  { opacity:1; transform:scale(1); }
+  100% { opacity:0; transform:scale(1.25); }
+}
 .portada__eyebrow{
-  position:relative; margin:0 0 18px;
+  position:relative; z-index:2; margin:0 0 18px;
   font:400 clamp(9px,1.4vw,12px)/1 var(--jn-display); letter-spacing:.24em; text-transform:uppercase;
   color:var(--jn-laton);
 }
 .portada__name{
-  position:relative; margin:0;
+  position:relative; z-index:2; margin:0;
   font:700 clamp(34px,8.4vw,96px)/1.15 var(--jn-display);
   color:#ffe6c2;
-  text-shadow:0 0 6px rgba(255,138,60,.9), 0 0 26px rgba(255,106,26,.55), 0 0 70px rgba(255,106,26,.35);
-  animation:jn-neon 6.4s steps(1,end) infinite;
+  /* sin animación global: el parpadeo lo controla .is-parpadeo */
 }
-.portada__name .gold{ color:var(--jn-ambar) }
+.portada__name .palabra{ display:inline-block; white-space:nowrap }
+/* Cada letra empieza apagada; el JS la enciende en orden aleatorio */
+.portada__name .letra{
+  display:inline-block; opacity:0; text-shadow:none; transform:translateY(3px) scale(.96);
+  transition:opacity .16s ease, transform .16s ease, text-shadow .16s ease;
+}
+.portada__name .letra.is-on{
+  opacity:1; transform:none;
+  text-shadow:0 0 6px rgba(255,138,60,.9), 0 0 24px rgba(255,106,26,.55), 0 0 64px rgba(255,106,26,.35);
+}
+.portada__name .letra.gold{ color:var(--jn-ambar) }
+.portada__name .letra.gold.is-on{
+  text-shadow:0 0 6px rgba(255,176,102,.95), 0 0 26px rgba(255,106,26,.6), 0 0 70px rgba(255,106,26,.4);
+}
+.portada__name .letra.espacio{ opacity:1; transform:none; text-shadow:none }
+/* Cuando todas están encendidas, el nombre parpadea como un rótulo neón */
+.portada__name.is-parpadeo{ animation:jn-neon 6.4s steps(1,end) infinite }
 .portada__desc{
-  position:relative; margin:22px auto 34px; max-width:46ch;
+  position:relative; z-index:2; margin:22px auto 34px; max-width:46ch;
   font:400 clamp(17px,2.2vw,23px)/1.4 var(--jn-terminal); color:rgba(255,243,221,.8);
 }
-.portada__cta{ position:relative; display:flex; flex-wrap:wrap; gap:14px; justify-content:center }
+.portada__cta{ position:relative; z-index:2; display:flex; flex-wrap:wrap; gap:14px; justify-content:center }
 .portada__nota{
-  position:absolute; bottom:18px; left:50%; transform:translateX(-50%); margin:0;
+  position:absolute; z-index:2; bottom:18px; left:50%; transform:translateX(-50%); margin:0;
   font:400 14px/1 var(--jn-terminal); letter-spacing:.08em; color:rgba(233,226,207,.35);
 }
 
@@ -546,6 +573,8 @@ body[data-pantalla="diario"] { overflow-y:auto }
 }
 @media (prefers-reduced-motion:reduce){
   .portada,.diario{ animation:none !important }
+  .portada__name.is-parpadeo{ animation:none !important }
+  .portada.is-encendiendo .portada__luz{ animation:none !important }
 }
 
 
@@ -653,7 +682,7 @@ body[data-pantalla="diario"] { overflow-y:auto }
 
 /* ══════════════════════════════════════════════════════════════════════
    PANTALLA DE CARGA
-   Sale al entrar en la web y al pulsar los botones de navegación.
+   Sale al entrar en la web y al ir a portada / diario / contactar.
    ══════════════════════════════════════════════════════════════════════ */
 .carga{
   position:fixed;

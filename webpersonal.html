@@ -18,9 +18,8 @@
 
   <!-- ================================================================
        PANTALLA DE CARGA
-       Sale al entrar en la web y al pulsar los botones de navegación.
-       Arranca visible (is-visible, sin hidden) para tapar la portada
-       desde el primer render; el JS la anima y la oculta.
+       Sale al entrar en la web y al ir a portada / diario / contactar.
+       NO sale dentro del bar (platos, siguiente, ← atrás, entrar al bar).
        ================================================================ -->
   <div class="carga is-visible" id="carga" aria-hidden="true">
     <div class="carga__caja">
@@ -36,14 +35,18 @@
     <!-- ================================================================
        PORTADA — lo primero que se ve. Nombre en grande con el estilo
        del bar + 3 botones: Conóceme (diario entero) · Contactar · Entrar (bar).
+       El nombre se parte en letras por JS para el encendido aleatorio.
        ================================================================ -->
   <section class="portada" id="portada" aria-labelledby="portada-title">
     <div class="portada__scan" aria-hidden="true"></div>
+    <div class="portada__luz" aria-hidden="true"></div>   <!-- destello de encendido -->
 
     <p class="portada__eyebrow">Bachillerato · 1º DAM · C1 de valencià</p>
 
     <h1 class="portada__name" id="portada-title">
-      Joan <span class="gold">Català</span> Mateu
+      <span class="palabra">Joan</span>
+      <span class="palabra gold">Català</span>
+      <span class="palabra">Mateu</span>
     </h1>
 
     <p class="portada__desc">

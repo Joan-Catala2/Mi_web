@@ -192,7 +192,7 @@
       </div>
     </div>
 
-    <p class="bar__hint" aria-hidden="true">1–9 saltar a un plato · c carta · s siguiente · m contactar · esc carta</p>
+    <p class="bar__hint" aria-hidden="true">1–10 saltar a un plato · c carta · s siguiente · m contactar · esc carta</p>
     </section>
 
   <!-- ════════════════════════════════════════════════════════════════
@@ -366,6 +366,42 @@
       <p>
         Este apartado no lo he escrito a mano: se rellena solo con la API gratuita de OpenWeather.
         No necesita base de datos.
+      </p>
+    </article>
+
+    <article class="post" id="monedas">
+      <header class="post__head">
+        <h2>Conversor de divisas</h2>
+        <p class="post__meta">ExchangeRate-API · en vivo</p>
+      </header>
+
+      <div class="monedas" data-monedas>
+        <div class="monedas__fila">
+          <label class="monedas__campo">
+            <span>Cantidad</span>
+            <input type="number" data-m-cantidad value="100" min="0" step="any" inputmode="decimal">
+          </label>
+
+          <label class="monedas__campo">
+            <span>De</span>
+            <select data-m-origen aria-label="Moneda de origen"></select>
+          </label>
+
+          <button class="monedas__cambiar" type="button" data-m-cambiar aria-label="Cambiar monedas" title="Cambiar monedas">⇄</button>
+
+          <label class="monedas__campo">
+            <span>A</span>
+            <select data-m-destino aria-label="Moneda de destino"></select>
+          </label>
+        </div>
+
+        <p class="monedas__resultado" data-m-resultado>—</p>
+        <p class="monedas__tasa" data-m-tasa>Cargando tasas…</p>
+      </div>
+
+      <p>
+        Este conversor usa la API gratuita de ExchangeRate-API con clave.
+        Las tasas se actualizan solas y no hace falta base de datos.
       </p>
     </article>
 

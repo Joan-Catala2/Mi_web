@@ -1,8 +1,8 @@
 /* ══════════════════════════════════════════════════════════════════════
-   script.js v9 · Joan Català Mateu
+   script.js v11 · Joan Català Mateu
    ──────────────────────────────────────────────────────────────────────
-   v9 = v8 + conversor de divisas con ExchangeRate-API (gratis, con clave,
-        sin base de datos). Ver marcas [v9].
+   v11 = v10 + países con REST Countries (gratis, SIN clave, sin registro,
+         sin base de datos). Ver marcas [v11].
    ──────────────────────────────────────────────────────────────────────
    TRES PANTALLAS en la misma página (body[data-pantalla]):
      portada → nombre grande + Conóceme / Contactar / Entrar
@@ -22,10 +22,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 function modulo(nombre, fn) {
   try { fn(); } catch (e) { console.error('[web] módulo "' + nombre + '":', e); }
 }
-/* [v7] pick pasa al ámbito exterior: lo usan el módulo de carga y el arranque */
 function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
 
-/* [v7] Mensajes que pueden salir en la carga de entrada */
 var MENSAJES_ENTRADA = [
   'Entrando en Casa Joan…',
   'Encendiendo el neón…',
@@ -35,10 +33,8 @@ var MENSAJES_ENTRADA = [
   'Guardando el C1 en la pared…'
 ];
 
-/* [v7] Función expuesta por el módulo de carga para lanzar la carga de entrada */
 var correrCarga = null;
 
-/* Año en portada/diario */
 modulo('year', function () {
   var y = document.getElementById('year');
   if (y) y.textContent = new Date().getFullYear();
@@ -46,8 +42,6 @@ modulo('year', function () {
 
 /* ══════════════════════════════════════════════════════════════════════
    1. LOS DATOS — un solo sitio: <template id="datosBar">
-   Se usan DOS veces: clonados uno a uno en el bar, y todos seguidos
-   en el diario. El orden del template es el orden de carta y sumario.
    ══════════════════════════════════════════════════════════════════════ */
 var PLATOS = [], actual = 0;
 
@@ -61,7 +55,8 @@ var CARTA = {
   'ia'       : { precio:'a futuro',       dicho:'Esto es lo serio: vivir de crear con IA. Un prototipo al día, criterio el primero.' },
   'proyectos': { precio:'en marcha',      dicho:'De postre, lo que estoy construyendo ahora mismo. Café y código.' },
   'clima'    : { precio:'en vivo',        dicho:'Esto lo pide la casa: el tiempo de ahora, sin salir del bar.' },
-  'monedas'  : { precio:'con clave',      dicho:'Cambio de moneda al momento, con tasas reales de ExchangeRate-API.' }
+  'monedas'  : { precio:'con clave',      dicho:'Cambio de moneda al momento, con tasas reales de ExchangeRate-API.' },
+  'paises'   : { precio:'gratis',         dicho:'Países, banderas, población y más. Un mundo entero en un solo plato.' }
 };
 var SALUDO = [
   'Buenas. Siéntate donde quieras, hoy no hay prisa.',
@@ -83,11 +78,10 @@ function leerPlatos() {
     };
   });
 }
-PLATOS = leerPlatos();   /* se lee una sola vez: mismo orden en bar y diario */
+PLATOS = leerPlatos();
 
 /* ══════════════════════════════════════════════════════════════════════
-   1b. CLIMA OPENWEATHER — sencillo, gratuito y sin base de datos
-   Cambia solo CLIMA.key por tu API key real.
+   1b. CLIMA OPENWEATHER
    ══════════════════════════════════════════════════════════════════════ */
 var CLIMA = {
   key: '5796a0d1d068a83ebae6d0f194fce351',
@@ -107,43 +101,24 @@ function unidadTemp() {
 
 function iconoClima(code) {
   var m = {
-    '01d': '☀️',
-    '01n': '🌙',
-    '02d': '⛅',
-    '02n': '☁️',
-    '03d': '☁️',
-    '03n': '☁️',
-    '04d': '☁️',
-    '04n': '☁️',
-    '09d': '🌧️',
-    '09n': '🌧️',
-    '10d': '🌦️',
-    '10n': '🌧️',
-    '11d': '⛈️',
-    '11n': '⛈️',
-    '13d': '❄️',
-    '13n': '❄️',
-    '50d': '🌫️',
-    '50n': '🌫️'
+    '01d': '☀️', '01n': '🌙', '02d': '⛅', '02n': '☁️', '03d': '☁️', '03n': '☁️',
+    '04d': '☁️', '04n': '☁️', '09d': '🌧️', '09n': '🌧️', '10d': '🌦️', '10n': '🌧️',
+    '11d': '⛈️', '11n': '⛈️', '13d': '❄️', '13n': '❄️', '50d': '🌫️', '50n': '🌫️'
   };
-
   return m[code] || '🌡️';
 }
 
 function climaUrl() {
   var params = new URLSearchParams();
-
   params.set('units', CLIMA.unidades);
   params.set('lang', CLIMA.lang);
   params.set('appid', CLIMA.key);
-
   if (CLIMA.lat != null && CLIMA.lon != null) {
     params.set('lat', CLIMA.lat);
     params.set('lon', CLIMA.lon);
   } else {
     params.set('q', CLIMA.ciudad);
   }
-
   return 'https://api.openweathermap.org/data/2.5/weather?' + params.toString();
 }
 
@@ -152,13 +127,8 @@ function pintarClima(data) {
   if (!ultimaData) return;
 
   var w = ultimaData.weather && ultimaData.weather[0] ? ultimaData.weather[0] : {};
-
-  var estado = w.description
-    ? w.description.charAt(0).toUpperCase() + w.description.slice(1)
-    : 'Sin descripción';
-
+  var estado = w.description ? w.description.charAt(0).toUpperCase() + w.description.slice(1) : 'Sin descripción';
   var icon = iconoClima(w.icon);
-
   var temp = ultimaData.main && ultimaData.main.temp != null ? Math.round(ultimaData.main.temp) : null;
   var sens = ultimaData.main && ultimaData.main.feels_like != null ? Math.round(ultimaData.main.feels_like) : null;
   var min = ultimaData.main && ultimaData.main.temp_min != null ? Math.round(ultimaData.main.temp_min) : null;
@@ -173,25 +143,15 @@ function pintarClima(data) {
     var t = bloque.querySelector('[data-clima-temp]');
     var x = bloque.querySelector('[data-clima-extra]');
     var n = bloque.querySelector('[data-clima-nota]');
-
     if (e) e.textContent = icon + ' ' + estado;
-
-    if (t) {
-      t.textContent = (temp != null ? temp : '—') + ' ' + unidadTemp();
-    }
-
-    if (x) {
-      x.textContent =
-        'Sensación ' + (sens != null ? sens : '—') + ' ' + unidadTemp() +
-        ' · mín ' + (min != null ? min : '—') +
-        ' · máx ' + (max != null ? max : '—') +
-        ' · humedad ' + (humedad != null ? humedad : '—') + '%' +
-        ' · viento ' + (viento != null ? viento : '—') + ' m/s';
-    }
-
-    if (n) {
-      n.textContent = 'Ciudad: ' + ciudad + ' · Actualizado: ' + hora;
-    }
+    if (t) t.textContent = (temp != null ? temp : '—') + ' ' + unidadTemp();
+    if (x) x.textContent =
+      'Sensación ' + (sens != null ? sens : '—') + ' ' + unidadTemp() +
+      ' · mín ' + (min != null ? min : '—') +
+      ' · máx ' + (max != null ? max : '—') +
+      ' · humedad ' + (humedad != null ? humedad : '—') + '%' +
+      ' · viento ' + (viento != null ? viento : '—') + ' m/s';
+    if (n) n.textContent = 'Ciudad: ' + ciudad + ' · Actualizado: ' + hora;
   });
 }
 
@@ -201,7 +161,6 @@ function pintarErrorClima(mensaje) {
     var t = bloque.querySelector('[data-clima-temp]');
     var x = bloque.querySelector('[data-clima-extra]');
     var n = bloque.querySelector('[data-clima-nota]');
-
     if (e) e.textContent = '☁️ Tiempo no disponible';
     if (t) t.textContent = '— ' + unidadTemp();
     if (x) x.textContent = 'Revisa la API key, la ciudad o la conexión.';
@@ -214,31 +173,21 @@ function cargarClima() {
     pintarErrorClima('Falta la API key en script.js.');
     return;
   }
-
   fetch(climaUrl())
-    .then(function (r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(pintarClima)
-    .catch(function (e) {
-      console.error('[clima]', e);
-      pintarErrorClima(e.message);
-    });
+    .catch(function (e) { console.error('[clima]', e); pintarErrorClima(e.message); });
 }
 
 /* ══════════════════════════════════════════════════════════════════════
    1c. [v9] DIVISAS · ExchangeRate-API
-   Gratis, con clave, sin base de datos.
-   Endpoint: https://v6.exchangerate-api.com/v6/TU_KEY/latest/BASE
    ══════════════════════════════════════════════════════════════════════ */
 var MONEDAS = {
-  key: '26b774ebd2e1fc8cd152b215',   /* <-- cambia esto */
-  base: 'EUR',                              /* moneda base de la petición */
-  cadaMinutos: 30                           /* refresco automático */
+  key: '26b774ebd2e1fc8cd152b215',
+  base: 'EUR',
+  cadaMinutos: 30
 };
 
-/* Lista de monedas que mostramos en los selects (código ISO + nombre en español) */
 var LISTA_MONEDAS = [
   { code: 'EUR', name: 'Euro' },
   { code: 'USD', name: 'Dólar estadounidense' },
@@ -260,14 +209,13 @@ var LISTA_MONEDAS = [
   { code: 'MAD', name: 'Dírham marroquí' }
 ];
 
-/* Símbolos rápidos para mostrar el resultado con aspecto de dinero */
 var SIMBOLOS = {
   EUR: '€', USD: '$', GBP: '£', JPY: '¥', MXN: '$', ARS: '$', COP: '$',
   CLP: '$', PEN: 'S/', BRL: 'R$', CAD: '$', CHF: 'CHF', CNY: '¥',
   AUD: '$', KRW: '₩', INR: '₹', TRY: '₺', MAD: 'DH'
 };
 
-var ultimaTasas = null;   /* { base, conversion_rates } */
+var ultimaTasas = null;
 
 function monedasUrl(base) {
   return 'https://v6.exchangerate-api.com/v6/' + MONEDAS.key + '/latest/' + base;
@@ -291,86 +239,63 @@ function formatearImporte(valor, code) {
   }).format(valor);
 }
 
-/* Rellena los selects de un bloque [data-monedas] (se llama en cada clon) */
 function poblarSelects(bloque) {
   var selO = bloque.querySelector('[data-m-origen]');
   var selD = bloque.querySelector('[data-m-destino]');
-  if (!selO || !selD || selO.options.length) return;   /* ya poblado */
-
+  if (!selO || !selD || selO.options.length) return;
   var html = LISTA_MONEDAS.map(function (m) {
     return '<option value="' + m.code + '">' + m.code + ' · ' + m.name + '</option>';
   }).join('');
-
   selO.innerHTML = html;
   selD.innerHTML = html;
-
   selO.value = MONEDAS.base;
   selD.value = 'USD';
 }
 
-/* Calcula la conversión cruzada a partir de las tasas de la base */
 function calcularConversion(cantidad, origen, destino) {
   if (!ultimaTasas || !ultimaTasas.conversion_rates) return null;
-
   var tasas = ultimaTasas.conversion_rates;
-  var base = ultimaTasas.base;
-
   var tOrigen  = tasas[origen];
   var tDestino = tasas[destino];
-
   if (tOrigen == null || tDestino == null) return null;
-
-  /* Si la base no es el origen, normalizamos: */
-  /* cantidad_en_base = cantidad / tOrigen ; resultado = cantidad_en_base * tDestino */
   var enBase = cantidad / tOrigen;
   var resultado = enBase * tDestino;
-  var tasaUnitaria = tDestino / tOrigen;   /* 1 origen = X destino */
-
+  var tasaUnitaria = tDestino / tOrigen;
   return { resultado: resultado, tasaUnitaria: tasaUnitaria };
 }
 
-/* Pinta el resultado en un bloque concreto */
 function pintarBloqueMonedas(bloque) {
   var cantidadEl = bloque.querySelector('[data-m-cantidad]');
   var origenEl   = bloque.querySelector('[data-m-origen]');
   var destinoEl  = bloque.querySelector('[data-m-destino]');
   var resEl      = bloque.querySelector('[data-m-resultado]');
   var tasaEl     = bloque.querySelector('[data-m-tasa]');
-
   if (!resEl || !tasaEl) return;
-
   if (!ultimaTasas) {
     resEl.textContent = '—';
     tasaEl.textContent = 'Cargando tasas…';
     return;
   }
-
   var cantidad = parseFloat(cantidadEl && cantidadEl.value);
   if (isNaN(cantidad)) cantidad = 0;
-
   var origen  = origenEl  ? origenEl.value  : MONEDAS.base;
   var destino = destinoEl ? destinoEl.value : 'USD';
-
   var conv = calcularConversion(cantidad, origen, destino);
-
   if (!conv) {
     resEl.textContent = '—';
     tasaEl.textContent = 'No hay tasa para ' + origen + ' → ' + destino;
     return;
   }
-
   resEl.textContent =
     cantidad + ' ' + origen + ' = ' +
     formatearImporte(conv.resultado, destino) + ' ' +
     simboloMoneda(destino);
-
   tasaEl.textContent =
     '1 ' + origen + ' = ' + formatearImporte(conv.tasaUnitaria, destino) + ' ' + simboloMoneda(destino) +
     ' · base ' + ultimaTasas.base + ' · actualizado ' +
     new Date(ultimaTasas.time_last_update_utc || Date.now()).toLocaleString('es-ES');
 }
 
-/* Rellena TODOS los bloques [data-monedas] del DOM (diario + bar) */
 function pintarMonedas() {
   $$('[data-monedas]').forEach(pintarBloqueMonedas);
 }
@@ -389,56 +314,297 @@ function cargarTasas() {
     pintarErrorMonedas('Falta la API key de ExchangeRate-API en script.js.');
     return;
   }
-
   fetch(monedasUrl(MONEDAS.base))
-    .then(function (r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(function (data) {
-      if (data.result && data.result !== 'success') {
-        throw new Error(data['error-type'] || 'respuesta de error');
-      }
+      if (data.result && data.result !== 'success') throw new Error(data['error-type'] || 'respuesta de error');
       ultimaTasas = data;
       pintarMonedas();
     })
-    .catch(function (e) {
-      console.error('[monedas]', e);
-      pintarErrorMonedas('No se pudieron cargar las tasas: ' + e.message);
-    });
+    .catch(function (e) { console.error('[monedas]', e); pintarErrorMonedas('No se pudieron cargar las tasas: ' + e.message); });
 }
 
-/* Engancha los listeners de un bloque [data-monedas] (se llama en cada clon) */
 function inicializarBloqueMonedas(bloque) {
   if (bloque.dataset.monedasListo === '1') return;
-
   poblarSelects(bloque);
-
   var cantidadEl = bloque.querySelector('[data-m-cantidad]');
   var origenEl   = bloque.querySelector('[data-m-origen]');
   var destinoEl  = bloque.querySelector('[data-m-destino]');
   var cambiarEl  = bloque.querySelector('[data-m-cambiar]');
-
   var refrescar = function () { pintarBloqueMonedas(bloque); };
-
   on(cantidadEl, 'input',  refrescar);
   on(origenEl,   'change', refrescar);
   on(destinoEl,  'change', refrescar);
-
   on(cambiarEl, 'click', function () {
     var a = origenEl.value;
     origenEl.value = destinoEl.value;
     destinoEl.value = a;
     refrescar();
   });
-
   bloque.dataset.monedasListo = '1';
   pintarBloqueMonedas(bloque);
 }
 
-/* Inicializa todos los bloques presentes en el DOM */
 function inicializarMonedas() {
   $$('[data-monedas]').forEach(inicializarBloqueMonedas);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   1d. [v11] PAÍSES · REST Countries
+   Gratis · SIN clave · sin registro · sin base de datos.
+   ══════════════════════════════════════════════════════════════════════ */
+var PAISES = {
+  codigo: 'ESP'        /* país inicial; ya no hace falta ninguna key */
+};
+
+/* Lista de respaldo por si la API no devolviera la lista de países */
+var CODIGOS_PAI = [
+  'ESP','ARG','MEX','COL','CHL','PER','URY','ECU','BOL','PRY','CRI','PAN','VEN','CUB','DOM',
+  'USA','CAN','GBR','FRA','DEU','ITA','PRT','NLD','BEL','IRL','ISL','NOR','SWE','DNK','FIN',
+  'POL','CZE','SVK','HUN','ROU','BGR','HRV','SRB','GRC','CHE','AUT','BRA','JPN','CHN','KOR',
+  'VNM','THA','MYS','SGP','IDN','PHL','IND','PAK','LKA','TUR','RUS','UKR','MAR','DZA','TUN',
+  'EGY','ETH','KEN','ZAF','SAU','ARE','ISR','JOR','LBN','IRQ','IRN','AUS','NZL','BHS','JAM'
+];
+
+/* Caché de códigos ISO alfa-3 (se rellena la primera vez que se pide) */
+var listaPaisesCache = null;
+
+function paisesUrl(codigo) {
+  return 'https://countries.dev/alpha/' + codigo;
+}
+
+function paisesListaUrl() {
+  return 'https://countries.dev/countries?fields=alpha3Code';
+}
+
+function formatearPoblacion(n) {
+  if (n == null || isNaN(n)) return '—';
+  return new Intl.NumberFormat('es-ES').format(n);
+}
+
+function formatearArea(n) {
+  if (n == null || isNaN(n)) return '—';
+  return new Intl.NumberFormat('es-ES').format(n) + ' km²';
+}
+
+function formatearCapital(c) {
+  if (!c) return '—';
+  if (Array.isArray(c)) return c.length ? c.join(', ') : '—';
+  if (typeof c === 'string') return c;
+  return '—';
+}
+
+function formatearIdiomas(obj) {
+  if (!obj) return '—';
+  var vistos = {};
+  var res = [];
+  Object.keys(obj).forEach(function (k) {
+    var nombre = obj[k];
+    var txt = nombre && nombre.name ? nombre.name : (typeof nombre === 'string' ? nombre : k);
+    if (txt && !vistos[txt]) {
+      vistos[txt] = true;
+      res.push(txt);
+    }
+  });
+  return res.length ? res.join(', ') : '—';
+}
+
+function formatearMonedas(obj) {
+  if (!obj) return '—';
+  var res = [];
+  Object.keys(obj).forEach(function (k) {
+    var v = obj[k];
+    if (v && v.name) res.push(v.name + ' (' + k + ')');
+    else res.push(k);
+  });
+  return res.length ? res.join(', ') : '—';
+}
+
+function pintarBloquePaises(bloque, data) {
+  var banderaEl  = bloque.querySelector('[data-p-bandera]');
+  var nombreEl   = bloque.querySelector('[data-p-nombre]');
+  var capitalEl  = bloque.querySelector('[data-p-capital]');
+  var pobEl      = bloque.querySelector('[data-p-poblacion]');
+  var regionEl   = bloque.querySelector('[data-p-region]');
+  var subEl      = bloque.querySelector('[data-p-subregion]');
+  var idiomEl    = bloque.querySelector('[data-p-idiomas]');
+  var monEdEl    = bloque.querySelector('[data-p-moneda]');
+  var areaEl     = bloque.querySelector('[data-p-area]');
+  var errEl      = bloque.querySelector('[data-p-error]');
+
+  if (!data) return;
+  if (errEl) {
+    errEl.hidden = true;
+    errEl.textContent = '';
+  }
+
+  var name = typeof data.name === 'string'
+    ? data.name
+    : ((data.name && (data.name.common || data.name.official)) || '—');
+
+  var flags = data.flags || {};
+  var imgSrc = flags.svg || flags.png || '';
+
+  if (banderaEl) {
+    if (imgSrc) {
+      banderaEl.innerHTML =
+        '<img src="' + imgSrc + '" alt="Bandera de ' + name + '" loading="lazy">';
+    } else {
+      banderaEl.innerHTML =
+        '<span class="paises__bandera-vacia">Sin bandera</span>';
+    }
+  }
+
+  if (nombreEl)  nombreEl.textContent  = name;
+  if (capitalEl) capitalEl.textContent = formatearCapital(data.capital);
+  if (pobEl)     pobEl.textContent     = formatearPoblacion(data.population);
+  if (regionEl)  regionEl.textContent  = data.region || '—';
+  if (subEl)     subEl.textContent     = data.subregion || '—';
+  if (idiomEl)   idiomEl.textContent   = formatearIdiomas(data.languages);
+  if (monEdEl)   monEdEl.textContent   = formatearMonedas(data.currencies);
+  if (areaEl)    areaEl.textContent    = formatearArea(data.area);
+}
+
+function pintarErrorPaises(bloque, mensaje) {
+  var errEl = bloque.querySelector('[data-p-error]');
+  var nombreEl = bloque.querySelector('[data-p-nombre]');
+  var banderaEl = bloque.querySelector('[data-p-bandera]');
+
+  if (errEl) {
+    errEl.hidden = false;
+    errEl.textContent = mensaje || 'No se pudo cargar el país.';
+  }
+
+  if (nombreEl) nombreEl.textContent = '—';
+  if (banderaEl) banderaEl.innerHTML = '';
+}
+
+function cargarPais(bloque, codigo) {
+  var errEl = bloque.querySelector('[data-p-error]');
+  var nombreEl = bloque.querySelector('[data-p-nombre]');
+  var banderaEl = bloque.querySelector('[data-p-bandera]');
+
+  codigo = (codigo || '').toUpperCase().trim();
+
+  if (!/^[A-Z]{3}$/.test(codigo)) {
+    pintarErrorPaises(
+      bloque,
+      'El código debe ser de 3 letras (ISO alfa-3). Ejemplo: ESP'
+    );
+    return;
+  }
+
+  if (nombreEl) nombreEl.textContent = 'Cargando ' + codigo + '…';
+  if (banderaEl) banderaEl.innerHTML = '';
+  if (errEl) errEl.hidden = true;
+
+  fetch(paisesUrl(codigo))
+    .then(function (r) {
+      if (r.status === 404) {
+        throw new Error('País no encontrado: ' + codigo);
+      }
+
+      if (r.status === 429) {
+        throw new Error(
+          'Límite de peticiones alcanzado (429). Espera un momento.'
+        );
+      }
+
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+
+      return r.json();
+    })
+    .then(function (res) {
+      var data = Array.isArray(res) ? res[0] : res;
+
+      if (!data || !data.name) {
+        throw new Error('País no encontrado: ' + codigo);
+      }
+
+      pintarBloquePaises(bloque, data);
+    })
+    .catch(function (e) {
+      console.error('[paises]', e);
+      pintarErrorPaises(
+        bloque,
+        e.message || 'No se pudo cargar el país.'
+      );
+    });
+}
+
+/* Devuelve la lista de códigos ISO (cacheada). Si falla, usa la de respaldo. */
+function obtenerListaPaises() {
+  if (listaPaisesCache && listaPaisesCache.length) {
+    return Promise.resolve(listaPaisesCache);
+  }
+
+  return fetch(paisesListaUrl())
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function (arr) {
+      var codes = (arr || [])
+        .map(function (x) {
+          return x.alpha3Code || x.cca3;
+        })
+        .filter(Boolean);
+
+      if (!codes.length) throw new Error('lista vacía');
+
+      listaPaisesCache = codes;
+      return codes;
+    })
+    .catch(function (e) {
+      console.error('[paises lista]', e);
+      return CODIGOS_PAI.slice();
+    });
+}
+
+function inicializarBloquePaises(bloque) {
+  if (bloque.dataset.paisesListo === '1') return;
+
+  var codigoEl = bloque.querySelector('[data-p-codigo]');
+  var buscarEl = bloque.querySelector('[data-p-buscar]');
+  var aleatEl  = bloque.querySelector('[data-p-aleatorio]');
+
+  var buscar = function () {
+    var cod = codigoEl ? codigoEl.value : PAISES.codigo;
+    cargarPais(bloque, cod);
+  };
+
+  on(buscarEl, 'click', buscar);
+
+  on(codigoEl, 'keydown', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      buscar();
+    }
+  });
+
+  on(aleatEl, 'click', function () {
+    obtenerListaPaises().then(function (lista) {
+      var cod = pick(lista);
+
+      if (codigoEl) codigoEl.value = cod;
+
+      cargarPais(bloque, cod);
+    });
+  });
+
+  bloque.dataset.paisesListo = '1';
+
+  cargarPais(
+    bloque,
+    codigoEl ? codigoEl.value : PAISES.codigo
+  );
+
+  /* Precarga la lista para que el botón aleatorio esté listo al primer clic */
+  obtenerListaPaises().catch(function () {});
+}
+
+function inicializarPaises() {
+  $$('[data-paises]').forEach(inicializarBloquePaises);
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -448,14 +614,11 @@ var bar, panel, listaEl, cuerpo, sello, txtEl, ecoEl;
 
 function setPantalla(p) {
   document.body.dataset.pantalla = p;
-  Escena.corriendo(p === 'bar');                 /* la escena solo gasta CPU si se ve */
+  Escena.corriendo(p === 'bar');
   if (p === 'diario') window.scrollTo(0, 0);
-  if (p === 'portada') animarPortada();          /* [v8] cada vez que se ve la portada, se enciende */
+  if (p === 'portada') animarPortada();
 }
 
-/* Los destinos. "contacto" se comporta distinto según dónde estés:
-   dentro del bar abre la vista contacto del panel; desde fuera aterriza
-   en la sección de contacto del diario (tu contacto y todo alrededor). */
 var DESTINOS = {
   portada : { txt:'⌂ portada',    acc:function(){ setPantalla('portada'); } },
   bar     : { txt:'☰ el bar',     acc:function(){ setPantalla('bar'); verVista('carta'); saludar(); } },
@@ -465,11 +628,9 @@ var DESTINOS = {
     else { setPantalla('diario'); var c = document.getElementById('contacto');
            if (c) c.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth' }); }
   } },
-  /* [v6] ← atrás: dentro del bar, volver a la carta donde está el camarero */
   carta   : { txt:'← atrás',      acc:function(){ irCarta(); } }
 };
 
-/* Fila con los OTROS DOS destinos (el actual sale marcado y apagado) */
 function botonera(actual) {
   var html = '';
   ['bar','diario','contacto'].forEach(function (k) {
@@ -480,7 +641,6 @@ function botonera(actual) {
   return html;
 }
 
-/* Un solo manejador global para todos los botones de destino (data-ir) */
 document.addEventListener('click', function (e) {
   var b = e.target.closest && e.target.closest('[data-ir]');
   if (!b) return;
@@ -491,10 +651,9 @@ document.addEventListener('click', function (e) {
 /* ══════════════════════════════════════════════════════════════════════
    2b. [v8] PORTADA: encendido aleatorio del nombre + parpadeo final
    ══════════════════════════════════════════════════════════════════════ */
-var letrasPortada = [];   /* todas las letras (sin espacios) */
+var letrasPortada = [];
 var portadaTimer  = null;
 
-/* Parte cada .palabra del nombre en <span class="letra"> (una sola vez) */
 function prepararLetrasPortada() {
   var h1 = document.getElementById('portada-title');
   if (!h1 || h1.dataset.partido === '1') return;
@@ -517,32 +676,27 @@ function prepararLetrasPortada() {
   letrasPortada = todas;
 }
 
-/* Enciende las letras en orden aleatorio; al terminar, parpadea el nombre */
 function animarPortada() {
   prepararLetrasPortada();
   var h1 = document.getElementById('portada-title');
   var portadaEl = document.getElementById('portada');
   if (!h1 || !letrasPortada.length) return;
 
-  /* reset: todo apagado y sin parpadeo */
   h1.classList.remove('is-parpadeo');
   letrasPortada.forEach(function (l) { l.classList.remove('is-on'); });
   clearTimeout(portadaTimer);
 
-  /* con movimiento reducido: todo encendido de golpe, sin parpadeo */
   if (REDUCED) {
     letrasPortada.forEach(function (l) { l.classList.add('is-on'); });
     return;
   }
 
-  /* destello de "abrir la luz" */
   if (portadaEl) {
     portadaEl.classList.remove('is-encendiendo');
-    void portadaEl.offsetWidth;            /* reinicia la animación del flash */
+    void portadaEl.offsetWidth;
     portadaEl.classList.add('is-encendiendo');
   }
 
-  /* orden aleatorio de las letras (Fisher–Yates) */
   var orden = letrasPortada.slice();
   for (var i = orden.length - 1; i > 0; i--) {
     var j = Math.floor(Math.random() * (i + 1));
@@ -554,13 +708,13 @@ function animarPortada() {
     if (k < orden.length) {
       orden[k].classList.add('is-on');
       k++;
-      portadaTimer = setTimeout(encender, 55 + Math.random() * 80);   /* ritmo aleatorio */
+      portadaTimer = setTimeout(encender, 55 + Math.random() * 80);
     } else {
       if (portadaEl) portadaEl.classList.remove('is-encendiendo');
-      h1.classList.add('is-parpadeo');                                /* todas on → parpadea */
+      h1.classList.add('is-parpadeo');
     }
   }
-  portadaTimer = setTimeout(encender, 140);   /* pequeño retardo para ver el apagón */
+  portadaTimer = setTimeout(encender, 140);
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -571,12 +725,10 @@ modulo('diario', function () {
   var sumario = document.getElementById('sumarioLista');
   if (!cuerpoD || !sumario) return;
 
-  /* Sumario: un enlace por entrada */
   sumario.innerHTML = PLATOS.map(function (p) {
     return '<li><a href="#' + p.id + '">' + p.name + '</a></li>';
   }).join('');
 
-  /* Entradas: número, contenido íntegro y los botones de salida */
   cuerpoD.innerHTML = PLATOS.map(function (p) {
     var clon = p.art.cloneNode(true);
     clon.removeAttribute('id');
@@ -587,14 +739,11 @@ modulo('diario', function () {
            '</section>';
   }).join('');
 
-  /* Rellena el clima si ya lo teníamos cargado */
   pintarClima(ultimaData);
-
-  /* [v9] Rellena y engancha los conversores del diario */
   inicializarMonedas();
   pintarMonedas();
+  inicializarPaises();
 
-  /* Enlaces internos (#) con scroll suave, sin recargar */
   on(document.getElementById('diario'), 'click', function (e) {
     var a = e.target.closest && e.target.closest('a[href^="#"]');
     if (!a) return;
@@ -602,11 +751,9 @@ modulo('diario', function () {
     if (t) { e.preventDefault(); t.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth' }); }
   });
 
-  /* Botonera de la sección contacto (los otros dos: bar y diario) */
   var n3 = document.getElementById('nav3Contacto');
   if (n3) n3.innerHTML = botonera('contacto');
 
-  /* Copiar correo dentro del diario */
   on(document.getElementById('diarioCopyMail'), 'click', function () { copiar(this); });
 });
 
@@ -626,7 +773,6 @@ function construirCarta() {
   var total = document.getElementById('barTotal');
   if (total) total.textContent = PLATOS.length;
 
-  /* Actualiza el texto del hint según el número real de platos */
   var hint = document.querySelector('.bar__hint');
   if (hint) {
     hint.textContent =
@@ -637,7 +783,6 @@ function construirCarta() {
 
 function verVista(v) { if (panel) panel.dataset.vista = v; }
 
-/* Sirve el plato COMPLETO + [← atrás] + siguiente + los otros dos destinos */
 function servirPlato(i) {
   var p = PLATOS[i]; if (!p || !cuerpo) return;
   actual = i;
@@ -651,20 +796,23 @@ function servirPlato(i) {
   var fin = document.createElement('div');
   fin.className = 'servido__fin';
   fin.innerHTML =
-    /* [v6] el botón que pediste: volver a la carta con el camarero */
     '<button class="jn-btn jn-btn--linea" type="button" data-ir="carta">← atrás</button>' +
     '<button class="jn-btn" type="button" data-siguiente="' + PLATOS.indexOf(sig) + '">Siguiente · ' + sig.name + ' →</button>' +
-    botonera('bar');                                  /* 📖 el diario · ✉ contactar */
+    botonera('bar');
   cuerpo.appendChild(fin);
 
-  /* Importante: como el artículo se clona, hay que volver a pintar el clima */
   pintarClima(ultimaData);
 
-  /* [v9] Y a inicializar el conversor si es el plato de divisas */
   var bloqueM = cuerpo.querySelector('[data-monedas]');
   if (bloqueM) {
-    bloqueM.dataset.monedasListo = '';   /* fuerza reenganche en el clon */
+    bloqueM.dataset.monedasListo = '';
     inicializarBloqueMonedas(bloqueM);
+  }
+
+  var bloqueP = cuerpo.querySelector('[data-paises]');
+  if (bloqueP) {
+    bloqueP.dataset.paisesListo = '';
+    inicializarBloquePaises(bloqueP);
   }
 
   if (sello) sello.textContent = 'plato ' + ('0' + p.n).slice(-2) + ' · ' + p.min + ' min';
@@ -674,7 +822,6 @@ function servirPlato(i) {
   setTimeout(function () { try { cuerpo.focus({ preventScroll: true }); } catch (e) {} }, 240);
 }
 
-/* Volver a la pizarra (la usan el botón ← atrás, la tecla c y Esc del panel) */
 function irCarta() {
   verVista('carta');
   decir('¿Otra cosa? Mira la pizarra tranquilamente.', true);
@@ -694,7 +841,6 @@ modulo('bar', function () {
 
   construirCarta();
 
-  /* Pizarra: clic, sobrevuelo y flechas como menú de videojuego */
   on(listaEl, 'click', function (e) {
     var b = e.target.closest && e.target.closest('.plato');
     if (b) servirPlato(+b.dataset.i);
@@ -709,7 +855,6 @@ modulo('bar', function () {
     if (e.key === 'ArrowUp')   { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
   });
 
-  /* Serveta: siguiente / anterior (los destinos ya los capta el manejador global) */
   on(cuerpo, 'click', function (e) {
     var s = e.target.closest && e.target.closest('[data-siguiente]');
     var a = e.target.closest && e.target.closest('[data-anterior]');
@@ -717,8 +862,8 @@ modulo('bar', function () {
     else if (a) servirPlato(+a.dataset.anterior);
   });
   on(document.getElementById('barPrev'), 'click', function () { servirPlato((actual - 1 + PLATOS.length) % PLATOS.length); });
-  on(document.getElementById('barInicio'), 'click', irCarta);            /* ☰ la carta */
-  on(document.getElementById('barContactoBack'), 'click', irCarta);      /* contacto → carta */
+  on(document.getElementById('barInicio'), 'click', irCarta);
+  on(document.getElementById('barContactoBack'), 'click', irCarta);
   on(document.getElementById('burbuja'), 'click', saltarTexto);
   on(document.getElementById('barCopyMail'), 'click', function () { copiar(this); });
   on(document.getElementById('barSon'), 'click', function () {
@@ -727,7 +872,6 @@ modulo('bar', function () {
     this.textContent = 'sonido: ' + (o ? 'on' : 'off');
   });
 
-  /* Esc = portada · Tab encerrado en el bar */
   on(bar, 'keydown', function (e) {
     if (e.key === 'Escape') { e.preventDefault(); setPantalla('portada'); return; }
     if (e.key !== 'Tab') return;
@@ -740,7 +884,6 @@ modulo('bar', function () {
     else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
   });
 
-  /* Parallax suave de la escena */
   var escena = document.getElementById('barEscena');
   on(escena, 'pointermove', function (e) {
     var r = this.getBoundingClientRect();
@@ -780,8 +923,8 @@ function pompear() {
   escribiendo.i++;
   txtEl.textContent = t.slice(0, escribiendo.i);
   var ch = t.charAt(escribiendo.i - 1);
-  if (',;:'.indexOf(ch) > -1) escribiendo.i += 6;          /* pausa corta  */
-  else if ('.!?'.indexOf(ch) > -1) escribiendo.i += 14;    /* pausa larga  */
+  if (',;:'.indexOf(ch) > -1) escribiendo.i += 6;
+  else if ('.!?'.indexOf(ch) > -1) escribiendo.i += 14;
   if (escribiendo.i % 3 === 0) Sonido.blip();
   if (escribiendo.i >= t.length) { txtEl.textContent = t; terminar(); }
 }
@@ -790,7 +933,7 @@ function terminar() {
   Escena.hablar(false);
   if (cola.length) setTimeout(siguienteFrase, 340);
 }
-function saltarTexto() {                                   /* clic en la burbuja */
+function saltarTexto() {
   if (!escribiendo && !cola.length) return;
   var destino = cola.length ? cola[cola.length - 1] : escribiendo.txt;
   cola.length = 0; clearInterval(reloj); fijar(destino); terminar();
@@ -798,9 +941,6 @@ function saltarTexto() {                                   /* clic en la burbuja
 
 /* ══════════════════════════════════════════════════════════════════════
    6. ESCENA PIXEL-ART — canvas 256×144, pixelado duro.
-   Capas: pared → ventana → pizarra mural → estante → techo → lámparas
-   → camarero → barra → cafetera → tazas → gato → conos de luz → vapor
-   → polvo → grano → viñeta.
    ══════════════════════════════════════════════════════════════════════ */
 var Escena = (function () {
   var cv = document.getElementById('barCanvas');
@@ -809,7 +949,7 @@ var Escena = (function () {
   var g = cv.getContext('2d', { alpha: false });
   if (!g) return { corriendo: noop, hablar: noop, pulso: noop };
 
-  var W = cv.width, H = cv.height, CY = 100;   /* CY = borde superior de la barra */
+  var W = cv.width, H = cv.height, CY = 100;
   g.imageSmoothingEnabled = false;
 
   var C = {
@@ -822,9 +962,8 @@ var Escena = (function () {
   };
   function R(x, y, w, h, c) { g.fillStyle = c; g.fillRect(x | 0, y | 0, w | 0, h | 0); }
   function A(x, y, w, h, c, a) { g.globalAlpha = a; g.fillStyle = c; g.fillRect(x | 0, y | 0, w | 0, h | 0); g.globalAlpha = 1; }
-  function azar(n) { return (Math.sin(n * 12.9898) * 43758.5453) % 1; }   /* pseudoaleatorio estable */
+  function azar(n) { return (Math.sin(n * 12.9898) * 43758.5453) % 1; }
 
-  /* Grano de película: se genera una vez y siempre se superpone */
   var grano = document.createElement('canvas'); grano.width = W; grano.height = H;
   (function () {
     var gg = grano.getContext('2d'), n = Math.floor(W * H * .05);
@@ -847,7 +986,6 @@ var Escena = (function () {
     for (var k = 0; k < n; k++) vapor.push({ x: x + Math.random() * 3 - 1.5, y: y, v: 7 + Math.random() * 9, vida: 1, f: Math.random() * 6 });
   }
 
-  /* Pared de listones con veta falsa */
   function pared() {
     R(0, 10, W, CY - 10, C.pared);
     for (var x = 0; x < W; x += 13) {
@@ -857,7 +995,6 @@ var Escena = (function () {
     }
     R(0, 78, W, 2, C.junta); R(0, 80, W, CY - 80, '#2e1c13');
   }
-  /* Ventana a la calle: edificios, ventanas titilando y lluvia */
   var VX = 8, VY = 22, VW = 58, VH = 46;
   function ventana(t, dt) {
     R(VX - 3, VY - 3, VW + 6, VH + 6, C.marco); R(VX, VY, VW, VH, C.noche);
@@ -879,7 +1016,6 @@ var Escena = (function () {
     R(VX, VY + (VH >> 1) - 1, VW, 2, C.marco);
     R(VX - 5, VY + VH + 3, VW + 10, 3, C.madera);
   }
-  /* Pizarra colgada: menú con tiza + tacita humeante */
   function menuPared(t) {
     var BX = 140, BY = 26, BW = 62, BH = 42;
     R(BX - 3, BY - 3, BW + 6, BH + 6, C.madera); R(BX, BY, BW, BH, C.pizarra);
@@ -917,7 +1053,6 @@ var Escena = (function () {
       R(x - 2, 26, 4, 3, C.bombilla);
     }
   }
-  /* El camarero: respira, pestañea y mueve la boca al hablar */
   function camarero(t) {
     var bx = 104, bob = Math.round(Math.sin(t * 1.7)), y = CY - 2 + bob;
     R(bx - 3, y - 38, 6, 4, C.piel2);
@@ -968,7 +1103,6 @@ var Escena = (function () {
     R(x + 13, y - 7, 2, 1, '#120c09');
     R(x - 4, y - 5, 4, 2, C.gato); R(x - 5, y - 6 + Math.round(Math.sin(t * 1.6) * 2), 2, 3, C.gato);
   }
-  /* Conos de luz: por delante de todo, con parpadeo eléctrico */
   function conos(t) {
     for (var i = 0; i < lamparas.length; i++) {
       var x = lamparas[i].x;
@@ -983,13 +1117,13 @@ var Escena = (function () {
     pared(); ventana(t, dt); menuPared(t); estanteria(t); techo(t); lamparasE();
     camarero(t); barra(); cafetera(t); taza(128); taza(154); gato(t);
     conos(t);
-    for (var v = vapor.length - 1; v >= 0; v--) {                    /* vapor */
+    for (var v = vapor.length - 1; v >= 0; v--) {
       var p = vapor[v]; p.y -= p.v * dt; p.x += Math.sin(p.y * .17 + p.f) * .3; p.vida -= dt * .5;
       if (p.vida <= 0 || p.y < 12) { vapor.splice(v, 1); continue; }
       A(p.x, p.y, 1, 1, '#efe6d2', p.vida * .34);
       if (p.vida < .65) A(p.x + 1, p.y - 1, 1, 1, '#efe6d2', p.vida * .2);
     }
-    for (var d = 0; d < polvo.length; d++) {                          /* motas en el haz */
+    for (var d = 0; d < polvo.length; d++) {
       var q = polvo[d]; q.x += Math.sin(t * .3 + q.f) * .07; q.y -= q.v * dt * 5;
       if (q.y < 14) { q.y = CY - 6; q.x = Math.random() * W; }
       var cerca = Math.min(Math.abs(q.x - lamparas[0].x), Math.abs(q.x - lamparas[1].x));
@@ -1001,15 +1135,15 @@ var Escena = (function () {
   var ultimo = 0;
   function bucle(now) {
     st.raf = requestAnimationFrame(bucle);
-    if (document.hidden) return;                                      /* pestaña oculta: no gastar */
+    if (document.hidden) return;
     var dt = Math.min(.05, (now - ultimo) / 1000) || .016; ultimo = now;
     pintar((now - st.t0) / 1000, dt);
   }
   return {
-    corriendo: function (v) {                                         /* solo anima si el bar se ve */
+    corriendo: function (v) {
       if (v && !st.corriendo) {
         pintar(0, .016);
-        if (REDUCED) { st.corriendo = true; return; }                 /* estática: un fotograma */
+        if (REDUCED) { st.corriendo = true; return; }
         st.corriendo = true; st.t0 = performance.now(); ultimo = st.t0;
         st.raf = requestAnimationFrame(bucle);
       } else if (!v && st.corriendo) {
@@ -1063,8 +1197,6 @@ function copiar(btn) {
 
 /* ══════════════════════════════════════════════════════════════════════
    7b. PANTALLA DE CARGA
-   Sale al entrar en la web y al ir a portada / diario / contactar.
-   [v8] Ya NO sale dentro del bar (platos, siguiente, ← atrás, entrar al bar).
    ══════════════════════════════════════════════════════════════════════ */
 var cargaOcupada = false;
 
@@ -1074,13 +1206,10 @@ modulo('carga', function () {
   var pistaEl = document.getElementById('cargaPista');
   if (!cargaEl || !msgEl || !pistaEl) return;
 
-  /* [v7] Duración = base aleatoria + CARGA_EXTRA. Ajusta CARGA_EXTRA a tu gusto. */
   var CARGA_BASE  = 520;
   var CARGA_EXTRA = 1500;
   function durCarga() { return REDUCED ? Math.max(CARGA_EXTRA, 400) : (CARGA_BASE + Math.random() * 380) + CARGA_EXTRA; }
 
-  /* [v8] Destinos que SÍ muestran la pantalla de carga. Todo lo demás
-     (bar, carta, platos, siguiente, anterior…) navega sin carga. */
   var DESTINOS_CON_CARGA = ['portada', 'diario', 'contacto'];
 
   function accionDesdeBoton(b) {
@@ -1092,7 +1221,6 @@ modulo('carga', function () {
     return null;
   }
 
-  /* [v8] Solo cargan los botones de portada / diario / contactar */
   function esBotonCarga(b) {
     if (!b || b.tagName !== 'BUTTON') return false;
     if (b.getAttribute('data-carga') === 'no') return false;
@@ -1100,7 +1228,7 @@ modulo('carga', function () {
     if (b.id === 'barSon') return false;
     if (b.disabled) return false;
     var ir = b.getAttribute('data-ir');
-    if (!ir) return false;                                   /* platos, siguiente… → sin carga */
+    if (!ir) return false;
     return DESTINOS_CON_CARGA.indexOf(ir) !== -1;
   }
 
@@ -1167,22 +1295,18 @@ modulo('carga', function () {
     ]);
   }
 
-  /* [v7] Anima la barra y oculta la pantalla; luego ejecuta fn. */
   function correr(dur, fn) {
     cargaOcupada = true;
     var t0 = performance.now();
     function frame(now) {
       var p = Math.min(1, (now - t0) / dur);
-      var e = 1 - Math.pow(1 - p, 3); /* easeOutCubic */
-
+      var e = 1 - Math.pow(1 - p, 3);
       pistaEl.style.transform = 'scaleX(' + e + ')';
-
       if (p < 1) {
         requestAnimationFrame(frame);
       } else {
         cargaEl.classList.remove('is-visible');
         cargaEl.classList.add('is-salida');
-
         setTimeout(function () {
           cargaEl.hidden = true;
           cargaEl.setAttribute('aria-hidden', 'true');
@@ -1206,8 +1330,6 @@ modulo('carga', function () {
     correr(durCarga(), fn);
   }
 
-  /* [v7] Expuesta para el módulo de arranque: la pantalla ya está visible
-     desde el HTML; solo la animamos y la ocultamos. */
   correrCarga = function (msg, fn) {
     if (msg) msgEl.textContent = msg;
     cargaEl.hidden = false;
@@ -1252,7 +1374,6 @@ modulo('teclado', function () {
     if (e.key === 'Escape') { setPantalla('portada'); return; }
     if (pantalla !== 'bar') return;
 
-    /* Ahora funciona con cualquier número de platos, no solo 1-8 */
     var n = parseInt(e.key, 10);
     if (n >= 1 && n <= PLATOS.length) {
       servirPlato(n - 1);
@@ -1260,16 +1381,14 @@ modulo('teclado', function () {
     }
 
     var t = document.activeElement && document.activeElement.tagName;
-    if (/^(BUTTON|A|INPUT|TEXTAREA)$/.test(t)) return;   /* no pisar al foco del teclado */
+    if (/^(BUTTON|A|INPUT|TEXTAREA)$/.test(t)) return;
     var k = e.key.toLowerCase();
-    if (k === 'c') irCarta();                             /* c = carta (= ← atrás) */
+    if (k === 'c') irCarta();
     if (k === 's') servirPlato((actual + 1) % PLATOS.length);
     if (k === 'm') DESTINOS.contacto.acc();
   });
 });
 
-/* Arranque: portada. Si vienes con #contacto o un #apartado, respeta el enlace.
-   [v8] Tras la carga de entrada, si caemos en portada se anima el nombre. */
 modulo('arranque', function () {
   var hash = location.hash.replace('#', '');
   function destino() {
@@ -1280,33 +1399,32 @@ modulo('arranque', function () {
       var t = document.getElementById(directo.id);
       if (t) setTimeout(function () { t.scrollIntoView({ behavior: 'smooth' }); }, 120);
     } else {
-      animarPortada();          /* [v8] sin hash: aparece la portada y se enciende */
+      animarPortada();
     }
   }
   if (correrCarga) correrCarga(pick(MENSAJES_ENTRADA), destino);
   else destino();
 });
 
-/* Carga del clima OpenWeather */
 modulo('clima', function () {
   cargarClima();
-
   if (CLIMA.cadaMinutos > 0) {
     setInterval(cargarClima, CLIMA.cadaMinutos * 60000);
   }
 });
 
-/* [v9] Carga de divisas ExchangeRate-API */
 modulo('monedas', function () {
-  /* Primero pintamos con lo que haya (aunque no estén cargadas aún) */
   inicializarMonedas();
   cargarTasas();
-
   if (MONEDAS.cadaMinutos > 0) {
     setInterval(cargarTasas, MONEDAS.cadaMinutos * 60000);
   }
 });
 
-console.log('%c[web] v9 cargada · ' + PLATOS.length + ' apartados', 'color:#ffb066;font-weight:700');
+modulo('paises', function () {
+  inicializarPaises();
+});
+
+console.log('%c[web] v11 cargada · ' + PLATOS.length + ' apartados', 'color:#ffb066;font-weight:700');
 
 })();

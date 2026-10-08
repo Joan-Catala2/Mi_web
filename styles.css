@@ -1049,3 +1049,81 @@ body[data-pantalla="diario"] { overflow-y:auto }
     transition:none;
   }
 }
+/* ══════════════════════════════════════════════════════════════════════
+   BLOQUE CURIOSIDADES · Wikipedia random summary (gratis, sin clave)
+   ══════════════════════════════════════════════════════════════════════ */
+.curiosidades{
+  margin:18px 0 22px;
+  padding:16px;
+  border:2px dashed rgba(90,42,32,.28);
+  background:rgba(255,255,255,.32);
+}
+.curiosidades__imagen{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin-bottom:12px;
+}
+.curiosidades__imagen:empty{ display:none }
+.curiosidades__imagen img{
+  max-width:240px;
+  max-height:180px;
+  width:auto;
+  height:auto;
+  border:1px solid rgba(90,42,32,.2);
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+.curiosidades__titulo{
+  margin:0 0 8px;
+  text-align:center;
+  font:700 clamp(18px,3vw,24px)/1.2 var(--jn-display);
+  color:#2a1f18;
+}
+.curiosidades__texto{
+  margin:0 0 14px;
+  font:400 15.5px/1.7 Karla,system-ui,sans-serif;
+  color:#5a3a22;
+}
+.curiosidades__acciones{ margin:0 0 10px; text-align:center }
+.curiosidades__btn{
+  cursor:pointer;
+  padding:11px 16px;
+  border:2px solid #5a3a22;
+  background:#fffdf6;
+  color:#5a2a20;
+  font:700 10px/1 var(--jn-display);
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  transition:background .2s, color .2s, transform .2s;
+}
+.curiosidades__btn:hover{
+  background:var(--jn-laton);
+  border-color:#20140b;
+  color:#20140b;
+  transform:translate(-1px,-1px);
+}
+.curiosidades__btn:active{ transform:translate(1px,1px) }
+.curiosidades__enlace-linea{ margin:0 0 6px; text-align:center }
+.curiosidades__enlace{
+  display:inline-block;
+  color:#8a3a20;
+  text-decoration-thickness:2px;
+  text-underline-offset:3px;
+}
+.curiosidades__enlace[hidden]{ display:none }
+.curiosidades__error{
+  margin:12px 0 0;
+  padding:10px 12px;
+  background:rgba(192,74,58,.1);
+  border:1px solid rgba(192,74,58,.4);
+  color:#8a2a20;
+  font:400 14px/1.3 Karla,system-ui,sans-serif;
+}
+.entrada .curiosidades,
+.servido .plato-post .curiosidades{
+  border-color:rgba(90,42,32,.28);
+  background:rgba(255,255,255,.32);
+}
+@media (max-width:560px){
+  .curiosidades__imagen img{ max-width:180px }
+}

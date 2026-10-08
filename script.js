@@ -1,8 +1,8 @@
 /* ══════════════════════════════════════════════════════════════════════
-   script.js v11 · Joan Català Mateu
+   script.js v12 · Joan Català Mateu
    ──────────────────────────────────────────────────────────────────────
-   v11 = v10 + países con REST Countries (gratis, SIN clave, sin registro,
-         sin base de datos). Ver marcas [v11].
+   v12 = v11 + curiosidades con Wikipedia (gratis, SIN clave, sin registro,
+         sin base de datos). Ver marcas [v12].
    ──────────────────────────────────────────────────────────────────────
    TRES PANTALLAS en la misma página (body[data-pantalla]):
      portada → nombre grande + Conóceme / Contactar / Entrar
@@ -56,7 +56,8 @@ var CARTA = {
   'proyectos': { precio:'en marcha',      dicho:'De postre, lo que estoy construyendo ahora mismo. Café y código.' },
   'clima'    : { precio:'en vivo',        dicho:'Esto lo pide la casa: el tiempo de ahora, sin salir del bar.' },
   'monedas'  : { precio:'con clave',      dicho:'Cambio de moneda al momento, con tasas reales de ExchangeRate-API.' },
-  'paises'   : { precio:'gratis',         dicho:'Países, banderas, población y más. Un mundo entero en un solo plato.' }
+  'paises'   : { precio:'gratis',         dicho:'Países, banderas, población y más. Un mundo entero en un solo plato.' },
+  'curiosidades': { precio:'gratis',      dicho:'¿Sabías que…? Una curiosidad aleatoria de la Wikipedia, recién servida.' }   /* [v12] */
 };
 var SALUDO = [
   'Buenas. Siéntate donde quieras, hoy no hay prisa.',
@@ -608,6 +609,89 @@ function inicializarPaises() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
+   1e. [v12] CURIOSIDADES · Wikipedia random summary
+   Gratis · SIN clave · sin registro · sin base de datos.
+   ══════════════════════════════════════════════════════════════════════ */
+var CURIOSIDADES = {
+  url: 'https://es.wikipedia.org/api/rest_v1/page/random/summary',
+  maxCaracteres: 320
+};
+
+function truncarTexto(txt, n) {
+  if (!txt) return '—';
+  var limpio = txt.replace(/\s+/g, ' ').trim();
+  if (limpio.length <= n) return limpio;
+  var corte = limpio.slice(0, n);
+  var m = corte.lastIndexOf(' ');
+  if (m > 0) corte = corte.slice(0, m);
+  return corte + '…';
+}
+
+function pintarCuriosidad(bloque, data) {
+  var tituloEl = bloque.querySelector('[data-c-titulo]');
+  var textoEl  = bloque.querySelector('[data-c-texto]');
+  var imgEl    = bloque.querySelector('[data-c-imagen]');
+  var enlaceEl = bloque.querySelector('[data-c-enlace]');
+  var errEl    = bloque.querySelector('[data-c-error]');
+
+  if (errEl) { errEl.hidden = true; errEl.textContent = ''; }
+
+  var titulo  = (data && data.title) || '—';
+  var extract = (data && data.extract) || '';
+  var url = (data && data.content_urls && data.content_urls.desktop) ? data.content_urls.desktop.page : '';
+  var img = (data && data.thumbnail) ? data.thumbnail.source : '';
+
+  if (tituloEl) tituloEl.textContent = titulo;
+  if (textoEl)  textoEl.textContent  = extract ? truncarTexto(extract, CURIOSIDADES.maxCaracteres) : 'Sin texto para esta curiosidad.';
+
+  if (imgEl) imgEl.innerHTML = img ? '<img src="' + img + '" alt="' + titulo + '" loading="lazy">' : '';
+
+  if (enlaceEl) {
+    if (url) { enlaceEl.hidden = false; enlaceEl.href = url; }
+    else { enlaceEl.hidden = true; }
+  }
+}
+
+function pintarErrorCuriosidad(bloque, mensaje) {
+  var errEl = bloque.querySelector('[data-c-error]');
+  var tituloEl = bloque.querySelector('[data-c-titulo]');
+  var textoEl = bloque.querySelector('[data-c-texto]');
+  var imgEl = bloque.querySelector('[data-c-imagen]');
+  if (errEl) { errEl.hidden = false; errEl.textContent = mensaje || 'No se pudo cargar la curiosidad.'; }
+  if (tituloEl) tituloEl.textContent = '—';
+  if (textoEl) textoEl.textContent = '—';
+  if (imgEl) imgEl.innerHTML = '';
+}
+
+function cargarCuriosidad(bloque) {
+  var errEl = bloque.querySelector('[data-c-error]');
+  var tituloEl = bloque.querySelector('[data-c-titulo]');
+  if (tituloEl) tituloEl.textContent = 'Buscando algo curioso…';
+  if (errEl) errEl.hidden = true;
+
+  fetch(CURIOSIDADES.url)
+    .then(function (r) {
+      if (r.status === 429) throw new Error('Demasiadas peticiones seguidas. Espera un momento y vuelve a pulsar.');
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function (data) { pintarCuriosidad(bloque, data); })
+    .catch(function (e) { console.error('[curiosidades]', e); pintarErrorCuriosidad(bloque, e.message); });
+}
+
+function inicializarBloqueCuriosidades(bloque) {
+  if (bloque.dataset.curiosidadesListo === '1') return;
+  var nuevaEl = bloque.querySelector('[data-c-nueva]');
+  on(nuevaEl, 'click', function () { cargarCuriosidad(bloque); });
+  bloque.dataset.curiosidadesListo = '1';
+  cargarCuriosidad(bloque);
+}
+
+function inicializarCuriosidades() {
+  $$('[data-curiosidades]').forEach(inicializarBloqueCuriosidades);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
    2. EL CONMUTADOR DE PANTALLAS
    ══════════════════════════════════════════════════════════════════════ */
 var bar, panel, listaEl, cuerpo, sello, txtEl, ecoEl;
@@ -743,6 +827,7 @@ modulo('diario', function () {
   inicializarMonedas();
   pintarMonedas();
   inicializarPaises();
+  inicializarCuriosidades();   /* [v12] */
 
   on(document.getElementById('diario'), 'click', function (e) {
     var a = e.target.closest && e.target.closest('a[href^="#"]');
@@ -813,6 +898,12 @@ function servirPlato(i) {
   if (bloqueP) {
     bloqueP.dataset.paisesListo = '';
     inicializarBloquePaises(bloqueP);
+  }
+
+  var bloqueC = cuerpo.querySelector('[data-curiosidades]');   /* [v12] */
+  if (bloqueC) {
+    bloqueC.dataset.curiosidadesListo = '';
+    inicializarBloqueCuriosidades(bloqueC);
   }
 
   if (sello) sello.textContent = 'plato ' + ('0' + p.n).slice(-2) + ' · ' + p.min + ' min';
@@ -1425,6 +1516,10 @@ modulo('paises', function () {
   inicializarPaises();
 });
 
-console.log('%c[web] v11 cargada · ' + PLATOS.length + ' apartados', 'color:#ffb066;font-weight:700');
+modulo('curiosidades', function () {   /* [v12] */
+  inicializarCuriosidades();
+});
+
+console.log('%c[web] v12 cargada · ' + PLATOS.length + ' apartados', 'color:#ffb066;font-weight:700');
 
 })();

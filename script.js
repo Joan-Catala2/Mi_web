@@ -1598,4 +1598,94 @@ modulo('curiosidades', function () {   /* [v12] */
 
 console.log('%c[web] v12 cargada · ' + PLATOS.length + ' apartados', 'color:#ffb066;font-weight:700');
 
+/* ══════════════════════════════════════════════════════════════════════
+   9. [MEJORAS · CONÓCEME] — índice visual, barra de lectura y revelados
+   Se ejecuta DESPUÉS de que el diario ya esté construido.
+   Si no pegas este bloque, la web funciona igual (sin estas mejoras).
+   ══════════════════════════════════════════════════════════════════════ */
+modulo('conoceme', function () {
+  document.documentElement.classList.add('mejoras');
+
+  var ETIQUETAS = {
+    'sobre-mi':     { c:'Sobre mí',      d:'Mi forma de trabajar',        t:'Presentación' },
+    'esgrima':      { c:'Esgrima',       d:'Disciplina y competición',    t:'Deporte' },
+    'viajar':       { c:'Viajes',        d:'Experiencias fuera de casa',  t:'Viajes' },
+    'musica':       { c:'Música',        d:'Una herramienta diaria',      t:'Costumbres' },
+    'ingles':       { c:'Inglés',        d:'Aprender por independencia',  t:'Idiomas' },
+    'estudios':     { c:'Estudios',      d:'Bachillerato · DAM · C1',     t:'Formación' },
+    'ia':           { c:'IA',            d:'Vivir de crear',              t:'Futuro' },
+    'proyectos':    { c:'Proyectos',     d:'Lo que estoy construyendo',   t:'Portfolio' },
+    'clima':        { c:'El tiempo',     d:'Clima en vivo',               t:'Datos en vivo' },
+    'monedas':      { c:'Divisas',       d:'Conversor en tiempo real',    t:'Datos en vivo' },
+    'paises':       { c:'Países',        d:'Un mundo de datos',           t:'Datos en vivo' },
+    'curiosidades': { c:'Curiosidades',  d:'¿Sabías que…?',               t:'Datos en vivo' }
+  };
+
+  /* 2 · índice visual numerado */
+  var lista = document.getElementById('sumarioLista');
+  if (lista) {
+    $$('a', lista).forEach(function (a, i) {
+      var id = a.getAttribute('href').slice(1);
+      var e = ETIQUETAS[id] || { c: a.textContent, d: '' };
+      a.className = 'indice__enlace';
+      a.dataset.id = id;
+      a.innerHTML =
+        '<span class="indice__num">' + ('0' + (i + 1)).slice(-2) + '</span>' +
+        '<span class="indice__txt">' +
+          '<span class="indice__corto">' + e.c + '</span>' +
+          '<span class="indice__desc">' + e.d + '</span>' +
+        '</span>';
+    });
+  }
+
+  /* 3 · número grande + etiqueta en cada entrada */
+  var entradas = $$('#diarioCuerpo .entrada');
+  entradas.forEach(function (sec, i) {
+    var e = ETIQUETAS[sec.id];
+    var num = $('.num', sec);
+    if (num) num.textContent = ('0' + (i + 1)).slice(-2);
+    if (e && e.t) sec.setAttribute('data-etiqueta', e.t);
+    sec.setAttribute('data-reveal', '');
+  });
+
+  /* 4 · barra de progreso de lectura */
+  var barra = document.getElementById('lecturaBarra');
+  var pct   = $('.lectura__pct');
+  function progreso() {
+    if (!barra) return;
+    var h = document.documentElement;
+    var total = h.scrollHeight - h.clientHeight;
+    var p = total > 4 ? Math.min(1, (h.scrollTop || document.body.scrollTop) / total) : 0;
+    barra.style.transform = 'scaleX(' + p + ')';
+    if (pct) pct.textContent = Math.round(p * 100) + '%';
+  }
+  on(window, 'scroll', progreso);
+  on(window, 'resize', progreso);
+  progreso();
+
+  /* 4b · sección actual resaltada en el índice + 10 · revelados */
+  if ('IntersectionObserver' in window) {
+    var activo = null;
+    var io = new IntersectionObserver(function (ents) {
+      ents.forEach(function (en) {
+        if (!en.isIntersecting || en.target.id === activo) return;
+        activo = en.target.id;
+        $$('.indice__enlace').forEach(function (a) {
+          a.classList.toggle('is-activo', a.dataset.id === activo);
+        });
+      });
+    }, { rootMargin: '-28% 0px -55% 0px', threshold: 0 });
+    entradas.forEach(function (s) { io.observe(s); });
+
+    var io2 = new IntersectionObserver(function (ents) {
+      ents.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('is-vista'); io2.unobserve(en.target); }
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: .08 });
+    $$('[data-reveal]').forEach(function (el) { io2.observe(el); });
+  } else {
+    $$('[data-reveal]').forEach(function (el) { el.classList.add('is-vista'); });
+  }
+});
+
 })();

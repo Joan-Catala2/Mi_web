@@ -109,9 +109,22 @@
       </div>
 
       <!-- [MEJORA 2] el sumario se convierte en índice visual por JS -->
-      <nav class="sumario" aria-label="Sumario del diario">
-        <p class="sumario__label">En este diario</p>
-        <ol class="sumario__lista" id="sumarioLista"><!-- la rellena script.js --></ol>
+            <!-- ── CARTA-MENÚ del diario (sustituye al antiguo <nav class="sumario">) ── -->
+      <nav class="carta" aria-label="Índice del diario">
+        <div class="carta__marco">
+          <p class="carta__title">El diario de Joan</p>
+          <ol class="carta__lista">
+            <li><a class="carta__item" href="#sobre-mi"   data-id="sobre-mi"><span class="carta__num">01</span><span class="carta__dots" aria-hidden="true"></span><span class="carta__name">Quién soy</span></a></li>
+            <li><a class="carta__item" href="#esgrima"    data-id="esgrima"><span class="carta__num">02</span><span class="carta__dots" aria-hidden="true"></span><span class="carta__name">Siete años de esgrima</span></a></li>
+            <li><a class="carta__item" href="#viajar"     data-id="viajar"><span class="carta__num">03</span><span class="carta__dots" aria-hidden="true"></span><span class="carta__name">Viajar</span></a></li>
+            <li><a class="carta__item" href="#musica"     data-id="musica"><span class="carta__num">04</span><span class="carta__dots" aria-hidden="true"></span><span class="carta__name">Música</span></a></li>
+            <li><a class="carta__item" href="#ingles"     data-id="ingles"><span class="carta__num">05</span><span class="carta__dots" aria-hidden="true"></span><span class="carta__name">Aprender inglés</span></a></li>
+            <li><a class="carta__item" href="#estudios"   data-id="estudios"><span class="carta__num">06</span><span class="carta__dots" aria-hidden="true"></span><span class="carta__name">Estudios</span></a></li>
+            <li><a class="carta__item" href="#ia"         data-id="ia"><span class="carta__num">07</span><span class="carta__dots" aria-hidden="true"></span><span class="carta__name">Inteligencia artificial</span></a></li>
+            <li><a class="carta__item" href="#proyectos"  data-id="proyectos"><span class="carta__num">08</span><span class="carta__dots" aria-hidden="true"></span><span class="carta__name">Mis proyectos</span></a></li>
+          </ol>
+          <button class="carta__empezar" id="empezarLeer" type="button">↓ Empezar a leer ↓</button>
+        </div>
       </nav>
     </header>
 

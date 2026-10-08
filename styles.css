@@ -1127,3 +1127,200 @@ body[data-pantalla="diario"] { overflow-y:auto }
 @media (max-width:560px){
   .curiosidades__imagen img{ max-width:180px }
 }
+/* ══════════════════════════════════════════════════════════════════════
+   [TEMA] MODO CLARO — se activa con <html data-tema="claro">
+   Solo AÑADE reglas nuevas (prefijo html[data-tema="claro"]).
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* 0 · Botón flotante de la portada (siempre existe, solo se ve en portada) */
+.tema-flotante{
+  position:fixed; top:clamp(10px,2.2vh,22px); right:clamp(12px,3vw,40px);
+  z-index:6; display:none;
+}
+body[data-pantalla="portada"] .tema-flotante{ display:block }
+
+/* 1 · Variables del modo claro (redefinen las de :root) */
+html[data-tema="claro"]{
+  --jn-noche:#f2e6d2;      --jn-humo:#f6eede;
+  --jn-madera:#c9a06a;     --jn-madera-oscura:#e6d6b8;   --jn-madera-clara:#8a5a3a;
+  --jn-laton:#a97b3f;      --jn-ambar:#b05e1f;           --jn-crema:#2a1f18;
+  --jn-tiza:#33261c;       --jn-pizarra:#efe2c8;
+  --jn-papel:#fffaf0;      --jn-tinta:#2a1f18;           --jn-rojo:#a83a2a;
+}
+
+/* 2 · Base */
+html[data-tema="claro"] body{ background:#f5ead6; color:#2a1f18 }
+html[data-tema="claro"] :focus-visible{ outline-color:#b05e1f }
+
+/* 3 · Pantalla de carga */
+html[data-tema="claro"] .carga{ background:radial-gradient(120% 90% at 50% 0%, #f7ecd9 0%, #e6d2b2 58%, #d8c29e 100%) }
+html[data-tema="claro"] .carga__caja{
+  background:rgba(255,250,240,.92); border-color:#8a5a3a;
+  box-shadow:0 0 0 4px #c9a06a, 0 0 0 7px #8a5a3a,
+             8px 10px 0 rgba(120,80,40,.25), inset 0 0 40px rgba(120,80,40,.08);
+}
+html[data-tema="claro"] .carga__marca{ color:#8a5a3a; text-shadow:none }
+html[data-tema="claro"] .carga__msg{ color:#2a1f18 }
+html[data-tema="claro"] .carga__barra{ background:#e6d6b8; border-color:#8a5a3a; box-shadow:inset 0 2px 4px rgba(120,80,40,.25) }
+html[data-tema="claro"] .carga__pista{ background:linear-gradient(90deg,#c9a06a,#b05e1f,#8a5a3a); box-shadow:0 0 12px rgba(176,94,31,.35) }
+html[data-tema="claro"] .carga__nota{ color:rgba(90,58,34,.6) }
+
+/* 4 · Portada */
+html[data-tema="claro"] .portada{ background:radial-gradient(130% 100% at 50% -12%, #f9efdd 0%, #ecd9ba 55%, #dcc4a0 100%) }
+html[data-tema="claro"] .portada__scan{ opacity:.14; background:repeating-linear-gradient(180deg, rgba(120,80,40,.22) 0 1px, transparent 1px 3px) }
+html[data-tema="claro"] .portada__luz{ background:radial-gradient(circle at 50% 42%, rgba(255,255,255,.9), rgba(214,164,94,.35) 36%, transparent 70%); mix-blend-mode:multiply }
+html[data-tema="claro"] .portada__eyebrow{ color:#8a5a3a }
+html[data-tema="claro"] .portada__name{ color:#5a3a22 }
+html[data-tema="claro"] .portada__name .letra.is-on{ text-shadow:0 0 6px rgba(176,94,31,.35), 0 0 22px rgba(176,94,31,.22), 0 0 60px rgba(176,94,31,.12) }
+html[data-tema="claro"] .portada__name .letra.gold{ color:#a97b3f }
+html[data-tema="claro"] .portada__name .letra.gold.is-on{ text-shadow:0 0 6px rgba(169,123,63,.45), 0 0 24px rgba(169,123,63,.28), 0 0 66px rgba(169,123,63,.14) }
+html[data-tema="claro"] .portada__desc{ color:rgba(42,31,24,.8) }
+html[data-tema="claro"] .portada__nota{ color:rgba(90,58,34,.55) }
+
+html[data-tema="claro"] .btn3{ color:#2a1f18; background:#f3e2c4; border-color:#8a5a3a; box-shadow:5px 5px 0 rgba(120,80,40,.28) }
+html[data-tema="claro"] .btn3:hover{ background:#b05e1f; border-color:#7a3a10; color:#fff; box-shadow:8px 8px 0 rgba(120,80,40,.3) }
+html[data-tema="claro"] .btn3--laton{ background:#c98a4f; border-color:#2a1f18; color:#20140b }
+html[data-tema="claro"] .btn3--laton:hover{ background:#e8c07a; border-color:#2a1f18; color:#20140b }
+
+/* 5 · Diario */
+html[data-tema="claro"] .diario{
+  background:
+    repeating-linear-gradient(90deg, rgba(138,94,60,.10) 0 130px, rgba(0,0,0,0) 130px 260px),
+    linear-gradient(180deg, #f1e3ca, #e3d0ae 70%);
+}
+html[data-tema="claro"] .diario__barra{
+  background:rgba(246,238,222,.95); border-bottom-color:#c9a06a;
+  box-shadow:0 8px 22px rgba(120,80,40,.25);
+}
+html[data-tema="claro"] .diario__marca{ color:#8a5a3a }
+html[data-tema="claro"] .diario__marca:hover{ color:#2a1f18 }
+html[data-tema="claro"] .btn4{ color:#2a1f18; background:#f3e2c4; border-color:#8a5a3a; box-shadow:3px 3px 0 rgba(120,80,40,.28) }
+html[data-tema="claro"] .btn4:hover{ background:#b05e1f; color:#fff; box-shadow:5px 5px 0 rgba(120,80,40,.3) }
+html[data-tema="claro"] .diario__eyebrow{ color:#a97b3f }
+html[data-tema="claro"] .diario__title{ color:#5a3a22; text-shadow:0 0 6px rgba(176,94,31,.22), 0 0 22px rgba(176,94,31,.12) }
+html[data-tema="claro"] .diario__phrase{ color:rgba(42,31,24,.75) }
+html[data-tema="claro"] .sumario__label{ color:rgba(138,90,58,.85) }
+html[data-tema="claro"] .sumario__lista a{ color:#3a2a1e }
+html[data-tema="claro"] .sumario__lista a::before{ color:#b05e1f }
+html[data-tema="claro"] .sumario__lista a:hover{ color:#b05e1f }
+html[data-tema="claro"] .entrada{ box-shadow:8px 10px 0 rgba(120,80,40,.16); border-color:#b89a72 }
+html[data-tema="claro"] .entrada--contacto{ background:linear-gradient(160deg,#e8dcc4,#d8c6a4); color:#2a1f18; border-color:#b89a72 }
+html[data-tema="claro"] .entrada--contacto h2{ color:#2a1f18 }
+html[data-tema="claro"] .entrada--contacto p{ color:rgba(42,31,24,.85) }
+html[data-tema="claro"] .diario__legal{ color:rgba(90,58,34,.6) }
+
+/* 6 · Bar: marco y botones */
+html[data-tema="claro"] .bar{ background:radial-gradient(130% 100% at 50% -12%, #f5e8d2 0%, #e0c9a6 55%, #cdb38c 100%) }
+html[data-tema="claro"] .bar__marco{
+  background:#e6d6b8; border-color:#c9a06a;
+  box-shadow:0 0 0 3px #b89a72, 0 0 0 6px #c9a06a,
+             0 34px 70px rgba(120,80,40,.35), inset 0 0 0 1px rgba(138,90,58,.25);
+}
+html[data-tema="claro"] .bar__ini,
+html[data-tema="claro"] .bar__son{ color:#2a1f18; background:#f3e2c4; border-color:#8a5a3a; box-shadow:3px 3px 0 rgba(120,80,40,.3) }
+html[data-tema="claro"] .bar__ini:hover,
+html[data-tema="claro"] .bar__son:hover{ background:#b05e1f; border-color:#7a3a10; color:#fff; box-shadow:5px 5px 0 rgba(120,80,40,.32) }
+html[data-tema="claro"] .bar__son[aria-pressed="true"]{ color:#2f7a49; border-color:#3f7a4a }
+html[data-tema="claro"] .bar__hint{ color:rgba(90,58,34,.55) }
+
+/* La escena nocturna se aclara con un filtro suave: el dibujo pixel no cambia */
+html[data-tema="claro"] .bar__escena{ background:linear-gradient(180deg,#e8d3b2,#d8c29e) }
+html[data-tema="claro"] .bar__canvas{ filter:brightness(1.45) saturate(.78) sepia(.3) hue-rotate(-12deg) }
+html[data-tema="claro"] .bar__scan{ opacity:.16; background:repeating-linear-gradient(180deg, rgba(90,58,34,.28) 0 1px, transparent 1px 3px) }
+html[data-tema="claro"] .bar__glow{
+  background:
+    radial-gradient(95% 70% at 32% 18%, rgba(255,220,150,.22), transparent 62%),
+    linear-gradient(180deg, rgba(255,244,220,.14), transparent 22%, transparent 68%, rgba(120,80,40,.16));
+}
+html[data-tema="claro"] .bar__neon{ color:#7a4a22; text-shadow:0 0 4px rgba(176,94,31,.45), 0 0 14px rgba(176,94,31,.28), 0 0 30px rgba(176,94,31,.18) }
+
+/* Burbuja del camarero */
+html[data-tema="claro"] .burbuja{ background:linear-gradient(#fffdf6,#f3e2c4); color:#2a1f18; box-shadow:7px 7px 0 rgba(120,80,40,.22) }
+html[data-tema="claro"] .burbuja__who{ color:#8a5a3a }
+html[data-tema="claro"] .burbuja__eco{ color:#9a6b45 }
+html[data-tema="claro"] .burbuja__txt{ color:#2a1f18 }
+
+/* 7 · Panel derecho: pizarra, carta y contacto */
+html[data-tema="claro"] .bar__panel{ background:#f6eede; border-left-color:#c9a06a }
+html[data-tema="claro"] .bar__panel ::-webkit-scrollbar-track{ background:#e6d6b8 }
+html[data-tema="claro"] .bar__panel ::-webkit-scrollbar-thumb{ background:#8a5a3a; border-color:#f6eede }
+
+html[data-tema="claro"] .pizarra,
+html[data-tema="claro"] .contacto{
+  color:#2a1f18;
+  background:
+    radial-gradient(120% 70% at 18% 0%, rgba(255,255,255,.55), transparent 58%),
+    repeating-linear-gradient(0deg, rgba(120,80,40,.06) 0 2px, transparent 2px 5px),
+    #efe2c8;
+  box-shadow:inset 0 0 0 2px rgba(138,90,58,.22), inset 0 0 60px rgba(120,80,40,.08);
+}
+html[data-tema="claro"] .pizarra__eyebrow,
+html[data-tema="claro"] .contacto__eyebrow{ color:#8a5a3a }
+html[data-tema="claro"] .pizarra__title,
+html[data-tema="claro"] .contacto__title{ color:#2a1f18; text-shadow:none }
+html[data-tema="claro"] .pizarra__sub{ color:rgba(42,31,24,.72) }
+html[data-tema="claro"] .pizarra__lista li{ border-bottom-color:rgba(138,90,58,.35) }
+html[data-tema="claro"] .pizarra__nota{ color:rgba(90,58,34,.6) }
+
+html[data-tema="claro"] .plato{ color:#3a2a1e }
+html[data-tema="claro"] .plato::before{ background:linear-gradient(90deg,#b05e1f,rgba(176,94,31,.12)) }
+html[data-tema="claro"] .plato:hover,
+html[data-tema="claro"] .plato:focus-visible{ color:#2a1f18 }
+html[data-tema="claro"] .plato__num{ color:#a97b3f }
+html[data-tema="claro"] .plato:hover .plato__num{ color:#b05e1f }
+html[data-tema="claro"] .plato__tag{ color:#6a4a30; border-color:rgba(138,90,58,.45) }
+html[data-tema="claro"] .plato:hover .plato__tag{ background:#b05e1f; color:#fff; border-color:#b05e1f }
+
+html[data-tema="claro"] .bar__full{ color:#f6eede; background:#8a5a3a }
+html[data-tema="claro"] .bar__full:hover{ background:#b05e1f; color:#fff }
+
+/* 8 · Serveta (plato servido) */
+html[data-tema="claro"] .servido__papel{ box-shadow:10px 12px 0 rgba(120,80,40,.16); border-color:#b89a72 }
+html[data-tema="claro"] .servido__prev{ color:#8a5a3a; border-bottom-color:rgba(138,90,58,.45) }
+html[data-tema="claro"] .servido__prev:hover{ color:#a83a2a; border-color:#a83a2a }
+html[data-tema="claro"] .servido__fin{ border-top-color:rgba(42,31,24,.2) }
+html[data-tema="claro"] .jn-btn{ color:#f6eede; background:#5a3a22; border-color:#5a3a22; box-shadow:3px 3px 0 rgba(120,80,40,.2) }
+html[data-tema="claro"] .jn-btn:hover{ background:#a83a2a; border-color:#a83a2a; color:#fff; box-shadow:5px 5px 0 rgba(120,80,40,.22) }
+html[data-tema="claro"] .jn-btn--linea{ background:none; color:#5a3a22; border-color:#5a3a22; box-shadow:none }
+html[data-tema="claro"] .jn-btn--linea:hover{ background:#5a3a22; color:#f6eede; border-color:#5a3a22 }
+
+/* 9 · Contacto del bar */
+html[data-tema="claro"] .contacto__txt{ color:rgba(42,31,24,.8) }
+html[data-tema="claro"] .contacto__mail a{ color:#b05e1f; border-bottom-color:rgba(176,94,31,.5) }
+html[data-tema="claro"] .contacto__mail a:hover{ color:#7a3a10; border-color:#7a3a10 }
+html[data-tema="claro"] .contacto__mail button{ color:#2a1f18; border-color:rgba(138,90,58,.45) }
+html[data-tema="claro"] .contacto__mail button:hover,
+html[data-tema="claro"] .contacto__mail button.is-ok{ background:#b05e1f; color:#fff; border-color:#b05e1f }
+html[data-tema="claro"] .contacto__redes a{ color:#3a2a1e; border-color:rgba(138,90,58,.45) }
+html[data-tema="claro"] .contacto__redes a:hover{ background:rgba(138,90,58,.12) }
+html[data-tema="claro"] .contacto__legal{ color:rgba(90,58,34,.55) }
+html[data-tema="claro"] #barContactoBack{ color:#3a2a1e; border-color:#8a5a3a }
+html[data-tema="claro"] #barContactoBack:hover{ background:rgba(138,90,58,.14); color:#2a1f18; border-color:#5a3a22 }
+
+/* 10 · Bloques de las APIs (clima, monedas, países, curiosidades) */
+html[data-tema="claro"] .clima,
+html[data-tema="claro"] .monedas,
+html[data-tema="claro"] .paises,
+html[data-tema="claro"] .curiosidades{ background:#fffdf6; border-color:rgba(138,90,58,.35) }
+html[data-tema="claro"] .monedas__campo input,
+html[data-tema="claro"] .monedas__campo select,
+html[data-tema="claro"] .paises__campo input{ background:#fffdf6; border-color:rgba(138,90,58,.4) }
+html[data-tema="claro"] .monedas__cambiar{ background:#fffdf6 }
+
+/* 11 · Fundido suave al cambiar de tema (sin forzarlo a quien no quiere animaciones) */
+html[data-tema="claro"] body,
+html[data-tema="claro"] .portada,
+html[data-tema="claro"] .diario,
+html[data-tema="claro"] .entrada,
+html[data-tema="claro"] .pizarra,
+html[data-tema="claro"] .contacto,
+html[data-tema="claro"] .burbuja{ transition:background-color .35s ease, color .35s ease }
+@media (prefers-reduced-motion:reduce){
+  html[data-tema="claro"] body,
+  html[data-tema="claro"] .portada,
+  html[data-tema="claro"] .diario,
+  html[data-tema="claro"] .entrada,
+  html[data-tema="claro"] .pizarra,
+  html[data-tema="claro"] .contacto,
+  html[data-tema="claro"] .burbuja{ transition:none }
+}

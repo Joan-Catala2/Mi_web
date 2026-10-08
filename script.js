@@ -806,12 +806,7 @@ function animarPortada() {
    ══════════════════════════════════════════════════════════════════════ */
 modulo('diario', function () {
   var cuerpoD = document.getElementById('diarioCuerpo');
-  var sumario = document.getElementById('sumarioLista');
-  if (!cuerpoD || !sumario) return;
-
-  sumario.innerHTML = PLATOS.map(function (p) {
-    return '<li><a href="#' + p.id + '">' + p.name + '</a></li>';
-  }).join('');
+  if (!cuerpoD) return;
 
   cuerpoD.innerHTML = PLATOS.map(function (p) {
     var clon = p.art.cloneNode(true);
@@ -1599,9 +1594,8 @@ modulo('curiosidades', function () {   /* [v12] */
 console.log('%c[web] v12 cargada · ' + PLATOS.length + ' apartados', 'color:#ffb066;font-weight:700');
 
 /* ══════════════════════════════════════════════════════════════════════
-   9. [MEJORAS · CONÓCEME] — índice visual, barra de lectura y revelados
+   9. [MEJORAS · CONÓCEME] — carta-menú, barra de lectura y revelados
    Se ejecuta DESPUÉS de que el diario ya esté construido.
-   Si no pegas este bloque, la web funciona igual (sin estas mejoras).
    ══════════════════════════════════════════════════════════════════════ */
 modulo('conoceme', function () {
   document.documentElement.classList.add('mejoras');
@@ -1621,22 +1615,12 @@ modulo('conoceme', function () {
     'curiosidades': { c:'Curiosidades',  d:'¿Sabías que…?',               t:'Datos en vivo' }
   };
 
-  /* 2 · índice visual numerado */
-  var lista = document.getElementById('sumarioLista');
-  if (lista) {
-    $$('a', lista).forEach(function (a, i) {
-      var id = a.getAttribute('href').slice(1);
-      var e = ETIQUETAS[id] || { c: a.textContent, d: '' };
-      a.className = 'indice__enlace';
-      a.dataset.id = id;
-      a.innerHTML =
-        '<span class="indice__num">' + ('0' + (i + 1)).slice(-2) + '</span>' +
-        '<span class="indice__txt">' +
-          '<span class="indice__corto">' + e.c + '</span>' +
-          '<span class="indice__desc">' + e.d + '</span>' +
-        '</span>';
-    });
-  }
+  /* 2 · carta-menú: botón "empezar a leer" */
+  var empezar = document.getElementById('empezarLeer');
+  on(empezar, 'click', function () {
+    var t = document.getElementById('sobre-mi');
+    if (t) t.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth' });
+  });
 
   /* 3 · número grande + etiqueta en cada entrada */
   var entradas = $$('#diarioCuerpo .entrada');
@@ -1663,14 +1647,14 @@ modulo('conoceme', function () {
   on(window, 'resize', progreso);
   progreso();
 
-  /* 4b · sección actual resaltada en el índice + 10 · revelados */
+  /* 4b · sección actual resaltada en la carta + 10 · revelados */
   if ('IntersectionObserver' in window) {
     var activo = null;
     var io = new IntersectionObserver(function (ents) {
       ents.forEach(function (en) {
         if (!en.isIntersecting || en.target.id === activo) return;
         activo = en.target.id;
-        $$('.indice__enlace').forEach(function (a) {
+        $$('.carta__item').forEach(function (a) {
           a.classList.toggle('is-activo', a.dataset.id === activo);
         });
       });

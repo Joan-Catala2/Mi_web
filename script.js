@@ -1455,6 +1455,82 @@ modulo('carga', function () {
 });
 
 /* ══════════════════════════════════════════════════════════════════════
+   7c. [TEMA] MODO CLARO / OSCURO
+   ──────────────────────────────────────────────────────────────────────
+   Añadido nuevo: NO toca nada de lo anterior.
+   Busca todos los <button data-tema> (portada, diario y bar), los
+   sincroniza, guarda la elección en localStorage y, si el usuario
+   no ha elegido nada, sigue la preferencia del sistema.
+   El CSS hace todo el trabajo con el atributo <html data-tema="claro">.
+   ══════════════════════════════════════════════════════════════════════ */
+modulo('tema', function () {
+  var raiz    = document.documentElement;
+  var clave   = 'joan-tema';
+  var botones = $$('[data-tema]');
+  if (!botones.length) return;
+
+  function leerGuardado() {
+    var g = null;
+    try { g = localStorage.getItem(clave); } catch (e) {}
+    return (g === 'claro' || g === 'oscuro') ? g : null;
+  }
+
+  function preferido() {
+    var g = leerGuardado();
+    if (g) return g;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'claro' : 'oscuro';
+  }
+
+  function pintarBotones() {
+    var claro = raiz.getAttribute('data-tema') === 'claro';
+    botones.forEach(function (b) {
+      b.setAttribute('aria-pressed', claro ? 'true' : 'false');
+      b.textContent = claro ? '☾ oscuro' : '☀ claro';
+    });
+    /* Color de la barra del navegador en móviles */
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', claro ? '#f5ead6' : '#070505');
+  }
+
+  function aplicar(valor, guardar) {
+    raiz.setAttribute('data-tema', valor);
+    pintarBotones();
+    if (guardar) { try { localStorage.setItem(clave, valor); } catch (e) {} }
+  }
+
+  botones.forEach(function (b) {
+    on(b, 'click', function () {
+      var nuevo = raiz.getAttribute('data-tema') === 'claro' ? 'oscuro' : 'claro';
+      aplicar(nuevo, true);
+      Sonido.tintir();
+    });
+  });
+
+  /* Si el usuario cambia la preferencia del sistema y no ha tocado
+     nunca el botón, la seguimos en directo. */
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: light)');
+    var oyente = function (e) { if (!leerGuardado()) aplicar(e.matches ? 'claro' : 'oscuro', false); };
+    if (mq.addEventListener) mq.addEventListener('change', oyente);
+    else if (mq.addListener) mq.addListener(oyente);
+  }
+
+  /* Sincronizar entre pestañas abiertas */
+  window.addEventListener('storage', function (e) {
+    if (e.key === clave && (e.newValue === 'claro' || e.newValue === 'oscuro')) {
+      aplicar(e.newValue, false);
+    }
+  });
+
+  aplicar(preferido(), false);
+});
+
+/* ══════════════════════════════════════════════════════════════════════
    8. TECLADO y arranque
    ══════════════════════════════════════════════════════════════════════ */
 modulo('teclado', function () {

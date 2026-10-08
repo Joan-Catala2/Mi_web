@@ -18,8 +18,6 @@
 
   <!-- ================================================================
        PANTALLA DE CARGA
-       Sale al entrar en la web y al ir a portada / diario / contactar.
-       NO sale dentro del bar (platos, siguiente, ← atrás, entrar al bar).
        ================================================================ -->
   <div class="carga is-visible" id="carga" aria-hidden="true">
     <div class="carga__caja">
@@ -32,14 +30,12 @@
     </div>
   </div>
 
-    <!-- ================================================================
-       PORTADA — lo primero que se ve. Nombre en grande con el estilo
-       del bar + 3 botones: Conóceme (diario entero) · Contactar · Entrar (bar).
-       El nombre se parte en letras por JS para el encendido aleatorio.
+  <!-- ================================================================
+       PORTADA
        ================================================================ -->
   <section class="portada" id="portada" aria-labelledby="portada-title">
     <div class="portada__scan" aria-hidden="true"></div>
-    <div class="portada__luz" aria-hidden="true"></div>   <!-- destello de encendido -->
+    <div class="portada__luz" aria-hidden="true"></div>
 
     <p class="portada__eyebrow">Bachillerato · 1º DAM · C1 de valencià</p>
 
@@ -60,16 +56,15 @@
     </div>
 
     <p class="portada__nota">Casa Joan · No te iras sin conocerme</p>
-      <!-- [TEMA] botón flotante solo visible en la portada -->
-  <div class="tema-flotante">
-    <button class="btn3 btn3--tema" type="button" data-tema aria-pressed="false">☀ claro</button>
-  </div>
+
+    <!-- [TEMA] botón flotante solo visible en la portada -->
+    <div class="tema-flotante">
+      <button class="btn3 btn3--tema" type="button" data-tema aria-pressed="false">☀ claro</button>
+    </div>
   </section>
 
   <!-- ================================================================
-       DIARIO — la web entera. El cuerpo lo rellena script.js desde el
-       <template id="datosBar">, entrada por entrada, con botones de
-       navegación al final de cada una.
+       DIARIO — la web entera.
        ================================================================ -->
   <main class="diario" id="diario" aria-labelledby="diario-title">
 
@@ -77,32 +72,121 @@
       <a class="diario__marca" href="#diario-top">Joan Català Mateu</a>
       <button class="btn4" type="button" data-ir="portada">⌂ portada</button>
       <button class="btn4" type="button" data-ir="bar">☰ el bar</button>
-     
-            <button class="btn4" type="button" data-ir="contacto">✉ contactar</button>
-
-   
+      <button class="btn4" type="button" data-ir="contacto">✉ contactar</button>
       <button class="btn4" type="button" data-tema aria-pressed="false">☀ claro</button>
-  
     </div>
 
+    <!-- [MEJORA 4] barra de progreso de lectura (la mueve el JS del final) -->
+    <div class="lectura" aria-hidden="true">
+      <span class="lectura__barra" id="lecturaBarra"></span>
+      <span class="lectura__pct"></span>
+    </div>
+
+    <!-- ────────────────────────────────────────────────────────────
+         [MEJORA 1] CABECERA POTENTE + [MEJORA 6] foto protagonista
+         ──────────────────────────────────────────────────────────── -->
     <header class="diario__top" id="diario-top">
-      <p class="diario__eyebrow">Diario personal</p>
-      <h2 class="diario__title" id="diario-title">Joan Català Mateu</h2>
-      <p class="diario__phrase">Esgrima, viajar, inglés y proyectos con IA. Todo lo que sé de mí, en un solo sitio.</p>
+      <p class="hero__eyebrow">Diario personal · Casa Joan</p>
+      <h2 class="hero__name" id="diario-title">Joan Català Mateu</h2>
+      <p class="hero__roll">Estudiante de DAM · Esgrima · IA · Tecnología</p>
+      <p class="hero__frase">Construyendo proyectos mientras aprendo.</p>
+
+      <div class="hero__cuerpo">
+        <figure class="foto foto--hero" data-reveal>
+          <img src="img/joan.jpg" alt="Retrato de Joan Català Mateu"
+               onerror="this.closest('.foto').hidden=true">
+        </figure>
+        <div class="hero__texto">
+          <p>
+            Bachillerato terminado, primero de DAM en marcha y siete años de pista a la
+            espalda. Entreno, estudio y construyo. Cuando algo no funciona, lo mido, lo
+            corrijo y lo vuelvo a intentar mañana.
+          </p>
+          <ul class="hero__tags">
+            <li>DAM</li><li>IA</li><li>ESGRIMA</li><li>IDIOMAS</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- [MEJORA 2] el sumario se convierte en índice visual por JS -->
       <nav class="sumario" aria-label="Sumario del diario">
         <p class="sumario__label">En este diario</p>
         <ol class="sumario__lista" id="sumarioLista"><!-- la rellena script.js --></ol>
       </nav>
     </header>
 
+    <!-- ────────────────────────────────────────────────────────────
+         [MEJORA 5] ficha de perfil rápido
+         ──────────────────────────────────────────────────────────── -->
+    <section class="perfil" aria-label="Perfil rápido" data-reveal>
+      <p class="perfil__title">Ficha de la casa</p>
+      <div class="perfil__rejilla">
+        <div class="perfil__dato">
+          <span class="perfil__ico" aria-hidden="true">🎓</span>
+          <span class="perfil__k">Formación</span>
+          <span class="perfil__v">1º DAM · IES Simarro</span>
+        </div>
+        <div class="perfil__dato">
+          <span class="perfil__ico" aria-hidden="true">⚔️</span>
+          <span class="perfil__k">Deporte</span>
+          <span class="perfil__v">Esgrima · alto rendimiento</span>
+        </div>
+        <div class="perfil__dato">
+          <span class="perfil__ico" aria-hidden="true">🌍</span>
+          <span class="perfil__k">Idiomas</span>
+          <span class="perfil__v">Valenciano C1 · Inglés B2 en curso</span>
+        </div>
+        <div class="perfil__dato">
+          <span class="perfil__ico" aria-hidden="true">🤖</span>
+          <span class="perfil__k">Interés</span>
+          <span class="perfil__v">IA · programación · proyectos propios</span>
+        </div>
+      </div>
+    </section>
+
     <div class="diario__cuerpo" id="diarioCuerpo"><!-- las entradas, generadas --></div>
 
-    <!-- Contacto del diario: el botón Contactar aterriza aquí -->
+    <!-- ────────────────────────────────────────────────────────────
+         [MEJORA 8] línea temporal
+         ──────────────────────────────────────────────────────────── -->
+    <section class="linea" aria-label="Trayectoria">
+      <p class="linea__eyebrow">Trayectoria</p>
+      <ol class="linea__lista">
+        <li data-reveal>
+          <span class="linea__anio">2018</span>
+          <span class="linea__txt"><span class="linea__ico" aria-hidden="true">⚔️</span> Empiezo esgrima</span>
+        </li>
+        <li data-reveal>
+          <span class="linea__anio">2025</span>
+          <span class="linea__txt"><span class="linea__ico" aria-hidden="true">🎓</span> Termino Bachillerato</span>
+        </li>
+        <li data-reveal>
+          <span class="linea__anio">2025</span>
+          <span class="linea__txt"><span class="linea__ico" aria-hidden="true">💻</span> Empiezo 1º de DAM en el IES Simarro</span>
+        </li>
+        <li data-reveal>
+          <span class="linea__anio">2026</span>
+          <span class="linea__txt"><span class="linea__ico" aria-hidden="true">🤖</span> Empiezo a crear proyectos con IA</span>
+        </li>
+        <li class="is-futuro" data-reveal>
+          <span class="linea__anio">2026 →</span>
+          <span class="linea__txt"><span class="linea__ico" aria-hidden="true">🚀</span> Construyendo mi futuro</span>
+        </li>
+      </ol>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────────
+         [MEJORA 9] cierre de portfolio
+         ──────────────────────────────────────────────────────────── -->
     <section class="entrada entrada--contacto" id="contacto">
-      <h2>Hablemos</h2>
+      <p class="contacto__eyebrow">Cierre</p>
+      <h2>¿Hacemos algo juntos?</h2>
       <p>
-        Si quieres proponerme un proyecto, una colaboración o escribirme sobre lo que has leído,
-        puedes hacerlo por correo. Respondo en un plazo de veinticuatro horas.
+        Si has llegado hasta aquí, ya sabes un poco más de mí. Estoy aprendiendo, creando y
+        buscando nuevos proyectos donde aportar disciplina y criterio. Escríbeme y lo hablamos.
+      </p>
+      <p class="contacto__acciones">
+        <a class="cta" href="mailto:catalajoan19@gmail.com">✉ Contactar</a>
       </p>
       <p class="contacto__mail">
         <a href="mailto:catalajoan19@gmail.com">catalajoan19@gmail.com</a>
@@ -117,10 +201,9 @@
       <p class="diario__legal">© <span id="year">2025</span> Joan Català Mateu · página hecha a mano con HTML, CSS y JavaScript.</p>
     </section>
   </main>
+
   <!-- ================================================================
-       EL BAR · es la web entera. No hay portada, ni cabecera, ni pie.
-       Panel derecho con 3 vistas: carta · plato · contacto.
-       La escena de la izquierda la pinta script.js en el canvas.
+       EL BAR
        ================================================================ -->
     <section class="bar" id="bar" aria-labelledby="bar-title">
 
@@ -129,14 +212,12 @@
       <button class="bar__ini" type="button" data-ir="portada">⌂ portada</button>
       <button class="bar__ini" type="button" data-ir="diario">📖 diario</button>
       <button class="bar__ini" type="button" data-ir="contacto">✉ contactar</button>
-      <button class="bar__son" id="barSon" type="button" aria-pressed="false" data-carga="no">sonido: off</button>
-            <button class="bar__ini" type="button" data-ir="contacto">✉ contactar</button>
 
       <!-- [TEMA] modo claro / oscuro -->
       <button class="bar__ini" type="button" data-tema aria-pressed="false">☀ claro</button>
 
       <button class="bar__son" id="barSon" type="button" aria-pressed="false" data-carga="no">sonido: off</button>
-    
+
     </div>
 
     <div class="bar__marco">
@@ -201,7 +282,7 @@
             <li><a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a></li>
             <li><a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a></li>
           </ul>
-          <p class="contacto__legal">© <span id="year">2026</span> Joan Català Mateu · página hecha a mano.</p>
+          <p class="contacto__legal">© 2026 Joan Català Mateu · página hecha a mano.</p>
           <button class="jn-btn jn-btn--linea" id="barContactoBack" type="button">☰ la carta</button>
         </section>
 
@@ -213,9 +294,7 @@
 
   <!-- ════════════════════════════════════════════════════════════════
        DATOS · un <template> no se pinta en pantalla: es la despensa.
-       Cada <article> es un plato. Para añadir uno, copia y pega un
-       bloque entero cambiando id, título y textos. El menú de la
-       pizarra se genera solo a partir de esta lista.
+       Cada <article> es un plato.
        ════════════════════════════════════════════════════════════════ -->
   <template id="datosBar">
 
@@ -245,6 +324,11 @@
         La esgrima es un deporte de lectura: antes de atacar hay que entender qué está haciendo
         el contrario. Empecé con siete años menos de los que tengo ahora y nunca lo he dejado.
       </p>
+      <figure class="foto foto--lado" data-reveal>
+        <img src="img/esgrima.jpg" alt="Joan en la pista de esgrima" loading="lazy"
+             onerror="this.closest('.foto').hidden=true">
+        <figcaption>La pista: donde aprendí a revisar mis propios errores.</figcaption>
+      </figure>
       <h3>Recorrido deportivo</h3>
       <ul class="list">
         <li>Temporadas completas de competición autonómica, con resultados destacados.</li>
@@ -270,6 +354,11 @@
         salir del país. Me interesan los sitios lejanos, y no tanto los monumentos como la forma
         en que la gente de allí organiza su día.
       </p>
+      <figure class="foto foto--lado" data-reveal>
+        <img src="img/viaje.jpg" alt="Viaje de Joan fuera de España" loading="lazy"
+             onerror="this.closest('.foto').hidden=true">
+        <figcaption>Cada viaje, una prueba de desenvolverse solo.</figcaption>
+      </figure>
       <p>
         Viajar enseña una cosa muy práctica: saber desenvolverse solo. Coger un transporte que no
         entiendes, preguntar en un idioma que dominas a medias, llegar a la hora prevista.
@@ -346,17 +435,15 @@
       <blockquote>Medir, ejecutar, corregir un detalle y volver mañana. El mismo método en la pista y en el editor.</blockquote>
     </article>
 
-    <article class="post" id="proyectos">
+    <!-- [MEJORA 7] Proyectos como portfolio visual -->
+    <article class="post post--proyectos" id="proyectos">
       <header class="post__head">
         <h2>Proyectos</h2>
         <p class="post__meta">2025 · Lo que estoy construyendo</p>
       </header>
+
       
-      <ul class="list">
-        <li><a href="https://github.com/" target="_blank" rel="noopener">Marca personal (esta web)</a> — HTML, CSS y JS puros.</li>
-        <li><a href="https://github.com/" target="_blank" rel="noopener">Prototipo con IA</a> — idea → prueba en un día.</li>
-        <li><a href="https://github.com/" target="_blank" rel="noopener">Prácticas de DAM</a> — ejercicios y proyectos de clase.</li>
-      </ul>
+
       <p>
         <a class="btn" href="https://github.com/" target="_blank" rel="noopener">Ver todo en GitHub →</a>
       </p>
@@ -458,7 +545,7 @@
         Este apartado usa la API gratuita de Abstract API Countries con clave.
         Banderas, población, capital, idiomas y más, sin base de datos.
       </p>
-   
+
     </article>
         <article class="post" id="curiosidades">
       <header class="post__head">

@@ -1634,3 +1634,102 @@ html[data-tema="claro"] .entrada--contacto .contacto__redes a{ color:#3a2a1e; bo
   .mejoras .foto img{ transform:none }
   .lectura__barra{ transition:none }
 }
+/* ══════════════════════════════════════════════════════════════════════
+   [CARTA-MENÚ] índice del diario + texto ancho completo + detalles
+   Sustituye visualmente al sumario de rejilla. Estilo papel del bar.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── texto bajo el nombre: ancho completo (aunque no haya foto) ── */
+.mejoras .hero__cuerpo{ display:flex; flex-wrap:wrap; align-items:center; gap:22px; margin-top:26px }
+.mejoras .foto--hero{ flex:0 0 auto; width:min(250px,100%); margin:0 }
+.mejoras .hero__texto{ flex:1 1 340px; min-width:0 }
+.mejoras .hero__texto p{ margin:0; max-width:none;
+  font:400 clamp(15px,1.2vw,17px)/1.7 Karla,system-ui,sans-serif; color:rgba(255,243,221,.74) }
+
+/* ── la carta ── */
+.carta{ max-width:660px; margin:30px auto 0 }
+.carta__marco{
+  position:relative; padding:26px 26px 24px; text-align:left;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.022) 0 3px, transparent 3px 7px),
+    linear-gradient(160deg,#f6efdd,var(--jn-papel) 60%,#e3d7bd);
+  border:2px solid #cbbda0; box-shadow:8px 10px 0 rgba(0,0,0,.45);
+}
+/* doble línea interior: el efecto ╔═╗ */
+.carta__marco::after{
+  content:''; position:absolute; inset:6px; pointer-events:none;
+  border:1px solid rgba(138,90,58,.4);
+}
+.carta__title{
+  margin:0 0 4px; text-align:center;
+  font:700 clamp(13px,2vw,17px)/1.3 var(--jn-display);
+  letter-spacing:.18em; text-transform:uppercase; color:#5a2a20;
+}
+.carta__marco::before{ /* filete bajo el título */
+  content:''; display:block; width:120px; height:0; margin:10px auto 14px;
+  border-top:2px solid rgba(138,90,58,.45);
+}
+.carta__lista{ list-style:none; margin:0; padding:0; max-width:520px; margin-inline:auto }
+.carta__item{
+  display:flex; align-items:baseline; gap:10px; padding:9px 2px;
+  text-decoration:none; color:#2a1f18;
+  transition:background .2s;
+}
+.carta__item:hover{ background:rgba(176,94,31,.07) }
+.carta__num{
+  flex:0 0 auto; font:700 15px/1 var(--jn-display); color:#b05e1f;
+  transition:color .25s, text-shadow .25s, transform .25s;
+}
+/* detalle 3 · el número se enciende y crece un poco al pasar el ratón */
+.carta__item:hover .carta__num{
+  color:#7a3a10; text-shadow:0 0 8px rgba(176,94,31,.55); transform:scale(1.14);
+}
+.carta__item.is-activo .carta__num{ color:#a83a2a; text-shadow:0 0 6px rgba(168,58,42,.4) }
+.carta__dots{
+  flex:1 1 auto; min-width:14px; border-bottom:2px dotted rgba(138,90,58,.4);
+  transform:translateY(-.35em);
+}
+.carta__name{
+  flex:0 1 auto; font:400 11px/1.4 var(--jn-display);
+  letter-spacing:.08em; text-transform:uppercase; color:#2a1f18;
+}
+.carta__item.is-activo .carta__name{ color:#7a2a20 }
+.carta__empezar{
+  display:block; margin:18px auto 0; cursor:pointer;
+  font:700 10px/1 var(--jn-display); letter-spacing:.18em; text-transform:uppercase;
+  color:#f3ead6; background:#2a1f18; border:2px solid #2a1f18; padding:13px 20px;
+  box-shadow:3px 3px 0 rgba(42,31,24,.25);
+  transition:background .2s, color .2s, border-color .2s, transform .2s, box-shadow .2s;
+}
+.carta__empezar:hover{
+  background:var(--jn-rojo); border-color:var(--jn-rojo); color:#fff;
+  transform:translate(-1px,-1px); box-shadow:5px 5px 0 rgba(42,31,24,.3);
+}
+.carta__empezar:active{ transform:translate(2px,2px); box-shadow:0 0 0 }
+
+/* ── detalle 3 también en las entradas: número grande sutil al hover ── */
+.mejoras .entrada .num{ transition:color .3s, transform .3s }
+.mejoras .entrada:hover .num{ color:rgba(42,31,24,.22); transform:scale(1.06) }
+
+/* ── detalle 1 · barra de lectura un pelín más marcada ── */
+.lectura{ height:4px }
+.lectura__barra{ box-shadow:0 0 10px rgba(255,176,102,.7) }
+
+/* ── modo claro: la carta sigue siendo papel, solo suavizo sombras ── */
+html[data-tema="claro"] .carta__marco{ box-shadow:8px 10px 0 rgba(120,80,40,.16); border-color:#b89a72 }
+html[data-tema="claro"] .carta__title{ color:#5a3a22 }
+html[data-tema="claro"] .carta__marco::before{ border-top-color:rgba(138,90,58,.5) }
+html[data-tema="claro"] .carta__marco::after{ border-color:rgba(138,90,58,.5) }
+html[data-tema="claro"] .carta__item{ color:#2a1f18 }
+html[data-tema="claro"] .carta__item:hover{ background:rgba(176,94,31,.06) }
+html[data-tema="claro"] .carta__name{ color:#3a2a1e }
+html[data-tema="claro"] .carta__empezar{ color:#f6eede; background:#5a3a22; border-color:#5a3a22 }
+html[data-tema="claro"] .carta__empezar:hover{ background:#a83a2a; border-color:#a83a2a; color:#fff }
+
+@media (max-width:700px){
+  .carta__marco{ padding:22px 16px 20px }
+  .carta__name{ font-size:10px }
+}
+@media (prefers-reduced-motion:reduce){
+  .carta__num, .mejoras .entrada .num{ transition:none }
+}

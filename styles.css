@@ -1635,101 +1635,124 @@ html[data-tema="claro"] .entrada--contacto .contacto__redes a{ color:#3a2a1e; bo
   .lectura__barra{ transition:none }
 }
 /* ══════════════════════════════════════════════════════════════════════
-   [CARTA-MENÚ] índice del diario + texto ancho completo + detalles
-   Sustituye visualmente al sumario de rejilla. Estilo papel del bar.
+   [CARTA-3D] índice cilíndrico girable + animaciones temáticas (v2)
+   Perspectiva suave, sombra proyectada, profundidad y hover sutil.
    ══════════════════════════════════════════════════════════════════════ */
-
-/* ── texto bajo el nombre: ancho completo (aunque no haya foto) ── */
-.mejoras .hero__cuerpo{ display:flex; flex-wrap:wrap; align-items:center; gap:22px; margin-top:26px }
-.mejoras .foto--hero{ flex:0 0 auto; width:min(250px,100%); margin:0 }
-.mejoras .hero__texto{ flex:1 1 340px; min-width:0 }
-.mejoras .hero__texto p{ margin:0; max-width:none;
-  font:400 clamp(15px,1.2vw,17px)/1.7 Karla,system-ui,sans-serif; color:rgba(255,243,221,.74) }
-
-/* ── la carta ── */
-.carta{ max-width:660px; margin:30px auto 0 }
-.carta__marco{
-  position:relative; padding:26px 26px 24px; text-align:left;
+.carta3d{
+  position:relative; max-width:660px; margin:30px auto 0; padding:16px 16px 10px;
   background:
     repeating-linear-gradient(90deg, rgba(0,0,0,.022) 0 3px, transparent 3px 7px),
     linear-gradient(160deg,#f6efdd,var(--jn-papel) 60%,#e3d7bd);
   border:2px solid #cbbda0; box-shadow:8px 10px 0 rgba(0,0,0,.45);
+  user-select:none;
 }
-/* doble línea interior: el efecto ╔═╗ */
-.carta__marco::after{
-  content:''; position:absolute; inset:6px; pointer-events:none;
-  border:1px solid rgba(138,90,58,.4);
-}
-.carta__title{
-  margin:0 0 4px; text-align:center;
-  font:700 clamp(13px,2vw,17px)/1.3 var(--jn-display);
-  letter-spacing:.18em; text-transform:uppercase; color:#5a2a20;
-}
-.carta__marco::before{ /* filete bajo el título */
-  content:''; display:block; width:120px; height:0; margin:10px auto 14px;
-  border-top:2px solid rgba(138,90,58,.45);
-}
-.carta__lista{ list-style:none; margin:0; padding:0; max-width:520px; margin-inline:auto }
-.carta__item{
-  display:flex; align-items:baseline; gap:10px; padding:9px 2px;
-  text-decoration:none; color:#2a1f18;
-  transition:background .2s;
-}
-.carta__item:hover{ background:rgba(176,94,31,.07) }
-.carta__num{
-  flex:0 0 auto; font:700 15px/1 var(--jn-display); color:#b05e1f;
-  transition:color .25s, text-shadow .25s, transform .25s;
-}
-/* detalle 3 · el número se enciende y crece un poco al pasar el ratón */
-.carta__item:hover .carta__num{
-  color:#7a3a10; text-shadow:0 0 8px rgba(176,94,31,.55); transform:scale(1.14);
-}
-.carta__item.is-activo .carta__num{ color:#a83a2a; text-shadow:0 0 6px rgba(168,58,42,.4) }
-.carta__dots{
-  flex:1 1 auto; min-width:14px; border-bottom:2px dotted rgba(138,90,58,.4);
-  transform:translateY(-.35em);
-}
-.carta__name{
-  flex:0 1 auto; font:400 11px/1.4 var(--jn-display);
-  letter-spacing:.08em; text-transform:uppercase; color:#2a1f18;
-}
-.carta__item.is-activo .carta__name{ color:#7a2a20 }
-.carta__empezar{
-  display:block; margin:18px auto 0; cursor:pointer;
-  font:700 10px/1 var(--jn-display); letter-spacing:.18em; text-transform:uppercase;
-  color:#f3ead6; background:#2a1f18; border:2px solid #2a1f18; padding:13px 20px;
-  box-shadow:3px 3px 0 rgba(42,31,24,.25);
-  transition:background .2s, color .2s, border-color .2s, transform .2s, box-shadow .2s;
-}
-.carta__empezar:hover{
-  background:var(--jn-rojo); border-color:var(--jn-rojo); color:#fff;
-  transform:translate(-1px,-1px); box-shadow:5px 5px 0 rgba(42,31,24,.3);
-}
-.carta__empezar:active{ transform:translate(2px,2px); box-shadow:0 0 0 }
+.carta3d__fx{ position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:7 }
 
-/* ── detalle 3 también en las entradas: número grande sutil al hover ── */
-.mejoras .entrada .num{ transition:color .3s, transform .3s }
-.mejoras .entrada:hover .num{ color:rgba(42,31,24,.22); transform:scale(1.06) }
+/* escena + sombra proyectada bajo el cilindro */
+.carta3d__escena{ perspective:1500px; height:250px; display:grid; place-items:center; position:relative }
+.carta3d__escena::after{
+  content:''; position:absolute; bottom:2px; left:50%; width:250px; height:26px;
+  transform:translateX(-50%); z-index:0; pointer-events:none;
+  background:radial-gradient(ellipse at center, rgba(0,0,0,.42), transparent 70%);
+  filter:blur(6px);
+}
 
-/* ── detalle 1 · barra de lectura un pelín más marcada ── */
-.lectura{ height:4px }
-.lectura__barra{ box-shadow:0 0 10px rgba(255,176,102,.7) }
+/* el cilindro */
+.carta3d__cubo{
+  position:relative; z-index:1; width:320px; height:210px; transform-style:preserve-3d;
+  transform:translateZ(calc(-1 * var(--r))) rotateY(0deg);
+  transition:transform .7s cubic-bezier(.2,.8,.2,1);
+  cursor:grab; touch-action:pan-y; will-change:transform;
+}
+.carta3d__cubo.is-drag{ cursor:grabbing; transition:none }
 
-/* ── modo claro: la carta sigue siendo papel, solo suavizo sombras ── */
-html[data-tema="claro"] .carta__marco{ box-shadow:8px 10px 0 rgba(120,80,40,.16); border-color:#b89a72 }
-html[data-tema="claro"] .carta__title{ color:#5a3a22 }
-html[data-tema="claro"] .carta__marco::before{ border-top-color:rgba(138,90,58,.5) }
-html[data-tema="claro"] .carta__marco::after{ border-color:rgba(138,90,58,.5) }
-html[data-tema="claro"] .carta__item{ color:#2a1f18 }
-html[data-tema="claro"] .carta__item:hover{ background:rgba(176,94,31,.06) }
-html[data-tema="claro"] .carta__name{ color:#3a2a1e }
-html[data-tema="claro"] .carta__empezar{ color:#f6eede; background:#5a3a22; border-color:#5a3a22 }
-html[data-tema="claro"] .carta__empezar:hover{ background:#a83a2a; border-color:#a83a2a; color:#fff }
+/* cada cara = un apartado */
+.cara{
+  position:absolute; inset:0; backface-visibility:hidden;
+  display:flex; flex-direction:column; justify-content:center; gap:7px;
+  padding:18px 20px; text-align:center; border-radius:6px;
+  background:linear-gradient(160deg,#fffaf0,#efe0c4);
+  border:1px solid #c9a06a;
+  box-shadow:0 8px 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.6);
+  opacity:.28;
+  transform:rotateY(calc(var(--a) * 45deg)) translateZ(var(--r));
+  transition:opacity .35s ease, box-shadow .35s ease, transform .35s cubic-bezier(.2,.8,.2,1);
+}
+.cara.is-frente{
+  opacity:1;
+  box-shadow:0 16px 34px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.75);
+}
+/* hover SOLO en la cara frontal: se acerca un poco, sin exagerar */
+.cara.is-frente:hover{
+  transform:rotateY(calc(var(--a) * 45deg)) translateZ(calc(var(--r) + 16px)) translateY(-4px);
+  box-shadow:0 22px 44px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.8);
+}
 
-@media (max-width:700px){
-  .carta__marco{ padding:22px 16px 20px }
-  .carta__name{ font-size:10px }
+.cara__num{ font:700 26px/1 var(--jn-display); color:#b05e1f; text-shadow:0 1px 0 rgba(255,255,255,.6) }
+.cara__title{ margin:0; font:700 15px/1.3 var(--jn-display); letter-spacing:.06em; text-transform:uppercase; color:#2a1f18 }
+.cara__desc{ margin:0; font:400 16px/1.35 var(--jn-terminal); color:#5a3a22 }
+.cara__abrir{
+  align-self:center; margin-top:4px; cursor:pointer;
+  font:700 9px/1 var(--jn-display); letter-spacing:.14em; text-transform:uppercase;
+  color:#f3ead6; background:#2a1f18; border:2px solid #2a1f18; padding:8px 15px;
+  transition:background .2s, color .2s, border-color .2s;
+}
+.cara__abrir:hover{ background:var(--jn-rojo); border-color:var(--jn-rojo); color:#fff }
+
+/* controles */
+.carta3d__controles{ display:flex; align-items:center; justify-content:center; gap:14px; margin-top:8px }
+.carta3d__nav{
+  cursor:pointer; width:36px; height:36px; line-height:1;
+  font:700 14px/1 var(--jn-display); color:#2a1f18;
+  background:#e9dab9; border:2px solid #8a5a3a; box-shadow:2px 2px 0 rgba(120,80,40,.3);
+  transition:background .2s, color .2s, transform .15s, box-shadow .2s;
+}
+.carta3d__nav:hover{ background:var(--jn-rojo); color:#fff; transform:translate(-1px,-1px); box-shadow:4px 4px 0 rgba(120,80,40,.3) }
+.carta3d__puntos{ display:flex; gap:8px }
+.carta3d__puntos button{
+  width:9px; height:9px; padding:0; cursor:pointer; border-radius:50%;
+  background:rgba(90,58,34,.3); border:0; transition:background .25s, transform .25s;
+}
+.carta3d__puntos button.is-on{ background:#b05e1f; transform:scale(1.4) }
+.carta3d__pista{ margin:6px 0 0; text-align:center; font:400 14px/1 var(--jn-terminal); color:rgba(90,58,34,.5) }
+
+/* ── animaciones temáticas ── */
+.fx{ position:absolute; pointer-events:none; will-change:transform,opacity; z-index:8 }
+.fx--nota{ font:400 26px/1 var(--jn-terminal); color:#b05e1f; text-shadow:0 0 8px rgba(176,94,31,.4); animation:fxSube 1.1s ease-out forwards }
+.fx--avion{ font:400 22px/1 var(--jn-terminal); color:#7a3a10; animation:fxCruza 1s ease-in forwards }
+.fx--codigo{ font:400 20px/1 var(--jn-terminal); color:#2a1f18; animation:fxSube 1.2s ease-out forwards }
+.fx--globo{ font:400 20px/1 var(--jn-terminal); color:#5a3a22; animation:fxSube 1.1s ease-out forwards }
+.fx--chispa{ width:9px; height:9px; border-radius:50%; background:var(--jn-ambar); box-shadow:0 0 12px var(--jn-ambar); animation:fxPop .85s ease-out forwards }
+.fx--card{ width:16px; height:22px; background:#fffdf6; border:2px solid #8a5a3a; box-shadow:2px 2px 0 rgba(120,80,40,.3); animation:fxPop 1s ease-out forwards }
+.fx--destello{ width:11px; height:11px; border-radius:50%; background:#fff; box-shadow:0 0 16px #ffe0b8; animation:fxPop .75s ease-out forwards }
+.fx--corte{
+  left:-20%; top:50%; width:140%; height:3px; transform:rotate(-24deg) scaleX(0);
+  background:linear-gradient(90deg,transparent,#fff 20%,#fff 80%,transparent);
+  box-shadow:0 0 14px rgba(255,255,255,.85); animation:fxCorte .7s ease-out forwards;
+}
+.fx--corte::before,.fx--corte::after{ content:'✦'; position:absolute; top:-13px; font:400 17px/1 var(--jn-terminal); color:#ffe0b8 }
+.fx--corte::before{ left:8% } .fx--corte::after{ right:8% }
+@keyframes fxSube{ 0%{opacity:0; transform:translateY(24px) rotate(0)} 20%{opacity:1} 100%{opacity:0; transform:translateY(-96px) rotate(18deg)} }
+@keyframes fxCruza{ 0%{opacity:0; transform:translate(-30px,0) rotate(0)} 15%{opacity:1} 100%{opacity:0; transform:translate(380px,-34px) rotate(8deg)} }
+@keyframes fxPop{ 0%{opacity:0; transform:scale(.2)} 30%{opacity:1; transform:scale(1.25)} 100%{opacity:0; transform:scale(1) translateY(-34px)} }
+@keyframes fxCorte{ 0%{transform:rotate(-24deg) scaleX(0); opacity:0} 25%{transform:rotate(-24deg) scaleX(1); opacity:1} 70%{transform:rotate(-24deg) scaleX(1); opacity:1} 100%{transform:rotate(-24deg) scaleX(1); opacity:0} }
+
+/* modo claro */
+html[data-tema="claro"] .carta3d{ box-shadow:8px 10px 0 rgba(120,80,40,.16); border-color:#b89a72 }
+html[data-tema="claro"] .carta3d__escena::after{ background:radial-gradient(ellipse at center, rgba(120,80,40,.28), transparent 70%) }
+html[data-tema="claro"] .cara{ background:linear-gradient(160deg,#fffaf0,#f3e2c4); border-color:#b89a72; box-shadow:0 8px 18px rgba(120,80,40,.18), inset 0 1px 0 rgba(255,255,255,.7) }
+html[data-tema="claro"] .cara.is-frente{ box-shadow:0 16px 34px rgba(120,80,40,.28), inset 0 1px 0 rgba(255,255,255,.85) }
+html[data-tema="claro"] .cara__abrir{ color:#f6eede; background:#5a3a22; border-color:#5a3a22 }
+html[data-tema="claro"] .cara__abrir:hover{ background:#a83a2a; border-color:#a83a2a; color:#fff }
+html[data-tema="claro"] .carta3d__nav{ background:#f3e2c4; color:#2a1f18; box-shadow:2px 2px 0 rgba(120,80,40,.2) }
+html[data-tema="claro"] .carta3d__nav:hover{ background:#a83a2a; color:#fff }
+html[data-tema="claro"] .carta3d__puntos button.is-on{ background:#a83a2a }
+
+@media (max-width:560px){
+  .carta3d__escena{ height:210px }
+  .carta3d__cubo{ width:250px; height:170px }
 }
 @media (prefers-reduced-motion:reduce){
-  .carta__num, .mejoras .entrada .num{ transition:none }
+  .carta3d__cubo,.cara{ transition:none }
+  .fx{ animation-duration:.001ms!important }
 }

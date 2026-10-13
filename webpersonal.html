@@ -30,38 +30,35 @@
     </div>
   </div>
 
-  <!-- ================================================================
-       PORTADA
-       ================================================================ -->
-  <section class="portada" id="portada" aria-labelledby="portada-title">
-    <div class="portada__scan" aria-hidden="true"></div>
-    <div class="portada__luz" aria-hidden="true"></div>
+ <!-- ══ ÍNDICE ARCADE: las 3 tarjetas 3D de la referencia ══ -->
+<div class="plataforma">
+  <p class="plataforma__rotulo">CASA JOAN <span>· MI ESPACIO · MI HISTORIA</span></p>
 
-    <p class="portada__eyebrow">Bachillerato · 1º DAM · C1 de valencià</p>
+  <div class="arcade-fila">
+    <button class="tarjeta3d tarjeta3d--azul" type="button" data-ir="diario"
+            aria-label="Conóceme — abrir el diario">
+      <span class="tarjeta3d__ico" aria-hidden="true">👤</span>
+      <span class="tarjeta3d__tit">Conóceme</span>
+      <span class="tarjeta3d__sub">Mi historia</span>
+    </button>
 
-    <h1 class="portada__name" id="portada-title">
-      <span class="palabra">Joan</span>
-      <span class="palabra gold">Català</span>
-      <span class="palabra">Mateu</span>
-    </h1>
+    <button class="tarjeta3d tarjeta3d--naranja" type="button" data-ir="bar"
+            aria-label="Entrar — abrir el bar">
+      <span class="tarjeta3d__ico" aria-hidden="true">🎮</span>
+      <span class="tarjeta3d__tit">Entrar</span>
+      <span class="tarjeta3d__sub">El bar</span>
+    </button>
 
-    <p class="portada__desc">
-      Esgrimista de alto rendimiento, estudiante de DAM y futuro creando proyectos con IA.
-    </p>
+    <button class="tarjeta3d tarjeta3d--verde" type="button" data-ir="contacto"
+            aria-label="Contactar — escribirme">
+      <span class="tarjeta3d__ico" aria-hidden="true">✉️</span>
+      <span class="tarjeta3d__tit">Contactar</span>
+      <span class="tarjeta3d__sub">Escríbeme</span>
+    </button>
+  </div>
 
-    <div class="portada__cta">
-      <button class="btn3 btn3--laton" type="button" data-ir="diario">Conóceme</button>
-      <button class="btn3"             type="button" data-ir="contacto">Contactar</button>
-      <button class="btn3"             type="button" data-ir="bar">Entrar</button>
-    </div>
-
-    <p class="portada__nota">Casa Joan · No te irás sin conocerme</p>
-
-    <!-- [TEMA] botón flotante solo visible en la portada -->
-    <div class="tema-flotante">
-      <button class="btn3 btn3--tema" type="button" data-tema aria-pressed="false">☀ claro</button>
-    </div>
-  </section>
+  <div class="plataforma__base" aria-hidden="true"></div>
+</div>
 
   <!-- ================================================================
        DIARIO — la web entera.
@@ -119,6 +116,7 @@
 
             <article class="cara" data-cara data-id="sobre-mi" data-tema="destello" style="--a:0">
               <span class="cara__num">01</span>
+              <span class="cara__ico" aria-hidden="true">🧭</span> 
               <h3 class="cara__title">Quién soy</h3>
               <p class="cara__desc">Mi forma de trabajar: medir, ejecutar, corregir.</p>
               <button class="cara__abrir" type="button" data-abrir="sobre-mi">Entrar →</button>
@@ -126,6 +124,7 @@
 
             <article class="cara" data-cara data-id="esgrima" data-tema="corte" style="--a:1">
               <span class="cara__num">02</span>
+              <span class="cara__ico" aria-hidden="true">⚔️</span> 
               <h3 class="cara__title">Siete años de esgrima</h3>
               <p class="cara__desc">Disciplina, pista y el hábito de revisar el error.</p>
               <button class="cara__abrir" type="button" data-abrir="esgrima">Entrar →</button>
@@ -133,6 +132,7 @@
 
             <article class="cara" data-cara data-id="viajar" data-tema="viaje" style="--a:2">
               <span class="cara__num">03</span>
+              <span class="cara__ico" aria-hidden="true">✈️</span>
               <h3 class="cara__title">Viajar</h3>
               <p class="cara__desc">Experiencias fuera de casa para desenvolverse solo.</p>
               <button class="cara__abrir" type="button" data-abrir="viajar">Entrar →</button>
@@ -140,6 +140,7 @@
 
             <article class="cara" data-cara data-id="musica" data-tema="musica" style="--a:3">
               <span class="cara__num">04</span>
+              <span class="cara__ico" aria-hidden="true">🎧</span> 
               <h3 class="cara__title">Música</h3>
               <p class="cara__desc">Una herramienta diaria, no un adorno.</p>
               <button class="cara__abrir" type="button" data-abrir="musica">Entrar →</button>
@@ -147,6 +148,7 @@
 
             <article class="cara" data-cara data-id="ingles" data-tema="idioma" style="--a:4">
               <span class="cara__num">05</span>
+              <span class="cara__ico" aria-hidden="true">🗣️</span>
               <h3 class="cara__title">Aprender inglés</h3>
               <p class="cara__desc">Independencia para moverme sin depender de nadie.</p>
               <button class="cara__abrir" type="button" data-abrir="ingles">Entrar →</button>
@@ -154,6 +156,7 @@
 
             <article class="cara" data-cara data-id="estudios" data-tema="codigo" style="--a:5">
               <span class="cara__num">06</span>
+              <span class="cara__ico" aria-hidden="true">🎓</span> 
               <h3 class="cara__title">Estudios</h3>
               <p class="cara__desc">Bachillerato, 1º DAM y el C1 de valenciano.</p>
               <button class="cara__abrir" type="button" data-abrir="estudios">Entrar →</button>
@@ -161,6 +164,7 @@
 
             <article class="cara" data-cara data-id="ia" data-tema="ia" style="--a:6">
               <span class="cara__num">07</span>
+              <span class="cara__ico" aria-hidden="true">🤖</span>  
               <h3 class="cara__title">Inteligencia artificial</h3>
               <p class="cara__desc">Vivir de crear. Prototipo al día, criterio primero.</p>
               <button class="cara__abrir" type="button" data-abrir="ia">Entrar →</button>
@@ -168,6 +172,7 @@
 
             <article class="cara" data-cara data-id="proyectos" data-tema="proyectos" style="--a:7">
               <span class="cara__num">08</span>
+              <span class="cara__ico" aria-hidden="true">🚀</span>
               <h3 class="cara__title">Mis proyectos</h3>
               <p class="cara__desc">Lo que estoy construyendo ahora mismo.</p>
               <button class="cara__abrir" type="button" data-abrir="proyectos">Entrar →</button>

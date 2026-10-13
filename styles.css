@@ -778,7 +778,7 @@ body[data-pantalla="diario"] { overflow-y:auto }
 
 
 /* ══════════════════════════════════════════════════════════════════════
-   BLOQUE PAÍSES · Abstract API Countries (gratis, con clave, sin base de datos)
+   BLOQUE PAÍSES · countries.dev (gratis, sin clave, sin base de datos)
    ══════════════════════════════════════════════════════════════════════ */
 .paises{
   margin:18px 0 22px;
@@ -1755,4 +1755,114 @@ html[data-tema="claro"] .carta3d__puntos button.is-on{ background:#a83a2a }
 @media (prefers-reduced-motion:reduce){
   .carta3d__cubo,.cara{ transition:none }
   .fx{ animation-duration:.001ms!important }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   [MEJORA v13] CARTA-3D PRO · Volver al índice · reintentos de APIs
+   Bloque NUEVO al final: solo refina lo existente, no rompe nada.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Iluminación dinámica de las caras (la pone el JS con --luz) ── */
+.carta3d .cara{
+  transform:rotateY(var(--giro, calc(var(--a) * 45deg))) translateZ(var(--r));
+}
+.carta3d .cara::after{
+  content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:linear-gradient(180deg,
+    rgb(255 255 255 / calc(var(--luz,.5) * .14)),
+    rgb(255 255 255 / 0) 42%);
+  background-color:rgb(12 8 6 / calc((1 - var(--luz,.5)) * .5));
+  transition:background-color .25s ease;
+}
+.carta3d .cara.is-frente::after{
+  background-color:rgb(12 8 6 / 0);
+}
+
+/* ── Cara frontal: brillo ámbar al pasar el ratón y respuesta al pulsar ── */
+.carta3d .cara.is-frente:hover{
+  box-shadow:0 22px 44px rgba(0,0,0,.5),
+             0 0 0 2px rgba(255,176,102,.55),
+             0 0 30px rgba(255,176,102,.22),
+             inset 0 1px 0 rgba(255,255,255,.8);
+}
+.carta3d .cara__abrir{
+  box-shadow:2px 2px 0 rgba(0,0,0,.25);
+  transition:background .2s, color .2s, border-color .2s, transform .12s, box-shadow .12s;
+}
+.carta3d .cara__abrir:active{
+  transform:translate(2px,2px); box-shadow:0 0 0 rgba(0,0,0,0);
+}
+
+/* ── Foco visible en todos los controles del índice ── */
+.carta3d .cara__abrir:focus-visible,
+.carta3d .carta3d__nav:focus-visible,
+.carta3d .carta3d__puntos button:focus-visible,
+.carta3d:focus-visible{
+  outline:2px solid var(--jn-ambar);
+  outline-offset:3px;
+}
+
+/* ── Cara resaltada por scroll (sincronizada con el lector) ── */
+.carta3d .cara.is-activo{
+  border-color:var(--jn-ambar);
+  box-shadow:0 8px 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.6),
+             0 0 0 2px rgba(255,176,102,.35);
+}
+html[data-tema="claro"] .carta3d .cara.is-activo{
+  box-shadow:0 8px 18px rgba(120,80,40,.18), inset 0 1px 0 rgba(255,255,255,.7),
+             0 0 0 2px rgba(176,94,31,.4);
+}
+
+/* ── Táctil: objetivos más grandes en pantallas medianas/pequeñas ── */
+@media (max-width:760px){
+  .carta3d__escena{ height:232px }
+  .carta3d__cubo{ width:280px; height:186px }
+  .carta3d__nav{ width:44px; height:44px; font-size:16px }
+  .carta3d__puntos button{ width:12px; height:12px }
+  .carta3d__puntos{ gap:10px }
+  .cara__desc{ font-size:15px }
+}
+@media (max-width:560px){
+  .carta3d__escena{ height:212px }
+  .carta3d__cubo{ width:240px; height:168px }
+}
+
+/* ── Botón «Volver al índice» en cada apartado ── */
+.entrada__volver{
+  display:inline-flex; align-items:center; gap:9px; cursor:pointer;
+  margin:0 0 16px; padding:9px 13px;
+  font:700 9px/1 var(--jn-display); letter-spacing:.14em; text-transform:uppercase;
+  color:#5a3a22; background:rgba(90,58,34,.07);
+  border:1px solid rgba(90,58,34,.4);
+  box-shadow:2px 2px 0 rgba(120,80,40,.14);
+  transition:background .2s, color .2s, border-color .2s, transform .15s, box-shadow .15s;
+}
+.entrada__volver:hover{
+  background:#2a1f18; color:#f3ead6; border-color:#2a1f18;
+  transform:translate(-1px,-1px); box-shadow:4px 4px 0 rgba(120,80,40,.2);
+}
+.entrada__volver:active{ transform:translate(1px,1px); box-shadow:0 0 0 }
+.entrada__volver:focus-visible{ outline:2px solid var(--jn-ambar); outline-offset:2px }
+.entrada__volver .entrada__pos{ opacity:.65; font-weight:400; letter-spacing:.1em }
+html[data-tema="claro"] .entrada__volver{ color:#5a3a22; background:rgba(138,90,58,.1); border-color:rgba(138,90,58,.5) }
+html[data-tema="claro"] .entrada__volver:hover{ background:#5a3a22; color:#f6eede; border-color:#5a3a22 }
+
+/* ── Botón «Reintentar» en las herramientas cuando algo falla ── */
+.estado-reintento{
+  display:inline-block; margin:12px 0 4px; padding:9px 13px; cursor:pointer;
+  font:700 9px/1 var(--jn-display); letter-spacing:.12em; text-transform:uppercase;
+  color:#fff; background:var(--jn-rojo); border:2px solid var(--jn-rojo);
+  box-shadow:2px 2px 0 rgba(0,0,0,.3);
+  transition:transform .15s, box-shadow .15s, background .2s;
+}
+.estado-reintento:hover{ transform:translate(-1px,-1px); box-shadow:4px 4px 0 rgba(0,0,0,.32); background:#a83a2a; border-color:#a83a2a }
+.estado-reintento:active{ transform:translate(1px,1px); box-shadow:0 0 0 }
+.estado-reintento:focus-visible{ outline:2px solid var(--jn-ambar); outline-offset:2px }
+
+@media (prefers-reduced-motion:reduce){
+  .carta3d .cara::after,
+  .carta3d .cara__abrir,
+  .entrada__volver,
+  .estado-reintento{ transition:none }
 }

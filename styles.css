@@ -2228,4 +2228,130 @@ html[data-tema="claro"] .paises__campo input{ background:#fff; border-color:var(
 }
 @media (prefers-reduced-motion:reduce){
   .tarjeta3d, .tarjeta3d:hover{ transition:none; transform:none }
+}/* ══════════════════════════════════════════════════════════════════════
+   [ARCADE v15.1] portada completa + índice legible en modo claro
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Portada: contenido apilado y centrado; si no cabe, se puede scrollear
+   (no toco 'display': sigue mandando la regla body[data-pantalla=...]) */
+.portada{
+  place-items:center; align-content:safe center;
+  gap:clamp(10px,2vh,18px);
+  padding:clamp(26px,6vh,60px) clamp(16px,4vw,28px);
+  overflow:auto;
 }
+.portada__eyebrow{
+  margin:0; font:400 clamp(9px,1.4vw,12px)/1 var(--jn-display);
+  letter-spacing:.26em; text-transform:uppercase; color:var(--jn-laton);
+}
+.portada__name{ margin:0 }
+.portada__roll{
+  margin:0; font:400 clamp(10px,1.5vw,13px)/1.6 var(--jn-display);
+  letter-spacing:.16em; text-transform:uppercase; color:var(--jn-ambar);
+}
+.portada__frase{
+  margin:0; max-width:44ch;
+  font:400 clamp(16px,2.1vw,21px)/1.35 var(--jn-terminal); color:rgba(230,237,243,.78);
+}
+.portada__tags{
+  list-style:none; display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:0; padding:0;
+}
+.portada__tags li{
+  font:700 9px/1 var(--jn-display); letter-spacing:.16em; text-transform:uppercase;
+  padding:8px 10px; color:var(--jn-laton);
+  background:rgba(56,189,248,.08); border:1px dashed rgba(232,192,122,.45);
+}
+.plataforma{ margin-top:clamp(10px,2.4vh,22px) }
+
+/* Portada en modo claro */
+html[data-tema="claro"] .portada__eyebrow{ color:#8a5a3a }
+html[data-tema="claro"] .portada__name{ color:#16233c }
+html[data-tema="claro"] .portada__name .letra.is-on{
+  text-shadow:0 0 6px rgba(194,87,26,.4), 0 0 22px rgba(194,87,26,.22);
+}
+html[data-tema="claro"] .portada__roll{ color:#c2571a }
+html[data-tema="claro"] .portada__frase{ color:rgba(22,35,60,.78) }
+html[data-tema="claro"] .portada__tags li{
+  color:#8a5a3a; background:rgba(29,111,209,.08); border-color:rgba(138,90,58,.45);
+}
+
+/* ── Índice 3D: caras con contraste real en modo claro ── */
+html[data-tema="claro"] .carta3d{
+  background:#fff; border-color:#c3d0e2;
+  box-shadow:0 0 0 1px rgba(194,87,26,.2), 0 16px 34px var(--jn-sombra);
+}
+html[data-tema="claro"] .carta3d__escena::after{
+  background:radial-gradient(ellipse at center, rgba(60,80,110,.18), transparent 70%);
+}
+html[data-tema="claro"] .carta3d .cara{
+  background:linear-gradient(165deg,#ffffff,#eef3fa);
+  border-color:#c3d0e2;
+  box-shadow:0 10px 22px var(--jn-sombra);
+}
+html[data-tema="claro"] .carta3d .cara::after{
+  background-color:rgb(232 237 245 / calc((1 - var(--luz,.5)) * .45));
+}
+html[data-tema="claro"] .carta3d .cara.is-frente{
+  border-color:#c2571a;
+  box-shadow:0 0 0 2px rgba(194,87,26,.3), 0 16px 34px var(--jn-sombra);
+}
+html[data-tema="claro"] .carta3d .cara.is-activo{
+  border-color:#1d6fd1; box-shadow:0 0 0 2px rgba(29,111,209,.35);
+}
+html[data-tema="claro"] .cara__num{ color:#c2571a }
+html[data-tema="claro"] .cara__ico{ filter:none }
+html[data-tema="claro"] .cara__title{ color:#16233c }
+html[data-tema="claro"] .cara__desc{ color:#4a5a74 }
+html[data-tema="claro"] .cara__abrir{ background:#fff; border-color:#c2571a; color:#c2571a }
+html[data-tema="claro"] .cara__abrir:hover{ background:#c2571a; color:#fff }
+html[data-tema="claro"] .carta3d__nav{ background:#fff; border-color:#8a5a3a; color:#16233c }
+html[data-tema="claro"] .carta3d__nav:hover{ background:#c2571a; color:#fff }
+html[data-tema="claro"] .carta3d__puntos button{ background:rgba(36,50,72,.22) }
+html[data-tema="claro"] .carta3d__puntos button.is-on{ background:#c2571a }
+html[data-tema="claro"] .carta3d__pista{ color:rgba(36,50,72,.55) }
+/* ══════════════════════════════════════════════════════════════════════
+   [ARCADE v15.2] índice 3D legible en modo claro (con !important para
+   ganar a cualquier regla previa) + color-scheme
+   ══════════════════════════════════════════════════════════════════════ */
+html[data-tema="claro"]{ color-scheme: light; }
+
+html[data-tema="claro"] .carta3d{
+  background:#ffffff !important;
+  border-color:#c3d0e2 !important;
+  box-shadow:0 0 0 1px rgba(194,87,26,.2), 0 16px 34px var(--jn-sombra) !important;
+}
+html[data-tema="claro"] .carta3d__escena{ background:#eef3fa !important; }
+html[data-tema="claro"] .carta3d__escena::after{
+  background:radial-gradient(ellipse at center, rgba(60,80,110,.16), transparent 70%) !important;
+}
+html[data-tema="claro"] .carta3d .cara{
+  background:linear-gradient(165deg,#ffffff,#eef3fa) !important;
+  border-color:#c3d0e2 !important;
+  box-shadow:0 10px 22px var(--jn-sombra) !important;
+}
+html[data-tema="claro"] .carta3d .cara::after{
+  background-color:rgb(232 237 245 / calc((1 - var(--luz,.5)) * .4)) !important;
+}
+html[data-tema="claro"] .carta3d .cara.is-frente{
+  border-color:#c2571a !important;
+  box-shadow:0 0 0 2px rgba(194,87,26,.3), 0 16px 34px var(--jn-sombra) !important;
+}
+html[data-tema="claro"] .carta3d .cara.is-activo{
+  border-color:#1d6fd1 !important;
+  box-shadow:0 0 0 2px rgba(29,111,209,.35) !important;
+}
+html[data-tema="claro"] .cara__num{ color:#c2571a !important; }
+html[data-tema="claro"] .cara__ico{ filter:none !important; }
+html[data-tema="claro"] .cara__title{ color:#16233c !important; }
+html[data-tema="claro"] .cara__desc{ color:#4a5a74 !important; }
+html[data-tema="claro"] .cara__abrir{
+  background:#ffffff !important; border-color:#c2571a !important; color:#c2571a !important;
+}
+html[data-tema="claro"] .cara__abrir:hover{ background:#c2571a !important; color:#ffffff !important; }
+html[data-tema="claro"] .carta3d__nav{
+  background:#ffffff !important; border-color:#8a5a3a !important; color:#16233c !important;
+}
+html[data-tema="claro"] .carta3d__nav:hover{ background:#c2571a !important; color:#ffffff !important; }
+html[data-tema="claro"] .carta3d__puntos button{ background:rgba(36,50,72,.22) !important; }
+html[data-tema="claro"] .carta3d__puntos button.is-on{ background:#c2571a !important; }
+html[data-tema="claro"] .carta3d__pista{ color:rgba(36,50,72,.55) !important; }

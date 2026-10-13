@@ -1672,4 +1672,157 @@ modulo('conoceme', function () {
   }
 });
 
+/* ══════════════════════════════════════════════════════════════════════
+   10. [CARTA-3D] índice cilíndrico girable + animaciones temáticas
+   ──────────────────────────────────────────────────────────────────────
+   AÑADIDO NUEVO (v13): NO toca nada de lo anterior.
+   El propio JS RELLENA el texto de cada cara (num/título/descripción/botón)
+   leyendo data-id, así el texto aparece aunque el HTML de la cara esté vacío.
+   Arrastra el cubo (ratón o dedo) para girar: inercia + enganche a la cara
+   frontal. Flechas ◀ ▶, puntos indicadores y ← → también giran.
+   Al pasar una cara a frente suelta su animación temática (notas, corte,
+   aviones, código, chispas, tarjetas, destello…).
+   ══════════════════════════════════════════════════════════════════════ */
+modulo('carta3d', function () {
+  var cubo = document.getElementById('cubo');
+  var fx   = document.getElementById('cartaFx');
+  var puntosBox = document.getElementById('cuboPuntos');
+  if (!cubo || !puntosBox) return;
+  var caras = $$('[data-cara]', cubo);
+  var N = caras.length; if (!N) return;
+  var paso = 360 / N;
+  var rot = 0, activo = 0;
+
+  /* contenido de cada cara (por data-id) — el texto lo pone el JS */
+  var CARAS3D = {
+    'sobre-mi' : { n:'01', title:'Quién soy',                desc:'Mi forma de trabajar: medir, ejecutar, corregir.', tema:'destello' },
+    'esgrima'  : { n:'02', title:'Siete años de esgrima',    desc:'Disciplina, pista y el hábito de revisar el error.', tema:'corte' },
+    'viajar'   : { n:'03', title:'Viajar',                   desc:'Experiencias fuera de casa para valerte por ti.', tema:'viaje' },
+    'musica'   : { n:'04', title:'Música',                   desc:'Una herramienta diaria, no un adorno.', tema:'musica' },
+    'ingles'   : { n:'05', title:'Aprender inglés',          desc:'Independencia para moverte sin depender de nadie.', tema:'idioma' },
+    'estudios' : { n:'06', title:'Estudios',                 desc:'Bachillerato, 1º DAM y el C1 de valenciano.', tema:'codigo' },
+    'ia'       : { n:'07', title:'Inteligencia artificial',  desc:'Vivir de crear. Prototipo al día, criterio primero.', tema:'ia' },
+    'proyectos': { n:'08', title:'Mis proyectos',            desc:'Lo que estoy construyendo ahora mismo.', tema:'proyectos' }
+  };
+
+  /* 1 · relleno de caras (texto garantizado) */
+  caras.forEach(function (c, i) {
+    var id = c.dataset.id, d = CARAS3D[id];
+    if (!c.style.getPropertyValue('--a')) c.style.setProperty('--a', i);
+    if (d) {
+      c.dataset.tema = c.dataset.tema || d.tema;
+      c.innerHTML =
+        '<span class="cara__num">' + d.n + '</span>' +
+        '<h3 class="cara__title">' + d.title + '</h3>' +
+        '<p class="cara__desc">' + d.desc + '</p>' +
+        '<button class="cara__abrir" type="button" data-abrir="' + id + '">Abrir →</button>';
+    }
+  });
+
+  /* 2 · puntos indicadores */
+  var puntos = [];
+  caras.forEach(function (c, i) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.setAttribute('role', 'tab');
+    b.setAttribute('aria-label', 'Ir a ' + (c.dataset.id || 'sección ' + (i + 1)));
+    on(b, 'click', function () { irA(i); });
+    puntosBox.appendChild(b); puntos.push(b);
+  });
+
+  function marcarFrente(){
+    caras.forEach(function (c, i) { c.classList.toggle('is-frente', i === activo); });
+    puntos.forEach(function (p, i) { p.classList.toggle('is-on', i === activo); });
+  }
+  function aplicar(){
+    cubo.style.transform = 'translateZ(calc(-1 * var(--r))) rotateY(' + rot + 'deg)';
+    var idx = ((Math.round(rot / paso) % N) + N) % N;
+    if (idx !== activo) { activo = idx; marcarFrente(); fxTema(caras[activo].dataset.tema); }
+    else marcarFrente();
+  }
+  function irA(i){ rot = -i * paso; aplicar(); }
+  function irPaso(d){ rot -= d * paso; aplicar(); }
+
+  /* 3 · animación temática según la cara que pasa a frente */
+  function fxTema(tema){
+    if (REDUCED || !fx) return;
+    var set = {
+      musica:   { cls:'fx--nota',     glifos:['♪','♫','♬','♩'], n:8 },
+      viaje:    { cls:'fx--avion',    glifos:['✈'],             n:3 },
+      codigo:   { cls:'fx--codigo',   glifos:['{ }','</>','( )',';'], n:7 },
+      idioma:   { cls:'fx--globo',    glifos:['“ ”','Aa','Bb','¿?'], n:6 },
+      ia:       { cls:'fx--chispa',   glifos:null,               n:12 },
+      proyectos:{ cls:'fx--card',     glifos:null,               n:5 },
+      destello: { cls:'fx--destello', glifos:null,               n:9 },
+      corte:    { cls:'fx--corte',    glifos:null,               n:1 }
+    }[tema] || { cls:'fx--destello', glifos:null, n:6 };
+
+    for (var k = 0; k < set.n; k++) {
+      var s = document.createElement('span');
+      s.className = 'fx ' + set.cls;
+      if (set.cls !== 'fx--corte') {
+        s.style.left = (12 + Math.random() * 76) + '%';
+        s.style.top  = (55 + Math.random() * 30) + '%';
+        s.style.animationDelay = (Math.random() * .25) + 's';
+        if (set.glifos) s.textContent = pick(set.glifos);
+      }
+      fx.appendChild(s);
+      (function (el) { setTimeout(function () { el.remove(); }, 1300); })(s);
+    }
+    Sonido.tintir();
+  }
+
+  /* 4 · arrastre con inercia + enganche */
+  var arrastrando = false, lastX = 0, moved = 0, vel = 0;
+  function down(x){ arrastrando = true; lastX = x; moved = 0; vel = 0; cubo.classList.add('is-drag'); }
+  function move(x){
+    if (!arrastrando) return;
+    var d = x - lastX; lastX = x; moved += Math.abs(d); vel = d;
+    rot += d * 0.35;
+    cubo.style.transform = 'translateZ(calc(-1 * var(--r))) rotateY(' + rot + 'deg)';
+    var idx = ((Math.round(rot / paso) % N) + N) % N;
+    if (idx !== activo) { activo = idx; marcarFrente(); }
+  }
+  function up(){
+    if (!arrastrando) return;
+    arrastrando = false; cubo.classList.remove('is-drag');
+    if (moved < 4) { aplicar(); return; }          /* fue un click, no un arrastre */
+    rot += vel * 6;                                 /* inercia */
+    rot = Math.round(rot / paso) * paso;            /* enganche a la cara más cercana */
+    aplicar();
+  }
+  cubo.addEventListener('pointerdown', function (e) {
+    if (e.target.closest && e.target.closest('button')) return;   /* no bloqueamos Abrir/◀▶ */
+    down(e.clientX);
+    try { cubo.setPointerCapture(e.pointerId); } catch (_){}
+  });
+  cubo.addEventListener('pointermove', function (e) { if (arrastrando) move(e.clientX); });
+  cubo.addEventListener('pointerup', up);
+  cubo.addEventListener('pointercancel', up);
+  cubo.addEventListener('lostpointercapture', up);
+
+  /* 5 · flechas ◀ ▶ */
+  on(document.getElementById('cuboPrev'), 'click', function () { irPaso(-1); });
+  on(document.getElementById('cuboNext'), 'click', function () { irPaso(1); });
+
+  /* 6 · teclado sobre la carta (← →) */
+  var zona = cubo.closest('.carta3d');
+  if (zona) {
+    zona.setAttribute('tabindex', '0');
+    on(zona, 'keydown', function (e) {
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); irPaso(-1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); irPaso(1); }
+    });
+  }
+
+  /* 7 · botón "Abrir →" de cada cara */
+  on(cubo, 'click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-abrir]'); if (!b) return;
+    var t = document.getElementById(b.getAttribute('data-abrir'));
+    if (t) t.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth' });
+  });
+
+  /* estado inicial */
+  marcarFrente(); aplicar();
+});
+
 })();

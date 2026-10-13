@@ -1,9 +1,8 @@
 /* ══════════════════════════════════════════════════════════════════════
-   script.js v15 · Joan Català Mateu  (tema ARCADE)
-   v15 = v14 +:
-     · modulo('tilt'): inclinación 3D suave en las .tarjeta3d de la portada
-     · CARAS3D con icono (coherente con el HTML)
-     · resto idéntico: portada, diario, bar, APIs, tema, carga, teclado
+   script.js v15.2 · Joan Català Mateu (tema ARCADE)
+   [v15.2] FIX índice: las caras del carrusel ya no usan data-tema (colisionaba
+           con el botón claro/oscuro). Ahora usan data-fx. El módulo 'tema' solo
+           captura <button data-tema>.
    ══════════════════════════════════════════════════════════════════════ */
 (function () {
 'use strict';
@@ -115,7 +114,7 @@ function iconoClima(code) {
 }
 function climaUrl() {
   var cfg = window.CASA_JOAN_CONFIG || {};
-  if (cfg.climaUrl) return cfg.climaUrl; /* proxy: la clave no viaja al cliente */
+  if (cfg.climaUrl) return cfg.climaUrl;
   var params = new URLSearchParams();
   params.set('units', CLIMA.unidades); params.set('lang', CLIMA.lang); params.set('appid', CLIMA.key);
   if (CLIMA.lat != null && CLIMA.lon != null) { params.set('lat', CLIMA.lat); params.set('lon', CLIMA.lon); }
@@ -544,7 +543,6 @@ function animarPortada() {
   portadaTimer = setTimeout(encender, 140);
 }
 
-/* [v15] inclinación 3D suave de las tarjetas arcade */
 modulo('tilt', function () {
   if (REDUCED) return;
   $$('.tarjeta3d').forEach(function (t) {
@@ -747,7 +745,7 @@ function saltarTexto() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   6. ESCENA PIXEL-ART (canvas) — sin cambios
+   6. ESCENA PIXEL-ART (canvas)
    ══════════════════════════════════════════════════════════════════════ */
 var Escena = (function () {
   var cv = document.getElementById('barCanvas');
@@ -1070,9 +1068,12 @@ modulo('carga', function () {
 
 /* ══════════════════════════════════════════════════════════════════════
    7c. TEMA CLARO / OSCURO
+   [v15.2] solo captura <button data-tema> (antes captaba también las caras
+           del carrusel, que llevaban data-tema por error).
    ══════════════════════════════════════════════════════════════════════ */
 modulo('tema', function () {
-  var raiz = document.documentElement, clave = 'joan-tema', botones = $$('[data-tema]');
+  var raiz = document.documentElement, clave = 'joan-tema',
+      botones = $$('[data-tema]').filter(function (b) { return b.tagName === 'BUTTON'; }); // [v15.2]
   if (!botones.length) return;
   function leerGuardado() { var g = null; try { g = localStorage.getItem(clave); } catch (e) {} return (g === 'claro' || g === 'oscuro') ? g : null; }
   function preferido() { var g = leerGuardado(); if (g) return g; return (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'claro' : 'oscuro'; }
@@ -1134,7 +1135,7 @@ modulo('monedas', function () { inicializarMonedas(); cargarTasas(); if (MONEDAS
 modulo('paises', function () { inicializarPaises(); });
 modulo('curiosidades', function () { inicializarCuriosidades(); });
 
-console.log('%c[web] v15 ARCADE cargada · ' + PLATOS.length + ' apartados', 'color:#ff9f1c;font-weight:700');
+console.log('%c[web] v15.2 ARCADE cargada · ' + PLATOS.length + ' apartados', 'color:#ff9f1c;font-weight:700');
 
 /* ══════════════════════════════════════════════════════════════════════
    9. [MEJORAS · CONÓCEME]
@@ -1190,6 +1191,7 @@ modulo('conoceme', function () {
 
 /* ══════════════════════════════════════════════════════════════════════
    10. [CARTA-3D] índice cilíndrico girable
+   [v15.2] el tema visual de cada cara se guarda en data-fx (antes data-tema)
    ══════════════════════════════════════════════════════════════════════ */
 modulo('carta3d', function () {
   var cubo = document.getElementById('cubo');
@@ -1228,7 +1230,7 @@ modulo('carta3d', function () {
   caras.forEach(function (c, i) {
     var id = c.dataset.id, d = CARAS3D[id];
     if (!c.style.getPropertyValue('--a')) c.style.setProperty('--a', i);
-    if (d) c.dataset.tema = c.dataset.tema || d.tema;
+    if (d) c.dataset.fx = c.dataset.fx || d.tema;                 // [v15.2] era dataset.tema
     if (!d || $('.cara__title', c)) return;
     c.innerHTML =
       '<span class="cara__num">' + d.n + '</span>' +
@@ -1258,7 +1260,7 @@ modulo('carta3d', function () {
   function aplicar() {
     cubo.style.transform = 'translateZ(calc(-1 * var(--r))) rotateY(' + rot + 'deg)';
     var idx = ((Math.round(rot / paso) % N) + N) % N;
-    if (idx !== activo) { activo = idx; marcarFrente(); fxTema(caras[activo].dataset.tema); }
+    if (idx !== activo) { activo = idx; marcarFrente(); fxTema(caras[activo].dataset.fx); } // [v15.2] era dataset.tema
     else marcarFrente();
     iluminar();
   }

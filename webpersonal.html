@@ -30,35 +30,46 @@
     </div>
   </div>
 
- <!-- ══ ÍNDICE ARCADE: las 3 tarjetas 3D de la referencia ══ -->
-<div class="plataforma">
-  <p class="plataforma__rotulo">CASA JOAN <span>· MI ESPACIO · MI HISTORIA</span></p>
+<!-- ══ PORTADA: escena arcade (título en neón + tarjetas 3D abajo).
+     Al estar dentro de .portada, SOLO se ve en la portada. ══ -->
+<section class="portada" id="portada" aria-label="Portada">
+  <div class="portada__scan" aria-hidden="true"></div>
+  <div class="portada__luz" aria-hidden="true"></div>
 
-  <div class="arcade-fila">
-    <button class="tarjeta3d tarjeta3d--azul" type="button" data-ir="diario"
-            aria-label="Conóceme — abrir el diario">
-      <span class="tarjeta3d__ico" aria-hidden="true">👤</span>
-      <span class="tarjeta3d__tit">Conóceme</span>
-      <span class="tarjeta3d__sub">Mi historia</span>
-    </button>
+  <p class="portada__eyebrow">Diario personal · Casa Joan</p>
+  <h1 class="portada__name" id="portada-title">
+    <span class="palabra">JOAN</span> <span class="palabra">CATALÀ</span> <span class="palabra">MATEU</span>
+  </h1>
+  <p class="portada__roll">Estudiante de DAM · Esgrima · IA · Tecnología</p>
+  <p class="portada__frase">Construyendo proyectos mientras aprendo.</p>
+  <ul class="portada__tags"><li>DAM</li><li>IA</li><li>ESGRIMA</li><li>IDIOMAS</li></ul>
 
-    <button class="tarjeta3d tarjeta3d--naranja" type="button" data-ir="bar"
-            aria-label="Entrar — abrir el bar">
-      <span class="tarjeta3d__ico" aria-hidden="true">🎮</span>
-      <span class="tarjeta3d__tit">Entrar</span>
-      <span class="tarjeta3d__sub">El bar</span>
-    </button>
+  <div class="plataforma">
+    <div class="arcade-fila">
+      <button class="tarjeta3d tarjeta3d--azul" type="button" data-ir="diario"
+              aria-label="Conóceme — abrir el diario">
+        <span class="tarjeta3d__ico" aria-hidden="true">👤</span>
+        <span class="tarjeta3d__tit">Conóceme</span>
+        <span class="tarjeta3d__sub">Mi historia</span>
+      </button>
 
-    <button class="tarjeta3d tarjeta3d--verde" type="button" data-ir="contacto"
-            aria-label="Contactar — escribirme">
-      <span class="tarjeta3d__ico" aria-hidden="true">✉️</span>
-      <span class="tarjeta3d__tit">Contactar</span>
-      <span class="tarjeta3d__sub">Escríbeme</span>
-    </button>
+      <button class="tarjeta3d tarjeta3d--naranja" type="button" data-ir="bar"
+              aria-label="Entrar — abrir el bar">
+        <span class="tarjeta3d__ico" aria-hidden="true">🎮</span>
+        <span class="tarjeta3d__tit">Entrar</span>
+        <span class="tarjeta3d__sub">El bar</span>
+      </button>
+
+      <button class="tarjeta3d tarjeta3d--verde" type="button" data-ir="contacto"
+              aria-label="Contactar — escribirme">
+        <span class="tarjeta3d__ico" aria-hidden="true">✉️</span>
+        <span class="tarjeta3d__tit">Contactar</span>
+        <span class="tarjeta3d__sub">Escríbeme</span>
+      </button>
+    </div>
+    <div class="plataforma__base" aria-hidden="true"></div>
   </div>
-
-  <div class="plataforma__base" aria-hidden="true"></div>
-</div>
+</section>
 
   <!-- ================================================================
        DIARIO — la web entera.

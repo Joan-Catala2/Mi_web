@@ -1865,4 +1865,367 @@ html[data-tema="claro"] .entrada__volver:hover{ background:#5a3a22; color:#f6eed
   .carta3d .cara__abrir,
   .entrada__volver,
   .estado-reintento{ transition:none }
+}/* ══════════════════════════════════════════════════════════════════════
+   [TEMA ARCADE v15] — negro azulado + neón, inspirado en la referencia.
+   Bloque de overrides al final: no borra nada, solo recoloca.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── 0 · Paleta arcade (redefine las variables usadas por todo) ── */
+:root{
+  --jn-noche:#04070d;      --jn-humo:#0a1220;
+  --jn-madera:#16233c;     --jn-madera-oscura:#0b1526;   --jn-madera-clara:#2f4a73;
+  --jn-laton:#e8c07a;      --jn-ambar:#ff9f1c;           --jn-crema:#e6edf3;
+  --jn-tiza:#c9d6e8;       --jn-pizarra:#0d1524;
+  --jn-papel:#0f1a2c;      --jn-tinta:#e6edf3;           --jn-rojo:#ff5a4e;
+  --jn-azul:#38bdf8;       --jn-verde:#3fb950;
+  --jn-borde:#1d2b45;      --jn-sombra:rgba(0,0,0,.65);
+}
+
+/* ── 1 · Base y carga ── */
+html,body{ background:var(--jn-noche) }
+body{ color:var(--jn-crema) }
+:focus-visible{ outline:2px solid var(--jn-ambar); outline-offset:3px }
+
+.carga{ background:radial-gradient(120% 90% at 50% 0%, #0e1b30 0%, #04070d 60%) }
+.carga__caja{
+  background:rgba(10,18,32,.92); border-color:var(--jn-borde);
+  box-shadow:0 0 0 1px rgba(255,159,28,.25), 0 24px 60px var(--jn-sombra),
+             inset 0 0 40px rgba(0,0,0,.5);
+}
+.carga__marca{ color:var(--jn-ambar); text-shadow:0 0 10px rgba(255,159,28,.7) }
+.carga__barra{ background:#0a1220; border-color:var(--jn-borde) }
+.carga__pista{ background:linear-gradient(90deg,var(--jn-azul),var(--jn-ambar)); box-shadow:0 0 14px rgba(255,159,28,.6) }
+
+/* ── 2 · Portada: escena arcade ── */
+.portada{ background:radial-gradient(130% 100% at 50% -12%, #12233f 0%, #070d18 55%, #04070d 100%) }
+.portada__scan{ opacity:.28 }
+.portada__eyebrow{ color:var(--jn-laton) }
+.portada__name{ color:#ffe9c7 }
+.portada__name .letra.is-on{
+  text-shadow:0 0 6px rgba(255,159,28,.85), 0 0 24px rgba(255,106,26,.5), 0 0 64px rgba(255,106,26,.3);
+}
+.portada__desc{ color:rgba(230,237,243,.78) }
+.portada__nota{ color:rgba(201,214,232,.4) }
+
+/* ── 3 · Plataforma + tarjetas 3D (la imagen) ── */
+.plataforma{
+  position:relative; z-index:2; margin-top:clamp(18px,4vh,38px);
+  display:grid; justify-items:center; gap:clamp(14px,3vh,26px);
+  perspective:1200px;
+}
+.plataforma__rotulo{
+  margin:0; font:700 clamp(15px,2.6vw,24px)/1 var(--jn-display);
+  letter-spacing:.18em; color:var(--jn-laton);
+  text-shadow:0 0 8px rgba(232,192,122,.5), 0 0 26px rgba(255,159,28,.35);
+}
+.plataforma__rotulo span{
+  display:block; margin-top:6px; font-size:.5em; letter-spacing:.34em; color:rgba(232,192,122,.65);
+}
+.arcade-fila{ display:flex; flex-wrap:wrap; gap:clamp(12px,2vw,22px); justify-content:center; transform-style:preserve-3d }
+
+.tarjeta3d{
+  --acento:var(--jn-ambar);
+  position:relative; cursor:pointer;
+  width:clamp(120px,24vw,158px); padding:22px 12px 18px;
+  display:grid; justify-items:center; gap:8px; text-align:center;
+  color:var(--jn-crema);
+  background:linear-gradient(165deg, #101d33 0%, #0a1322 60%, #060c16 100%);
+  border:2px solid var(--acento); border-radius:10px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.05) inset,
+    0 18px 34px var(--jn-sombra),
+    0 0 22px color-mix(in srgb, var(--acento) 40%, transparent);
+  transform:rotateX(var(--tx,0deg)) rotateY(var(--ty,0deg)) translateZ(0);
+  transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  touch-action:manipulation;
+}
+.tarjeta3d--azul   { --acento:var(--jn-azul) }
+.tarjeta3d--naranja{ --acento:var(--jn-ambar) }
+.tarjeta3d--verde  { --acento:var(--jn-verde) }
+
+.tarjeta3d::before{ /* brillo superior tipo consola */
+  content:''; position:absolute; inset:6px; border-radius:7px; pointer-events:none;
+  background:linear-gradient(180deg, rgba(255,255,255,.10), transparent 45%);
+}
+.tarjeta3d__ico{ font-size:clamp(30px,5vw,40px); line-height:1; filter:drop-shadow(0 0 10px color-mix(in srgb, var(--acento) 60%, transparent)) }
+.tarjeta3d__tit{ font:700 clamp(13px,1.8vw,16px)/1.2 var(--jn-display); letter-spacing:.06em }
+.tarjeta3d__sub{ font:400 clamp(12px,1.6vw,14px)/1 var(--jn-terminal); color:rgba(230,237,243,.55) }
+
+.tarjeta3d:hover, .tarjeta3d:focus-visible{
+  transform:translateY(-8px) rotateX(var(--tx,0deg)) rotateY(var(--ty,0deg));
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.08) inset,
+    0 26px 48px var(--jn-sombra),
+    0 0 34px color-mix(in srgb, var(--acento) 65%, transparent);
+  border-color:color-mix(in srgb, var(--acento) 80%, #fff);
+}
+.tarjeta3d:active{ transform:translateY(-2px) scale(.98) }
+
+.plataforma__base{
+  width:min(560px,92%); height:26px; margin-top:-6px;
+  background:radial-gradient(ellipse at center, rgba(255,159,28,.18), transparent 70%);
+  filter:blur(2px);
+}
+
+/* ── 4 · Diario y barra superior ── */
+.diario{ background:linear-gradient(180deg, #070d18, #04070d 70%) }
+.diario__barra{ background:rgba(8,14,26,.94); border-bottom-color:var(--jn-borde); box-shadow:0 8px 26px var(--jn-sombra) }
+.diario__marca{ color:var(--jn-ambar) }
+.diario__marca:hover{ color:#fff }
+.btn4{ background:#0a1322; border-color:var(--jn-madera-clara); color:var(--jn-crema); box-shadow:0 3px 0 rgba(0,0,0,.5) }
+.btn4:hover{ background:var(--jn-rojo); color:#fff }
+.lectura{ background:rgba(0,0,0,.5) }
+.lectura__barra{ background:linear-gradient(90deg,var(--jn-azul),var(--jn-ambar)) }
+
+.hero__eyebrow{ color:var(--jn-laton) }
+.hero__name{ color:#ffe9c7; text-shadow:0 0 8px rgba(255,159,28,.6), 0 0 30px rgba(255,106,26,.3) }
+.hero__roll{ color:var(--jn-ambar) }
+.hero__frase, .hero__texto p{ color:rgba(230,237,243,.78) }
+.hero__tags li{ color:var(--jn-laton); background:rgba(56,189,248,.08); border-color:rgba(232,192,122,.4) }
+
+/* ── 5 · Carrusel 3D: tarjetas neón ── */
+.carta3d{
+  background:linear-gradient(165deg,#0c1626,#070d18);
+  border-color:var(--jn-borde);
+  box-shadow:0 0 0 1px rgba(255,159,28,.18), 0 26px 54px var(--jn-sombra);
+}
+.carta3d__escena::after{ background:radial-gradient(ellipse at center, rgba(255,159,28,.22), transparent 70%) }
+.carta3d .cara{
+  background:linear-gradient(165deg,#101d33,#081020);
+  border:2px solid var(--jn-borde); border-radius:10px;
+  box-shadow:0 10px 22px var(--jn-sombra), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.carta3d .cara.is-frente{
+  border-color:var(--jn-ambar);
+  box-shadow:0 18px 38px var(--jn-sombra), 0 0 26px rgba(255,159,28,.35), inset 0 1px 0 rgba(255,255,255,.1);
+}
+.carta3d .cara.is-activo{ border-color:var(--jn-azul); box-shadow:0 0 0 2px rgba(56,189,248,.4), 0 14px 30px var(--jn-sombra) }
+.cara__num{ color:var(--jn-ambar) }
+.cara__ico{ font-size:26px; line-height:1; filter:drop-shadow(0 0 8px rgba(255,159,28,.5)) }
+.cara__title{ color:#fff }
+.cara__desc{ color:rgba(201,214,232,.75) }
+.cara__abrir{ background:#0a1322; border-color:var(--jn-ambar); color:var(--jn-ambar) }
+.cara__abrir:hover{ background:var(--jn-ambar); color:#04070d }
+.carta3d__nav{ background:#0a1322; border-color:var(--jn-madera-clara); color:var(--jn-ambar); box-shadow:0 2px 0 rgba(0,0,0,.5) }
+.carta3d__nav:hover{ background:var(--jn-ambar); color:#04070d }
+.carta3d__puntos button{ background:rgba(201,214,232,.25) }
+.carta3d__puntos button.is-on{ background:var(--jn-ambar) }
+.carta3d__pista{ color:rgba(201,214,232,.45) }
+
+/* ── 6 · Entradas = paneles oscuros (sección interior de la imagen) ── */
+.entrada{
+  background:linear-gradient(165deg,#0c1626,#08101e);
+  border:1px solid var(--jn-borde);
+  box-shadow:0 0 0 1px rgba(255,159,28,.12), 0 16px 40px var(--jn-sombra);
+}
+.entrada h2{ color:#fff }
+.entrada .post__meta, .entrada h3{ color:var(--jn-laton) }
+.entrada p{ color:rgba(230,237,243,.82) }
+.entrada p strong{ color:var(--jn-ambar) }
+.entrada .list li{ color:rgba(230,237,243,.82) }
+.entrada .list li::before{ color:var(--jn-ambar) }
+.entrada blockquote{ background:rgba(56,189,248,.08); border-left-color:var(--jn-ambar); color:#eaf3ff }
+.entrada a{ color:var(--jn-azul) }
+.entrada .num{ color:rgba(230,237,243,.08) }
+.entrada[data-etiqueta]::before{ color:var(--jn-laton); border-bottom-color:rgba(232,192,122,.3) }
+
+.entrada__volver{
+  color:var(--jn-ambar); background:rgba(255,159,28,.08);
+  border-color:rgba(255,159,28,.45); box-shadow:0 2px 0 rgba(0,0,0,.4);
+}
+.entrada__volver:hover{ background:var(--jn-ambar); color:#04070d; border-color:var(--jn-ambar) }
+
+.foto img{ border-color:var(--jn-borde); box-shadow:0 14px 34px var(--jn-sombra) }
+.foto figcaption{ color:rgba(201,214,232,.6) }
+
+.perfil__title{ color:var(--jn-laton) }
+.perfil__dato{ background:#0c1626; border-color:var(--jn-borde); box-shadow:0 6px 16px var(--jn-sombra) }
+.perfil__k{ color:var(--jn-laton) }
+.perfil__v{ color:var(--jn-crema) }
+
+.tarjeta{ background:#0c1626; border-color:var(--jn-borde); box-shadow:0 10px 24px var(--jn-sombra) }
+.tarjeta .tarjeta__num{ color:var(--jn-ambar) }
+.tarjeta .tarjeta__name{ color:#fff }
+.tarjeta .tarjeta__stack{ color:var(--jn-laton) }
+.tarjeta .tarjeta__desc{ color:rgba(230,237,243,.78) }
+.tarjeta .tarjeta__link{ background:#0a1322; border-color:var(--jn-ambar); color:var(--jn-ambar) }
+.tarjeta .tarjeta__link:hover{ background:var(--jn-ambar); color:#04070d }
+
+.linea__eyebrow{ color:var(--jn-laton) }
+.linea__lista::before{ background:linear-gradient(180deg,transparent,var(--jn-azul) 18%,var(--jn-ambar) 82%,transparent) }
+.linea__lista li::before{ background:#04070d; border-color:var(--jn-ambar) }
+.linea__anio{ color:var(--jn-laton) }
+.linea__txt{ color:rgba(230,237,243,.85) }
+
+/* Contacto */
+.entrada--contacto{ background:linear-gradient(165deg,#0a1a2e,#060d1a); border-color:#1d3a5c }
+.entrada--contacto h2{ color:#fff }
+.entrada--contacto p{ color:rgba(230,237,243,.85) }
+.entrada--contacto .contacto__eyebrow{ color:var(--jn-laton) }
+.cta{ background:var(--jn-rojo); border-color:var(--jn-rojo); box-shadow:0 5px 0 rgba(0,0,0,.5) }
+.cta:hover{ background:#ff7a6e; border-color:#ff7a6e }
+.entrada--contacto .contacto__mail a{ color:var(--jn-azul); border-color:rgba(56,189,248,.5) }
+.entrada--contacto .contacto__mail button{ color:var(--jn-tiza); border-color:rgba(201,214,232,.35) }
+.entrada--contacto .contacto__redes a{ color:var(--jn-tiza); border-color:rgba(201,214,232,.3) }
+.diario__legal{ color:rgba(201,214,232,.45) }
+
+/* ── 7 · El bar: marco neón sobre negro azulado ── */
+.bar{ background:radial-gradient(130% 100% at 50% -12%, #101f38 0%, #060c16 55%, #04070d 100%) }
+.bar__marco{
+  background:#0b1526; border-color:#16233c;
+  box-shadow:0 0 0 1px rgba(255,159,28,.3), 0 0 0 4px #060c16,
+             0 34px 70px var(--jn-sombra), inset 0 0 0 1px rgba(56,189,248,.15);
+}
+.bar__ini,.bar__son{ background:#0a1322; border-color:var(--jn-madera-clara); color:var(--jn-crema); box-shadow:0 3px 0 rgba(0,0,0,.6) }
+.bar__ini:hover,.bar__son:hover{ background:var(--jn-rojo); border-color:#ff8a80; color:#fff }
+.bar__son[aria-pressed="true"]{ color:var(--jn-verde); border-color:#2ea043 }
+.bar__hint{ color:rgba(201,214,232,.4) }
+.bar__escena{ background:linear-gradient(180deg,#0c1626,#04070d) }
+.bar__neon{ color:#ffe0b8; text-shadow:0 0 6px #ff8a3c, 0 0 18px #ff6a1a, 0 0 36px rgba(255,106,26,.6) }
+
+.burbuja{
+  background:linear-gradient(#0e1a2e,#0a1322); color:var(--jn-crema);
+  border-color:var(--jn-borde); box-shadow:0 10px 26px var(--jn-sombra), 0 0 0 1px rgba(255,159,28,.2);
+}
+.burbuja::after{ border-bottom-color:var(--jn-borde) }
+.burbuja__who{ color:var(--jn-laton) }
+.burbuja__eco{ color:rgba(201,214,232,.55) }
+.burbuja__txt{ color:var(--jn-crema) }
+.burbuja__txt::after{ color:var(--jn-ambar) }
+
+/* Panel derecho */
+.bar__panel{ background:#0a1220; border-left-color:#16233c }
+.pizarra,.contacto{
+  color:var(--jn-tiza);
+  background:
+    radial-gradient(120% 70% at 18% 0%, rgba(56,189,248,.07), transparent 58%),
+    linear-gradient(180deg,#0d1524,#0a1220);
+  box-shadow:inset 0 0 0 1px rgba(255,159,28,.2), inset 0 0 60px rgba(0,0,0,.55);
+}
+.pizarra__eyebrow,.contacto__eyebrow{ color:var(--jn-laton) }
+.pizarra__title,.contacto__title{ color:#fff; text-shadow:0 0 12px rgba(255,159,28,.35) }
+.pizarra__sub{ color:rgba(201,214,232,.7) }
+.pizarra__lista li{ border-bottom-color:rgba(201,214,232,.12) }
+.pizarra__nota{ color:rgba(201,214,232,.45) }
+.plato{ color:var(--jn-tiza) }
+.plato::before{ background:linear-gradient(90deg,var(--jn-ambar),transparent) }
+.plato:hover,.plato:focus-visible{ color:#fff }
+.plato__num{ color:rgba(232,192,122,.6) }
+.plato__tag{ color:var(--jn-tiza); border-color:rgba(201,214,232,.25) }
+.plato:hover .plato__tag{ background:var(--jn-ambar); color:#04070d; border-color:var(--jn-ambar) }
+.bar__full{ background:var(--jn-laton); color:#04070d; box-shadow:0 4px 0 rgba(0,0,0,.5) }
+.bar__full:hover{ background:var(--jn-ambar); color:#04070d }
+
+/* Serveta → panel oscuro */
+.servido__papel{
+  background:linear-gradient(165deg,#0e1a2e,#0a1322);
+  border-color:var(--jn-borde);
+  box-shadow:0 14px 34px var(--jn-sombra), 0 0 0 1px rgba(255,159,28,.18);
+}
+.servido__sello{ border-color:var(--jn-ambar); color:var(--jn-ambar); opacity:.85 }
+.servido__prev{ color:var(--jn-laton); border-bottom-color:rgba(232,192,122,.4) }
+.servido__prev:hover{ color:var(--jn-ambar); border-color:var(--jn-ambar) }
+.servido .plato-post h2{ color:#fff }
+.servido .plato-post .post__meta{ color:var(--jn-laton) }
+.servido .plato-post p{ color:rgba(230,237,243,.85) }
+.servido .plato-post p strong{ color:var(--jn-ambar) }
+.servido .plato-post h3{ color:var(--jn-laton) }
+.servido .plato-post .list li{ color:rgba(230,237,243,.85) }
+.servido .plato-post .list li::before{ color:var(--jn-ambar) }
+.servido .plato-post blockquote{ background:rgba(56,189,248,.08); border-left-color:var(--jn-ambar); color:#eaf3ff }
+.servido .plato-post a{ color:var(--jn-azul) }
+.servido__fin{ border-top-color:rgba(201,214,232,.15) }
+.jn-btn{ background:#0a1322; border-color:var(--jn-madera-clara); color:var(--jn-crema); box-shadow:0 3px 0 rgba(0,0,0,.5) }
+.jn-btn:hover{ background:var(--jn-rojo); border-color:var(--jn-rojo); color:#fff }
+.jn-btn--linea{ background:none; color:var(--jn-laton); border-color:var(--jn-laton) }
+.jn-btn--linea:hover{ background:var(--jn-laton); color:#04070d }
+.jn-btn--laton{ background:var(--jn-laton); border-color:var(--jn-laton); color:#04070d }
+
+.contacto__txt{ color:rgba(201,214,232,.8) }
+.contacto__mail a{ color:var(--jn-azul); border-color:rgba(56,189,248,.5) }
+.contacto__mail a:hover{ color:#fff; border-color:#fff }
+.contacto__mail button{ color:var(--jn-tiza); border-color:rgba(201,214,232,.3) }
+.contacto__mail button:hover,.contacto__mail button.is-ok{ background:var(--jn-ambar); color:#04070d; border-color:var(--jn-ambar) }
+.contacto__redes a{ color:var(--jn-tiza); border-color:rgba(201,214,232,.3) }
+.contacto__legal{ color:rgba(201,214,232,.45) }
+#barContactoBack{ color:var(--jn-tiza); border-color:rgba(201,214,232,.5) }
+
+/* ── 8 · Herramientas de API: paneles con estados ── */
+.clima,.monedas,.paises,.curiosidades{
+  background:rgba(56,189,248,.05);
+  border-color:rgba(255,159,28,.35);
+}
+.clima__estado{ color:var(--jn-crema) }
+.clima__temp{ color:var(--jn-ambar); text-shadow:0 0 14px rgba(255,159,28,.4) }
+.clima__extra,.clima__nota{ color:rgba(201,214,232,.7) }
+.monedas__campo{ color:var(--jn-laton) }
+.monedas__campo input,.monedas__campo select,
+.paises__campo input{ background:#0a1322; border-color:var(--jn-borde); color:var(--jn-crema) }
+.monedas__cambiar{ background:#0a1322; border-color:var(--jn-borde); color:var(--jn-ambar) }
+.monedas__resultado{ color:#fff }
+.monedas__tasa{ color:rgba(201,214,232,.6) }
+.paises__campo{ color:var(--jn-laton) }
+.paises__btn{ background:var(--jn-ambar); border-color:var(--jn-ambar); color:#04070d }
+.paises__btn:hover{ background:#ffb84d; border-color:#ffb84d }
+.paises__btn--aleatorio{ background:#0a1322; color:var(--jn-ambar); border-color:var(--jn-ambar) }
+.paises__tarjeta{ background:#0c1626; border-color:var(--jn-borde) }
+.paises__nombre{ color:#fff }
+.paises__dato{ background:rgba(56,189,248,.06); border-left-color:var(--jn-ambar) }
+.paises__dato dt{ color:var(--jn-laton) }
+.paises__dato dd{ color:var(--jn-crema) }
+.paises__error,.curiosidades__error{ background:rgba(255,90,78,.1); border-color:rgba(255,90,78,.5); color:#ff9a92 }
+.curiosidades__titulo{ color:#fff }
+.curiosidades__texto{ color:rgba(230,237,243,.82) }
+.curiosidades__btn{ background:#0a1322; border-color:var(--jn-ambar); color:var(--jn-ambar) }
+.curiosidades__btn:hover{ background:var(--jn-ambar); color:#04070d }
+.curiosidades__enlace{ color:var(--jn-azul) }
+.estado-reintento{ background:var(--jn-rojo); border-color:var(--jn-rojo); box-shadow:0 2px 0 rgba(0,0,0,.5) }
+.estado-reintento:hover{ background:#ff7a6e; border-color:#ff7a6e }
+
+/* ── 9 · Modo claro arcade (papel + neón suave) ── */
+html[data-tema="claro"]{
+  --jn-noche:#eef2f8; --jn-humo:#f6f8fc; --jn-madera:#c9a06a; --jn-madera-oscura:#e8edf5;
+  --jn-madera-clara:#8a5a3a; --jn-laton:#a97b3f; --jn-ambar:#c2571a; --jn-crema:#16233c;
+  --jn-tiza:#243248; --jn-pizarra:#e8edf5; --jn-papel:#f2f5fa; --jn-tinta:#16233c;
+  --jn-rojo:#c0392b; --jn-azul:#1d6fd1; --jn-verde:#2f8a46; --jn-borde:#c3d0e2; --jn-sombra:rgba(60,80,110,.18);
+}
+html[data-tema="claro"] body{ background:#eef2f8; color:#16233c }
+html[data-tema="claro"] .carga{ background:radial-gradient(120% 90% at 50% 0%, #ffffff 0%, #dfe7f2 60%) }
+html[data-tema="claro"] .carga__caja{ background:rgba(255,255,255,.95); border-color:var(--jn-borde); box-shadow:0 24px 60px var(--jn-sombra) }
+html[data-tema="claro"] .portada{ background:radial-gradient(130% 100% at 50% -12%, #ffffff 0%, #e6ecf5 55%, #d8e1ee 100%) }
+html[data-tema="claro"] .portada__name{ color:#16233c }
+html[data-tema="claro"] .portada__desc{ color:rgba(22,35,60,.75) }
+html[data-tema="claro"] .tarjeta3d{ background:linear-gradient(165deg,#ffffff,#eef3fa); box-shadow:0 14px 30px var(--jn-sombra), 0 0 18px color-mix(in srgb, var(--acento) 25%, transparent) }
+html[data-tema="claro"] .diario{ background:linear-gradient(180deg,#f2f5fa,#e6ecf5 70%) }
+html[data-tema="claro"] .diario__barra{ background:rgba(255,255,255,.95); border-bottom-color:var(--jn-borde) }
+html[data-tema="claro"] .btn4{ background:#fff; border-color:var(--jn-borde); color:#16233c }
+html[data-tema="claro"] .entrada{ background:#fff; border-color:var(--jn-borde); box-shadow:0 0 0 1px rgba(194,87,26,.15), 0 12px 30px var(--jn-sombra) }
+html[data-tema="claro"] .entrada h2{ color:#16233c }
+html[data-tema="claro"] .entrada p{ color:#243248 }
+html[data-tema="claro"] .carta3d{ background:#fff; border-color:var(--jn-borde) }
+html[data-tema="claro"] .carta3d .cara{ background:linear-gradient(165deg,#ffffff,#eef3fa); border-color:var(--jn-borde) }
+html[data-tema="claro"] .cara__title{ color:#16233c }
+html[data-tema="claro"] .cara__desc{ color:#4a5a74 }
+html[data-tema="claro"] .bar__marco{ background:#fff; border-color:#c9a06a; box-shadow:0 0 0 1px rgba(194,87,26,.4), 0 34px 70px var(--jn-sombra) }
+html[data-tema="claro"] .pizarra,html[data-tema="claro"] .contacto{ background:#f6f8fc; color:#243248; box-shadow:inset 0 0 0 1px rgba(194,87,26,.25) }
+html[data-tema="claro"] .servido__papel{ background:#fff; border-color:var(--jn-borde) }
+html[data-tema="claro"] .jn-btn{ background:#fff; border-color:var(--jn-borde); color:#16233c }
+html[data-tema="claro"] .clima,html[data-tema="claro"] .monedas,
+html[data-tema="claro"] .paises,html[data-tema="claro"] .curiosidades{ background:#f6f8fc; border-color:rgba(194,87,26,.35) }
+html[data-tema="claro"] .monedas__campo input,html[data-tema="claro"] .monedas__campo select,
+html[data-tema="claro"] .paises__campo input{ background:#fff; border-color:var(--jn-borde); color:#16233c }
+
+/* ── 10 · Responsive y movimiento reducido ── */
+@media (max-width:700px){
+  .arcade-fila{ gap:10px }
+  .tarjeta3d{ width:calc(33.333% - 8px); min-width:104px; padding:16px 8px 14px }
+  .plataforma__rotulo span{ letter-spacing:.2em }
+}
+@media (max-width:520px){
+  .arcade-fila{ flex-wrap:wrap }
+  .tarjeta3d{ width:calc(50% - 8px) }
+  .tarjeta3d--verde{ width:100% }
+}
+@media (prefers-reduced-motion:reduce){
+  .tarjeta3d, .tarjeta3d:hover{ transition:none; transform:none }
 }

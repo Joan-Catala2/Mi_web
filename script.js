@@ -1,15 +1,9 @@
 /* ══════════════════════════════════════════════════════════════════════
-   script.js v14 · Joan Català Mateu
-   ──────────────────────────────────────────────────────────────────────
-   v14 = TU v12 + parches [v14] (NO reescribe la arquitectura):
-     · carta3d: radio dinámico (--r), iluminación (--luz), --giro,
-                aria-selected, Home/End, y ya NO pisa el texto de tus caras
-     · diario:  botón .entrada__volver en las 8 caras + delegación data-volver
-     · sync:    la cara activa se resalta al hacer scroll (is-activo)
-     · tools:   botón .estado-reintento en los catch (mismas APIs)
-     · ortografía: 'Volviendo'
-   Todo lo demás (Escena, Sonido, máquina de escribir, tema, carga, teclado
-   del bar, las 4 herramientas con sus claves) queda IGUAL que en tu v12.
+   script.js v15 · Joan Català Mateu  (tema ARCADE)
+   v15 = v14 +:
+     · modulo('tilt'): inclinación 3D suave en las .tarjeta3d de la portada
+     · CARAS3D con icono (coherente con el HTML)
+     · resto idéntico: portada, diario, bar, APIs, tema, carga, teclado
    ══════════════════════════════════════════════════════════════════════ */
 (function () {
 'use strict';
@@ -24,14 +18,9 @@ function modulo(nombre, fn) {
 }
 function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
 
-/* [v14] apartados que salen en el índice 3D (para "Volver al índice" y sync) */
 var CARAS_INDICE = ['sobre-mi','esgrima','viajar','musica','ingles','estudios','ia','proyectos'];
-
-/* [v14] stub: lo rellena modulo('carta3d'). Permite que volverAlIndice()
-   exista aunque la carta aún no se haya montado (seguro por orden). */
 var Carta3D = { irA: function () {}, activo: 0 };
 
-/* [v14] helper: botón "Reintentar" para las herramientas (CSS .estado-reintento) */
 function botonReintento(bloque, fn) {
   if (!bloque) return;
   var viejo = bloque.querySelector('.estado-reintento');
@@ -56,7 +45,6 @@ var MENSAJES_ENTRADA = [
   'Cargando el diario…',
   'Guardando el C1 en la pared…'
 ];
-
 var correrCarga = null;
 
 modulo('year', function () {
@@ -65,7 +53,7 @@ modulo('year', function () {
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   1. LOS DATOS — un solo sitio: <template id="datosBar">
+   1. LOS DATOS
    ══════════════════════════════════════════════════════════════════════ */
 var PLATOS = [], actual = 0;
 
@@ -111,46 +99,32 @@ PLATOS = leerPlatos();
 var CLIMA = {
   key: '5796a0d1d068a83ebae6d0f194fce351',
   ciudad: 'Valencia,ES',
-  lat: null,
-  lon: null,
-  unidades: 'metric',
-  lang: 'es',
-  cadaMinutos: 10
+  lat: null, lon: null,
+  unidades: 'metric', lang: 'es', cadaMinutos: 10
 };
-
 var ultimaData = null;
 
-function unidadTemp() {
-  return CLIMA.unidades === 'imperial' ? '°F' : '°C';
-}
-
+function unidadTemp() { return CLIMA.unidades === 'imperial' ? '°F' : '°C'; }
 function iconoClima(code) {
   var m = {
-    '01d': '☀️', '01n': '🌙', '02d': '⛅', '02n': '☁️', '03d': '☁️', '03n': '☁️',
-    '04d': '☁️', '04n': '☁️', '09d': '🌧️', '09n': '🌧️', '10d': '🌦️', '10n': '🌧️',
-    '11d': '⛈️', '11n': '⛈️', '13d': '❄️', '13n': '❄️', '50d': '🌫️', '50n': '🌫️'
+    '01d':'☀️','01n':'🌙','02d':'⛅','02n':'☁️','03d':'☁️','03n':'☁️',
+    '04d':'☁️','04n':'☁️','09d':'🌧️','09n':'🌧️','10d':'🌦️','10n':'🌧️',
+    '11d':'⛈️','11n':'⛈️','13d':'❄️','13n':'❄️','50d':'🌫️','50n':'🌫️'
   };
   return m[code] || '🌡️';
 }
-
 function climaUrl() {
+  var cfg = window.CASA_JOAN_CONFIG || {};
+  if (cfg.climaUrl) return cfg.climaUrl; /* proxy: la clave no viaja al cliente */
   var params = new URLSearchParams();
-  params.set('units', CLIMA.unidades);
-  params.set('lang', CLIMA.lang);
-  params.set('appid', CLIMA.key);
-  if (CLIMA.lat != null && CLIMA.lon != null) {
-    params.set('lat', CLIMA.lat);
-    params.set('lon', CLIMA.lon);
-  } else {
-    params.set('q', CLIMA.ciudad);
-  }
+  params.set('units', CLIMA.unidades); params.set('lang', CLIMA.lang); params.set('appid', CLIMA.key);
+  if (CLIMA.lat != null && CLIMA.lon != null) { params.set('lat', CLIMA.lat); params.set('lon', CLIMA.lon); }
+  else params.set('q', CLIMA.ciudad);
   return 'https://api.openweathermap.org/data/2.5/weather?' + params.toString();
 }
-
 function pintarClima(data) {
   if (data) ultimaData = data;
   if (!ultimaData) return;
-
   var w = ultimaData.weather && ultimaData.weather[0] ? ultimaData.weather[0] : {};
   var estado = w.description ? w.description.charAt(0).toUpperCase() + w.description.slice(1) : 'Sin descripción';
   var icon = iconoClima(w.icon);
@@ -162,44 +136,31 @@ function pintarClima(data) {
   var viento = ultimaData.wind ? ultimaData.wind.speed : null;
   var ciudad = ultimaData.name || CLIMA.ciudad;
   var hora = new Date().toLocaleString('es-ES');
-
   $$('[data-clima]').forEach(function (bloque) {
-    var e = bloque.querySelector('[data-clima-estado]');
-    var t = bloque.querySelector('[data-clima-temp]');
-    var x = bloque.querySelector('[data-clima-extra]');
-    var n = bloque.querySelector('[data-clima-nota]');
+    var e = bloque.querySelector('[data-clima-estado]'), t = bloque.querySelector('[data-clima-temp]');
+    var x = bloque.querySelector('[data-clima-extra]'), n = bloque.querySelector('[data-clima-nota]');
     if (e) e.textContent = icon + ' ' + estado;
     if (t) t.textContent = (temp != null ? temp : '—') + ' ' + unidadTemp();
-    if (x) x.textContent =
-      'Sensación ' + (sens != null ? sens : '—') + ' ' + unidadTemp() +
-      ' · mín ' + (min != null ? min : '—') +
-      ' · máx ' + (max != null ? max : '—') +
-      ' · humedad ' + (humedad != null ? humedad : '—') + '%' +
-      ' · viento ' + (viento != null ? viento : '—') + ' m/s';
+    if (x) x.textContent = 'Sensación ' + (sens != null ? sens : '—') + ' ' + unidadTemp() +
+      ' · mín ' + (min != null ? min : '—') + ' · máx ' + (max != null ? max : '—') +
+      ' · humedad ' + (humedad != null ? humedad : '—') + '%' + ' · viento ' + (viento != null ? viento : '—') + ' m/s';
     if (n) n.textContent = 'Ciudad: ' + ciudad + ' · Actualizado: ' + hora;
-    quitarReintento(bloque); /* [v14] */
+    quitarReintento(bloque);
   });
 }
-
 function pintarErrorClima(mensaje) {
   $$('[data-clima]').forEach(function (bloque) {
-    var e = bloque.querySelector('[data-clima-estado]');
-    var t = bloque.querySelector('[data-clima-temp]');
-    var x = bloque.querySelector('[data-clima-extra]');
-    var n = bloque.querySelector('[data-clima-nota]');
+    var e = bloque.querySelector('[data-clima-estado]'), t = bloque.querySelector('[data-clima-temp]');
+    var x = bloque.querySelector('[data-clima-extra]'), n = bloque.querySelector('[data-clima-nota]');
     if (e) e.textContent = '☁️ Tiempo no disponible';
     if (t) t.textContent = '— ' + unidadTemp();
     if (x) x.textContent = 'Revisa la API key, la ciudad o la conexión.';
     if (n) n.textContent = mensaje || 'Error desconocido';
-    botonReintento(bloque, cargarClima); /* [v14] */
+    botonReintento(bloque, cargarClima);
   });
 }
-
 function cargarClima() {
-  if (!CLIMA.key || CLIMA.key.indexOf('TU_API_KEY') > -1) {
-    pintarErrorClima('Falta la API key en script.js.');
-    return;
-  }
+  if (!CLIMA.key || CLIMA.key.indexOf('TU_API_KEY') > -1) { pintarErrorClima('Falta la API key en script.js.'); return; }
   fetch(climaUrl())
     .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(pintarClima)
@@ -207,106 +168,77 @@ function cargarClima() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   1c. DIVISAS · ExchangeRate-API
+   1c. DIVISAS
    ══════════════════════════════════════════════════════════════════════ */
-var MONEDAS = {
-  key: '26b774ebd2e1fc8cd152b215',
-  base: 'EUR',
-  cadaMinutos: 30
-};
-
+var MONEDAS = { key: '26b774ebd2e1fc8cd152b215', base: 'EUR', cadaMinutos: 30 };
 var LISTA_MONEDAS = [
-  { code: 'EUR', name: 'Euro' },
-  { code: 'USD', name: 'Dólar estadounidense' },
-  { code: 'GBP', name: 'Libra esterlina' },
-  { code: 'JPY', name: 'Yen japonés' },
-  { code: 'MXN', name: 'Peso mexicano' },
-  { code: 'ARS', name: 'Peso argentino' },
-  { code: 'COP', name: 'Peso colombiano' },
-  { code: 'CLP', name: 'Peso chileno' },
-  { code: 'PEN', name: 'Sol peruano' },
-  { code: 'BRL', name: 'Real brasileño' },
-  { code: 'CAD', name: 'Dólar canadiense' },
-  { code: 'CHF', name: 'Franco suizo' },
-  { code: 'CNY', name: 'Yuan chino' },
-  { code: 'AUD', name: 'Dólar australiano' },
-  { code: 'KRW', name: 'Won surcoreano' },
-  { code: 'INR', name: 'Rupia india' },
-  { code: 'TRY', name: 'Lira turca' },
-  { code: 'MAD', name: 'Dírham marroquí' }
+  { code:'EUR', name:'Euro' },{ code:'USD', name:'Dólar estadounidense' },
+  { code:'GBP', name:'Libra esterlina' },{ code:'JPY', name:'Yen japonés' },
+  { code:'MXN', name:'Peso mexicano' },{ code:'ARS', name:'Peso argentino' },
+  { code:'COP', name:'Peso colombiano' },{ code:'CLP', name:'Peso chileno' },
+  { code:'PEN', name:'Sol peruano' },{ code:'BRL', name:'Real brasileño' },
+  { code:'CAD', name:'Dólar canadiense' },{ code:'CHF', name:'Franco suizo' },
+  { code:'CNY', name:'Yuan chino' },{ code:'AUD', name:'Dólar australiano' },
+  { code:'KRW', name:'Won surcoreano' },{ code:'INR', name:'Rupia india' },
+  { code:'TRY', name:'Lira turca' },{ code:'MAD', name:'Dírham marroquí' }
 ];
-
-var SIMBOLOS = {
-  EUR: '€', USD: '$', GBP: '£', JPY: '¥', MXN: '$', ARS: '$', COP: '$',
-  CLP: '$', PEN: 'S/', BRL: 'R$', CAD: '$', CHF: 'CHF', CNY: '¥',
-  AUD: '$', KRW: '₩', INR: '₹', TRY: '₺', MAD: 'DH'
-};
-
+var SIMBOLOS = { EUR:'€',USD:'$',GBP:'£',JPY:'¥',MXN:'$',ARS:'$',COP:'$',CLP:'$',
+  PEN:'S/',BRL:'R$',CAD:'$',CHF:'CHF',CNY:'¥',AUD:'$',KRW:'₩',INR:'₹',TRY:'₺',MAD:'DH' };
 var ultimaTasas = null;
 
 function monedasUrl(base) {
+  var cfg = window.CASA_JOAN_CONFIG || {};
+  if (cfg.monedasUrl) return cfg.monedasUrl;
   return 'https://v6.exchangerate-api.com/v6/' + MONEDAS.key + '/latest/' + base;
 }
-function nombreMoneda(code) {
-  var m = LISTA_MONEDAS.filter(function (x) { return x.code === code; })[0];
-  return m ? m.name : code;
-}
+function nombreMoneda(code) { var m = LISTA_MONEDAS.filter(function (x) { return x.code === code; })[0]; return m ? m.name : code; }
 function simboloMoneda(code) { return SIMBOLOS[code] || code; }
 function formatearImporte(valor, code) {
   if (valor == null || isNaN(valor)) return '—';
   var decimales = (code === 'JPY' || code === 'KRW' || code === 'CLP' || code === 'COP' || code === 'ARS' || code === 'INR') ? 0 : 2;
   return new Intl.NumberFormat('es-ES', { minimumFractionDigits: decimales, maximumFractionDigits: decimales }).format(valor);
 }
-
 function poblarSelects(bloque) {
-  var selO = bloque.querySelector('[data-m-origen]');
-  var selD = bloque.querySelector('[data-m-destino]');
+  var selO = bloque.querySelector('[data-m-origen]'), selD = bloque.querySelector('[data-m-destino]');
   if (!selO || !selD || selO.options.length) return;
-  var html = LISTA_MONEDAS.map(function (m) {
-    return '<option value="' + m.code + '">' + m.code + ' · ' + m.name + '</option>';
-  }).join('');
+  var html = LISTA_MONEDAS.map(function (m) { return '<option value="' + m.code + '">' + m.code + ' · ' + m.name + '</option>'; }).join('');
   selO.innerHTML = html; selD.innerHTML = html;
   selO.value = MONEDAS.base; selD.value = 'USD';
 }
 function calcularConversion(cantidad, origen, destino) {
   if (!ultimaTasas || !ultimaTasas.conversion_rates) return null;
   var tasas = ultimaTasas.conversion_rates;
-  var tOrigen  = tasas[origen]; var tDestino = tasas[destino];
+  var tOrigen = tasas[origen], tDestino = tasas[destino];
   if (tOrigen == null || tDestino == null) return null;
   return { resultado: (cantidad / tOrigen) * tDestino, tasaUnitaria: tDestino / tOrigen };
 }
 function pintarBloqueMonedas(bloque) {
-  var cantidadEl = bloque.querySelector('[data-m-cantidad]');
-  var origenEl   = bloque.querySelector('[data-m-origen]');
-  var destinoEl  = bloque.querySelector('[data-m-destino]');
-  var resEl      = bloque.querySelector('[data-m-resultado]');
-  var tasaEl     = bloque.querySelector('[data-m-tasa]');
+  var cantidadEl = bloque.querySelector('[data-m-cantidad]'), origenEl = bloque.querySelector('[data-m-origen]');
+  var destinoEl = bloque.querySelector('[data-m-destino]'), resEl = bloque.querySelector('[data-m-resultado]');
+  var tasaEl = bloque.querySelector('[data-m-tasa]');
   if (!resEl || !tasaEl) return;
   if (!ultimaTasas) { resEl.textContent = '—'; tasaEl.textContent = 'Cargando tasas…'; return; }
   var cantidad = parseFloat(cantidadEl && cantidadEl.value); if (isNaN(cantidad)) cantidad = 0;
-  var origen  = origenEl  ? origenEl.value  : MONEDAS.base;
+  var origen = origenEl ? origenEl.value : MONEDAS.base;
   var destino = destinoEl ? destinoEl.value : 'USD';
   var conv = calcularConversion(cantidad, origen, destino);
   if (!conv) { resEl.textContent = '—'; tasaEl.textContent = 'No hay tasa para ' + origen + ' → ' + destino; return; }
   resEl.textContent = cantidad + ' ' + origen + ' = ' + formatearImporte(conv.resultado, destino) + ' ' + simboloMoneda(destino);
   tasaEl.textContent = '1 ' + origen + ' = ' + formatearImporte(conv.tasaUnitaria, destino) + ' ' + simboloMoneda(destino) +
     ' · base ' + ultimaTasas.base + ' · actualizado ' + new Date(ultimaTasas.time_last_update_utc || Date.now()).toLocaleString('es-ES');
-  quitarReintento(bloque); /* [v14] */
+  quitarReintento(bloque);
 }
 function pintarMonedas() { $$('[data-monedas]').forEach(pintarBloqueMonedas); }
 function pintarErrorMonedas(mensaje) {
   $$('[data-monedas]').forEach(function (bloque) {
-    var resEl  = bloque.querySelector('[data-m-resultado]');
-    var tasaEl = bloque.querySelector('[data-m-tasa]');
-    if (resEl)  resEl.textContent  = '—';
+    var resEl = bloque.querySelector('[data-m-resultado]'), tasaEl = bloque.querySelector('[data-m-tasa]');
+    if (resEl) resEl.textContent = '—';
     if (tasaEl) tasaEl.textContent = mensaje || 'Error al cargar las tasas.';
-    botonReintento(bloque, cargarTasas); /* [v14] */
+    botonReintento(bloque, cargarTasas);
   });
 }
 function cargarTasas() {
-  if (!MONEDAS.key || MONEDAS.key.indexOf('PEGA_TU_KEY') > -1) {
-    pintarErrorMonedas('Falta la API key de ExchangeRate-API en script.js.'); return;
-  }
+  if (!MONEDAS.key || MONEDAS.key.indexOf('PEGA_TU_KEY') > -1) { pintarErrorMonedas('Falta la API key de ExchangeRate-API en script.js.'); return; }
   fetch(monedasUrl(MONEDAS.base))
     .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(function (data) {
@@ -318,33 +250,26 @@ function cargarTasas() {
 function inicializarBloqueMonedas(bloque) {
   if (bloque.dataset.monedasListo === '1') return;
   poblarSelects(bloque);
-  var cantidadEl = bloque.querySelector('[data-m-cantidad]');
-  var origenEl   = bloque.querySelector('[data-m-origen]');
-  var destinoEl  = bloque.querySelector('[data-m-destino]');
-  var cambiarEl  = bloque.querySelector('[data-m-cambiar]');
+  var cantidadEl = bloque.querySelector('[data-m-cantidad]'), origenEl = bloque.querySelector('[data-m-origen]');
+  var destinoEl = bloque.querySelector('[data-m-destino]'), cambiarEl = bloque.querySelector('[data-m-cambiar]');
   var refrescar = function () { pintarBloqueMonedas(bloque); };
-  on(cantidadEl, 'input',  refrescar);
-  on(origenEl,   'change', refrescar);
-  on(destinoEl,  'change', refrescar);
-  on(cambiarEl, 'click', function () {
-    var a = origenEl.value; origenEl.value = destinoEl.value; destinoEl.value = a; refrescar();
-  });
+  on(cantidadEl, 'input', refrescar); on(origenEl, 'change', refrescar);
+  on(destinoEl, 'change', refrescar);
+  on(cambiarEl, 'click', function () { var a = origenEl.value; origenEl.value = destinoEl.value; destinoEl.value = a; refrescar(); });
   bloque.dataset.monedasListo = '1';
   pintarBloqueMonedas(bloque);
 }
 function inicializarMonedas() { $$('[data-monedas]').forEach(inicializarBloqueMonedas); }
 
 /* ══════════════════════════════════════════════════════════════════════
-   1d. PAÍSES · countries.dev (sin clave)
+   1d. PAÍSES
    ══════════════════════════════════════════════════════════════════════ */
 var PAISES = { codigo: 'ESP' };
-var CODIGOS_PAI = [
-  'ESP','ARG','MEX','COL','CHL','PER','URY','ECU','BOL','PRY','CRI','PAN','VEN','CUB','DOM',
-  'USA','CAN','GBR','FRA','DEU','ITA','PRT','NLD','BEL','IRL','ISL','NOR','SWE','DNK','FIN',
-  'POL','CZE','SVK','HUN','ROU','BGR','HRV','SRB','GRC','CHE','AUT','BRA','JPN','CHN','KOR',
-  'VNM','THA','MYS','SGP','IDN','PHL','IND','PAK','LKA','TUR','RUS','UKR','MAR','DZA','TUN',
-  'EGY','ETH','KEN','ZAF','SAU','ARE','ISR','JOR','LBN','IRQ','IRN','AUS','NZL','BHS','JAM'
-];
+var CODIGOS_PAI = ['ESP','ARG','MEX','COL','CHL','PER','URY','ECU','BOL','PRY','CRI','PAN','VEN','CUB','DOM',
+  'USA','CAN','GBR','FRA','DEU','ITA','PRT','NLD','BEL','IRL','ISL','NOR','SWE','DNK','FIN','POL','CZE',
+  'SVK','HUN','ROU','BGR','HRV','SRB','GRC','CHE','AUT','BRA','JPN','CHN','KOR','VNM','THA','MYS','SGP',
+  'IDN','PHL','IND','PAK','LKA','TUR','RUS','UKR','MAR','DZA','TUN','EGY','ETH','KEN','ZAF','SAU','ARE',
+  'ISR','JOR','LBN','IRQ','IRN','AUS','NZL','BHS','JAM'];
 var listaPaisesCache = null;
 
 function paisesUrl(codigo) { return 'https://countries.dev/alpha/' + codigo; }
@@ -370,26 +295,18 @@ function formatearIdiomas(obj) {
 function formatearMonedas(obj) {
   if (!obj) return '—';
   var res = [];
-  Object.keys(obj).forEach(function (k) {
-    var v = obj[k];
-    if (v && v.name) res.push(v.name + ' (' + k + ')'); else res.push(k);
-  });
+  Object.keys(obj).forEach(function (k) { var v = obj[k]; if (v && v.name) res.push(v.name + ' (' + k + ')'); else res.push(k); });
   return res.length ? res.join(', ') : '—';
 }
 function pintarBloquePaises(bloque, data) {
-  var banderaEl  = bloque.querySelector('[data-p-bandera]');
-  var nombreEl   = bloque.querySelector('[data-p-nombre]');
-  var capitalEl  = bloque.querySelector('[data-p-capital]');
-  var pobEl      = bloque.querySelector('[data-p-poblacion]');
-  var regionEl   = bloque.querySelector('[data-p-region]');
-  var subEl      = bloque.querySelector('[data-p-subregion]');
-  var idiomEl    = bloque.querySelector('[data-p-idiomas]');
-  var monEdEl    = bloque.querySelector('[data-p-moneda]');
-  var areaEl     = bloque.querySelector('[data-p-area]');
-  var errEl      = bloque.querySelector('[data-p-error]');
+  var banderaEl = bloque.querySelector('[data-p-bandera]'), nombreEl = bloque.querySelector('[data-p-nombre]');
+  var capitalEl = bloque.querySelector('[data-p-capital]'), pobEl = bloque.querySelector('[data-p-poblacion]');
+  var regionEl = bloque.querySelector('[data-p-region]'), subEl = bloque.querySelector('[data-p-subregion]');
+  var idiomEl = bloque.querySelector('[data-p-idiomas]'), monEdEl = bloque.querySelector('[data-p-moneda]');
+  var areaEl = bloque.querySelector('[data-p-area]'), errEl = bloque.querySelector('[data-p-error]');
   if (!data) return;
   if (errEl) { errEl.hidden = true; errEl.textContent = ''; }
-  quitarReintento(bloque); /* [v14] */
+  quitarReintento(bloque);
   var name = typeof data.name === 'string' ? data.name : ((data.name && (data.name.common || data.name.official)) || '—');
   var flags = data.flags || {};
   var imgSrc = flags.svg || flags.png || '';
@@ -398,35 +315,29 @@ function pintarBloquePaises(bloque, data) {
       ? '<img src="' + imgSrc + '" alt="Bandera de ' + name + '" loading="lazy">'
       : '<span class="paises__bandera-vacia">Sin bandera</span>';
   }
-  if (nombreEl)  nombreEl.textContent  = name;
+  if (nombreEl) nombreEl.textContent = name;
   if (capitalEl) capitalEl.textContent = formatearCapital(data.capital);
-  if (pobEl)     pobEl.textContent     = formatearPoblacion(data.population);
-  if (regionEl)  regionEl.textContent  = data.region || '—';
-  if (subEl)     subEl.textContent     = data.subregion || '—';
-  if (idiomEl)   idiomEl.textContent   = formatearIdiomas(data.languages);
-  if (monEdEl)   monEdEl.textContent   = formatearMonedas(data.currencies);
-  if (areaEl)    areaEl.textContent    = formatearArea(data.area);
+  if (pobEl) pobEl.textContent = formatearPoblacion(data.population);
+  if (regionEl) regionEl.textContent = data.region || '—';
+  if (subEl) subEl.textContent = data.subregion || '—';
+  if (idiomEl) idiomEl.textContent = formatearIdiomas(data.languages);
+  if (monEdEl) monEdEl.textContent = formatearMonedas(data.currencies);
+  if (areaEl) areaEl.textContent = formatearArea(data.area);
 }
 function pintarErrorPaises(bloque, mensaje) {
-  var errEl = bloque.querySelector('[data-p-error]');
-  var nombreEl = bloque.querySelector('[data-p-nombre]');
+  var errEl = bloque.querySelector('[data-p-error]'), nombreEl = bloque.querySelector('[data-p-nombre]');
   var banderaEl = bloque.querySelector('[data-p-bandera]');
   if (errEl) { errEl.hidden = false; errEl.textContent = mensaje || 'No se pudo cargar el país.'; }
   if (nombreEl) nombreEl.textContent = '—';
   if (banderaEl) banderaEl.innerHTML = '';
-  /* [v14] botón reintentar para este país concreto */
   var codEl = bloque.querySelector('[data-p-codigo]');
   botonReintento(bloque, function () { cargarPais(bloque, (codEl && codEl.value) || 'ESP'); });
 }
 function cargarPais(bloque, codigo) {
-  var errEl = bloque.querySelector('[data-p-error]');
-  var nombreEl = bloque.querySelector('[data-p-nombre]');
+  var errEl = bloque.querySelector('[data-p-error]'), nombreEl = bloque.querySelector('[data-p-nombre]');
   var banderaEl = bloque.querySelector('[data-p-bandera]');
   codigo = (codigo || '').toUpperCase().trim();
-  if (!/^[A-Z]{3}$/.test(codigo)) {
-    pintarErrorPaises(bloque, 'El código debe ser de 3 letras (ISO alfa-3). Ejemplo: ESP');
-    return;
-  }
+  if (!/^[A-Z]{3}$/.test(codigo)) { pintarErrorPaises(bloque, 'El código debe ser de 3 letras (ISO alfa-3). Ejemplo: ESP'); return; }
   if (nombreEl) nombreEl.textContent = 'Cargando ' + codigo + '…';
   if (banderaEl) banderaEl.innerHTML = '';
   if (errEl) errEl.hidden = true;
@@ -457,16 +368,13 @@ function obtenerListaPaises() {
 }
 function inicializarBloquePaises(bloque) {
   if (bloque.dataset.paisesListo === '1') return;
-  var codigoEl = bloque.querySelector('[data-p-codigo]');
-  var buscarEl = bloque.querySelector('[data-p-buscar]');
-  var aleatEl  = bloque.querySelector('[data-p-aleatorio]');
+  var codigoEl = bloque.querySelector('[data-p-codigo]'), buscarEl = bloque.querySelector('[data-p-buscar]');
+  var aleatEl = bloque.querySelector('[data-p-aleatorio]');
   var buscar = function () { var cod = codigoEl ? codigoEl.value : PAISES.codigo; cargarPais(bloque, cod); };
   on(buscarEl, 'click', buscar);
   on(codigoEl, 'keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); buscar(); } });
   on(aleatEl, 'click', function () {
-    obtenerListaPaises().then(function (lista) {
-      var cod = pick(lista); if (codigoEl) codigoEl.value = cod; cargarPais(bloque, cod);
-    });
+    obtenerListaPaises().then(function (lista) { var cod = pick(lista); if (codigoEl) codigoEl.value = cod; cargarPais(bloque, cod); });
   });
   bloque.dataset.paisesListo = '1';
   cargarPais(bloque, codigoEl ? codigoEl.value : PAISES.codigo);
@@ -475,7 +383,7 @@ function inicializarBloquePaises(bloque) {
 function inicializarPaises() { $$('[data-paises]').forEach(inicializarBloquePaises); }
 
 /* ══════════════════════════════════════════════════════════════════════
-   1e. CURIOSIDADES · Wikipedia random summary (sin clave)
+   1e. CURIOSIDADES
    ══════════════════════════════════════════════════════════════════════ */
 var CURIOSIDADES = { url: 'https://es.wikipedia.org/api/rest_v1/page/random/summary', maxCaracteres: 320 };
 function truncarTexto(txt, n) {
@@ -487,36 +395,31 @@ function truncarTexto(txt, n) {
   return corte + '…';
 }
 function pintarCuriosidad(bloque, data) {
-  var tituloEl = bloque.querySelector('[data-c-titulo]');
-  var textoEl  = bloque.querySelector('[data-c-texto]');
-  var imgEl    = bloque.querySelector('[data-c-imagen]');
-  var enlaceEl = bloque.querySelector('[data-c-enlace]');
-  var errEl    = bloque.querySelector('[data-c-error]');
+  var tituloEl = bloque.querySelector('[data-c-titulo]'), textoEl = bloque.querySelector('[data-c-texto]');
+  var imgEl = bloque.querySelector('[data-c-imagen]'), enlaceEl = bloque.querySelector('[data-c-enlace]');
+  var errEl = bloque.querySelector('[data-c-error]');
   if (errEl) { errEl.hidden = true; errEl.textContent = ''; }
-  quitarReintento(bloque); /* [v14] */
-  var titulo  = (data && data.title) || '—';
+  quitarReintento(bloque);
+  var titulo = (data && data.title) || '—';
   var extract = (data && data.extract) || '';
   var url = (data && data.content_urls && data.content_urls.desktop) ? data.content_urls.desktop.page : '';
   var img = (data && data.thumbnail) ? data.thumbnail.source : '';
   if (tituloEl) tituloEl.textContent = titulo;
-  if (textoEl)  textoEl.textContent  = extract ? truncarTexto(extract, CURIOSIDADES.maxCaracteres) : 'Sin texto para esta curiosidad.';
+  if (textoEl) textoEl.textContent = extract ? truncarTexto(extract, CURIOSIDADES.maxCaracteres) : 'Sin texto para esta curiosidad.';
   if (imgEl) imgEl.innerHTML = img ? '<img src="' + img + '" alt="' + titulo + '" loading="lazy">' : '';
   if (enlaceEl) { if (url) { enlaceEl.hidden = false; enlaceEl.href = url; } else { enlaceEl.hidden = true; } }
 }
 function pintarErrorCuriosidad(bloque, mensaje) {
-  var errEl = bloque.querySelector('[data-c-error]');
-  var tituloEl = bloque.querySelector('[data-c-titulo]');
-  var textoEl = bloque.querySelector('[data-c-texto]');
-  var imgEl = bloque.querySelector('[data-c-imagen]');
+  var errEl = bloque.querySelector('[data-c-error]'), tituloEl = bloque.querySelector('[data-c-titulo]');
+  var textoEl = bloque.querySelector('[data-c-texto]'), imgEl = bloque.querySelector('[data-c-imagen]');
   if (errEl) { errEl.hidden = false; errEl.textContent = mensaje || 'No se pudo cargar la curiosidad.'; }
   if (tituloEl) tituloEl.textContent = '—';
   if (textoEl) textoEl.textContent = '—';
   if (imgEl) imgEl.innerHTML = '';
-  botonReintento(bloque, function () { cargarCuriosidad(bloque); }); /* [v14] */
+  botonReintento(bloque, function () { cargarCuriosidad(bloque); });
 }
 function cargarCuriosidad(bloque) {
-  var errEl = bloque.querySelector('[data-c-error]');
-  var tituloEl = bloque.querySelector('[data-c-titulo]');
+  var errEl = bloque.querySelector('[data-c-error]'), tituloEl = bloque.querySelector('[data-c-titulo]');
   if (tituloEl) tituloEl.textContent = 'Buscando algo curioso…';
   if (errEl) errEl.hidden = true;
   fetch(CURIOSIDADES.url)
@@ -538,7 +441,7 @@ function inicializarBloqueCuriosidades(bloque) {
 function inicializarCuriosidades() { $$('[data-curiosidades]').forEach(inicializarBloqueCuriosidades); }
 
 /* ══════════════════════════════════════════════════════════════════════
-   2. EL CONMUTADOR DE PANTALLAS
+   2. CONMUTADOR DE PANTALLAS
    ══════════════════════════════════════════════════════════════════════ */
 var bar, panel, listaEl, cuerpo, sello, txtEl, ecoEl;
 
@@ -561,7 +464,6 @@ var DESTINOS = {
   carta   : { txt:'← atrás',      acc:function(){ irCarta(); } }
 };
 
-/* [v14] volver al índice: sube a la carta 3D y gira hasta la cara pedida */
 function volverAlIndice(id) {
   if (document.body.dataset.pantalla !== 'diario') setPantalla('diario');
   var carta = $('.carta3d');
@@ -586,8 +488,6 @@ document.addEventListener('click', function (e) {
   var d = DESTINOS[b.getAttribute('data-ir')];
   if (d) d.acc();
 });
-
-/* [v14] delegación del botón "Volver al índice" */
 document.addEventListener('click', function (e) {
   var b = e.target.closest && e.target.closest('[data-volver]');
   if (!b) return;
@@ -596,10 +496,10 @@ document.addEventListener('click', function (e) {
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   2b. PORTADA: encendido aleatorio del nombre + parpadeo final
+   2b. PORTADA: neón
    ══════════════════════════════════════════════════════════════════════ */
 var letrasPortada = [];
-var portadaTimer  = null;
+var portadaTimer = null;
 
 function prepararLetrasPortada() {
   var h1 = document.getElementById('portada-title');
@@ -644,8 +544,23 @@ function animarPortada() {
   portadaTimer = setTimeout(encender, 140);
 }
 
+/* [v15] inclinación 3D suave de las tarjetas arcade */
+modulo('tilt', function () {
+  if (REDUCED) return;
+  $$('.tarjeta3d').forEach(function (t) {
+    on(t, 'pointermove', function (e) {
+      var r = t.getBoundingClientRect();
+      var x = (e.clientX - r.left) / r.width - .5;
+      var y = (e.clientY - r.top) / r.height - .5;
+      t.style.setProperty('--ty', (x * 10).toFixed(2) + 'deg');
+      t.style.setProperty('--tx', (-y * 10).toFixed(2) + 'deg');
+    });
+    on(t, 'pointerleave', function () { t.style.setProperty('--tx', '0deg'); t.style.setProperty('--ty', '0deg'); });
+  });
+});
+
 /* ══════════════════════════════════════════════════════════════════════
-   3. EL DIARIO — se construye entero desde el template
+   3. EL DIARIO
    ══════════════════════════════════════════════════════════════════════ */
 modulo('diario', function () {
   var cuerpoD = document.getElementById('diarioCuerpo');
@@ -654,14 +569,12 @@ modulo('diario', function () {
   cuerpoD.innerHTML = PLATOS.map(function (p) {
     var clon = p.art.cloneNode(true);
     clon.removeAttribute('id');
-    /* [v14] botón "Volver al índice" solo en los apartados del índice 3D */
     var pos = CARAS_INDICE.indexOf(p.id);
     var volver = pos >= 0
       ? '<button class="entrada__volver" type="button" data-volver="' + p.id + '">← Volver al índice' +
         '<span class="entrada__pos">' + ('0' + (pos + 1)).slice(-2) + '/' + ('0' + CARAS_INDICE.length).slice(-2) + '</span></button>'
       : '';
-    return '<section class="entrada" id="' + p.id + '">' +
-             volver +
+    return '<section class="entrada" id="' + p.id + '">' + volver +
              '<p class="num">plato ' + ('0' + p.n).slice(-2) + '</p>' +
              clon.innerHTML +
              '<div class="nav3">' + botonera('diario') + '</div>' +
@@ -683,12 +596,11 @@ modulo('diario', function () {
 
   var n3 = document.getElementById('nav3Contacto');
   if (n3) n3.innerHTML = botonera('contacto');
-
   on(document.getElementById('diarioCopyMail'), 'click', function () { copiar(this); });
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   4. EL BAR — carta, serveta y contacto
+   4. EL BAR
    ══════════════════════════════════════════════════════════════════════ */
 function construirCarta() {
   if (!listaEl) return;
@@ -794,7 +706,7 @@ modulo('bar', function () {
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   5. MÁQUINA DE ESCRIBIR del camarero
+   5. MÁQUINA DE ESCRIBIR
    ══════════════════════════════════════════════════════════════════════ */
 var cola = [], escribiendo = null, reloj = null;
 function fijar(t) { if (ecoEl) ecoEl.hidden = true; if (txtEl) txtEl.textContent = t; }
@@ -835,7 +747,7 @@ function saltarTexto() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   6. ESCENA PIXEL-ART (canvas) — igual que en tu v12
+   6. ESCENA PIXEL-ART (canvas) — sin cambios
    ══════════════════════════════════════════════════════════════════════ */
 var Escena = (function () {
   var cv = document.getElementById('barCanvas');
@@ -1033,12 +945,12 @@ var Escena = (function () {
       } else if (!v && st.corriendo) { cancelAnimationFrame(st.raf); st.corriendo = false; }
     },
     hablar: function (v) { st.hablando = v; },
-    pulso:  function () { st.pulso = 1; }
+    pulso: function () { st.pulso = 1; }
   };
 })();
 
 /* ══════════════════════════════════════════════════════════════════════
-   7. SONIDO opcional + copiar correo
+   7. SONIDO + COPIAR
    ══════════════════════════════════════════════════════════════════════ */
 var Sonido = (function () {
   var ctx = null, activo = false;
@@ -1057,7 +969,7 @@ var Sonido = (function () {
   }
   return {
     conmutar: function () { activo = !activo; if (activo) { audio(); pita(660, .02, .05); } return activo; },
-    blip:   function () { pita(420 + Math.random() * 260, .014, .045); },
+    blip: function () { pita(420 + Math.random() * 260, .014, .045); },
     tintir: function () { pita(1180, .008, .06); }
   };
 })();
@@ -1074,7 +986,7 @@ function copiar(btn) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   7b. PANTALLA DE CARGA — igual que tu v12 (solo 'Volviendo' corregido)
+   7b. PANTALLA DE CARGA
    ══════════════════════════════════════════════════════════════════════ */
 var cargaOcupada = false;
 modulo('carga', function () {
@@ -1082,7 +994,7 @@ modulo('carga', function () {
   var msgEl   = document.getElementById('cargaMsg');
   var pistaEl = document.getElementById('cargaPista');
   if (!cargaEl || !msgEl || !pistaEl) return;
-  var CARGA_BASE  = 520, CARGA_EXTRA = 1500;
+  var CARGA_BASE = 520, CARGA_EXTRA = 1500;
   function durCarga() { return REDUCED ? Math.max(CARGA_EXTRA, 400) : (CARGA_BASE + Math.random() * 380) + CARGA_EXTRA; }
   var DESTINOS_CON_CARGA = ['portada', 'diario', 'contacto'];
   function accionDesdeBoton(b) {
@@ -1106,7 +1018,7 @@ modulo('carga', function () {
     if (ir === 'diario')  return pick(['Abriendo el diario entero…','Pasando servilletas…','Compilando la vida de Joan…']);
     if (ir === 'bar')     return pick(['Empujando la puerta del bar…','Encendiendo el ABIERTO…','El camarero se acerca…']);
     if (ir === 'contacto')return pick(['Llamando al camarero…','Pidiendo la cuenta…','Buscando papel y boli…']);
-    if (ir === 'carta')   return pick(['Volviendo a la pizarra…','Repasando la carta…']); /* [v14] ortografía */
+    if (ir === 'carta')   return pick(['Volviendo a la pizarra…','Repasando la carta…']);
     if (b.classList.contains('plato')) {
       var nameEl = $('.plato__name', b); var name = nameEl ? nameEl.textContent.trim() : 'un plato';
       return pick(['Sirviendo ' + name + '…','Buscando la servilleta de ' + name + '…','El camarero trae ' + name + '…']);
@@ -1157,7 +1069,7 @@ modulo('carga', function () {
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   7c. TEMA CLARO / OSCURO — igual que tu v12
+   7c. TEMA CLARO / OSCURO
    ══════════════════════════════════════════════════════════════════════ */
 modulo('tema', function () {
   var raiz = document.documentElement, clave = 'joan-tema', botones = $$('[data-tema]');
@@ -1169,7 +1081,7 @@ modulo('tema', function () {
     botones.forEach(function (b) { b.setAttribute('aria-pressed', claro ? 'true' : 'false'); b.textContent = claro ? '☾ oscuro' : '☀ claro'; });
     var meta = document.querySelector('meta[name="theme-color"]');
     if (!meta) { meta = document.createElement('meta'); meta.setAttribute('name', 'theme-color'); document.head.appendChild(meta); }
-    meta.setAttribute('content', claro ? '#f5ead6' : '#070505');
+    meta.setAttribute('content', claro ? '#eef2f8' : '#04070d');
   }
   function aplicar(valor, guardar) { raiz.setAttribute('data-tema', valor); pintarBotones(); if (guardar) { try { localStorage.setItem(clave, valor); } catch (e) {} } }
   botones.forEach(function (b) {
@@ -1222,11 +1134,10 @@ modulo('monedas', function () { inicializarMonedas(); cargarTasas(); if (MONEDAS
 modulo('paises', function () { inicializarPaises(); });
 modulo('curiosidades', function () { inicializarCuriosidades(); });
 
-console.log('%c[web] v14 cargada · ' + PLATOS.length + ' apartados', 'color:#ffb066;font-weight:700');
+console.log('%c[web] v15 ARCADE cargada · ' + PLATOS.length + ' apartados', 'color:#ff9f1c;font-weight:700');
 
 /* ══════════════════════════════════════════════════════════════════════
-   9. [MEJORAS · CONÓCEME] — barra de lectura, etiquetas y revelados
-   (el resaltado de la carta se ha movido a modulo('carta3d'))
+   9. [MEJORAS · CONÓCEME]
    ══════════════════════════════════════════════════════════════════════ */
 modulo('conoceme', function () {
   document.documentElement.classList.add('mejoras');
@@ -1256,7 +1167,7 @@ modulo('conoceme', function () {
   });
 
   var barra = document.getElementById('lecturaBarra');
-  var pct   = $('.lectura__pct');
+  var pct = $('.lectura__pct');
   function progreso() {
     if (!barra) return;
     var h = document.documentElement;
@@ -1278,15 +1189,7 @@ modulo('conoceme', function () {
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   10. [CARTA-3D] índice cilíndrico girable — TU implementación, mejorada
-   ──────────────────────────────────────────────────────────────────────
-   [v14] cambios sobre tu modulo('carta3d') original, sin reescribirlo:
-     · NO pisa el texto de tus caras (conserva tu «Entrar →» del HTML)
-     · --r calculado según el ancho real del cubo (se adapta a móvil)
-     · --luz y --giro por cara → activa la iluminación del CSS [v13]
-     · aria-selected en puntos + Home/End
-     · is-activo sincronizado con el scroll (resalta la cara que lees)
-     · expone Carta3D.irA() para que "Volver al índice" gire el cilindro
+   10. [CARTA-3D] índice cilíndrico girable
    ══════════════════════════════════════════════════════════════════════ */
 modulo('carta3d', function () {
   var cubo = document.getElementById('cubo');
@@ -1298,14 +1201,11 @@ modulo('carta3d', function () {
   var paso = 360 / N;
   var rot = 0, activo = 0;
 
-  /* [v14] radio dinámico: r = (ancho/2) / tan(π/N). Cubo 320px→~386, 250px→~302 */
   function calcularRadio() {
     var ancho = cubo.getBoundingClientRect().width || 320;
     var r = Math.round((ancho / 2) / Math.tan(Math.PI / N));
     cubo.style.setProperty('--r', Math.max(150, r) + 'px');
   }
-
-  /* [v14] iluminación por cara: luz = max(0, cos(ángulo respecto a cámara)) */
   function iluminar() {
     caras.forEach(function (c, i) {
       var ang = (i * paso + rot) * Math.PI / 180;
@@ -1315,30 +1215,29 @@ modulo('carta3d', function () {
     });
   }
 
-  /* 1 · relleno SOLO si la cara viene vacía (respeta tu HTML) */
   var CARAS3D = {
-    'sobre-mi' : { n:'01', title:'Quién soy',               desc:'Mi forma de trabajar: medir, ejecutar, corregir.', tema:'destello' },
-    'esgrima'  : { n:'02', title:'Siete años de esgrima',   desc:'Disciplina, pista y el hábito de revisar el error.', tema:'corte' },
-    'viajar'   : { n:'03', title:'Viajar',                  desc:'Experiencias fuera de casa para valerte por ti.', tema:'viaje' },
-    'musica'   : { n:'04', title:'Música',                  desc:'Una herramienta diaria, no un adorno.', tema:'musica' },
-    'ingles'   : { n:'05', title:'Aprender inglés',         desc:'Independencia para moverte sin depender de nadie.', tema:'idioma' },
-    'estudios' : { n:'06', title:'Estudios',                desc:'Bachillerato, 1º DAM y el C1 de valenciano.', tema:'codigo' },
-    'ia'       : { n:'07', title:'Inteligencia artificial', desc:'Vivir de crear. Prototipo al día, criterio primero.', tema:'ia' },
-    'proyectos': { n:'08', title:'Mis proyectos',           desc:'Lo que estoy construyendo ahora mismo.', tema:'proyectos' }
+    'sobre-mi' : { n:'01', ico:'🧭', title:'Quién soy',               desc:'Mi forma de trabajar: medir, ejecutar, corregir.', tema:'destello' },
+    'esgrima'  : { n:'02', ico:'⚔️', title:'Siete años de esgrima',   desc:'Disciplina, pista y el hábito de revisar el error.', tema:'corte' },
+    'viajar'   : { n:'03', ico:'✈️', title:'Viajar',                  desc:'Experiencias fuera de casa para valerte por ti.', tema:'viaje' },
+    'musica'   : { n:'04', ico:'🎧', title:'Música',                  desc:'Una herramienta diaria, no un adorno.', tema:'musica' },
+    'ingles'   : { n:'05', ico:'🗣️', title:'Aprender inglés',         desc:'Independencia para moverte sin depender de nadie.', tema:'idioma' },
+    'estudios' : { n:'06', ico:'🎓', title:'Estudios',                desc:'Bachillerato, 1º DAM y el C1 de valenciano.', tema:'codigo' },
+    'ia'       : { n:'07', ico:'🤖', title:'Inteligencia artificial', desc:'Vivir de crear. Prototipo al día, criterio primero.', tema:'ia' },
+    'proyectos': { n:'08', ico:'🚀', title:'Mis proyectos',           desc:'Lo que estoy construyendo ahora mismo.', tema:'proyectos' }
   };
   caras.forEach(function (c, i) {
     var id = c.dataset.id, d = CARAS3D[id];
     if (!c.style.getPropertyValue('--a')) c.style.setProperty('--a', i);
     if (d) c.dataset.tema = c.dataset.tema || d.tema;
-    if (!d || $('.cara__title', c)) return; /* [v14] ya tiene contenido → no lo toco */
+    if (!d || $('.cara__title', c)) return;
     c.innerHTML =
       '<span class="cara__num">' + d.n + '</span>' +
+      '<span class="cara__ico" aria-hidden="true">' + d.ico + '</span>' +
       '<h3 class="cara__title">' + d.title + '</h3>' +
       '<p class="cara__desc">' + d.desc + '</p>' +
       '<button class="cara__abrir" type="button" data-abrir="' + id + '">Entrar →</button>';
   });
 
-  /* 2 · puntos indicadores */
   var puntos = [];
   caras.forEach(function (c, i) {
     var b = document.createElement('button');
@@ -1361,12 +1260,11 @@ modulo('carta3d', function () {
     var idx = ((Math.round(rot / paso) % N) + N) % N;
     if (idx !== activo) { activo = idx; marcarFrente(); fxTema(caras[activo].dataset.tema); }
     else marcarFrente();
-    iluminar(); /* [v14] */
+    iluminar();
   }
   function irA(i) { rot = -i * paso; aplicar(); }
   function irPaso(d) { rot -= d * paso; aplicar(); }
 
-  /* [v14] resaltar la cara que corresponde a la entrada visible al leer */
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (ents) {
       ents.forEach(function (en) {
@@ -1379,7 +1277,6 @@ modulo('carta3d', function () {
     $$('#diarioCuerpo .entrada').forEach(function (s) { io.observe(s); });
   }
 
-  /* 3 · animación temática según la cara que pasa a frente */
   function fxTema(tema) {
     if (REDUCED || !fx) return;
     var set = {
@@ -1407,7 +1304,6 @@ modulo('carta3d', function () {
     Sonido.tintir();
   }
 
-  /* 4 · arrastre con inercia + enganche (igual que tu v12) */
   var arrastrando = false, lastX = 0, moved = 0, vel = 0;
   function down(x) { arrastrando = true; lastX = x; moved = 0; vel = 0; cubo.classList.add('is-drag'); }
   function move(x) {
@@ -1417,7 +1313,7 @@ modulo('carta3d', function () {
     cubo.style.transform = 'translateZ(calc(-1 * var(--r))) rotateY(' + rot + 'deg)';
     var idx = ((Math.round(rot / paso) % N) + N) % N;
     if (idx !== activo) { activo = idx; marcarFrente(); }
-    iluminar(); /* [v14] */
+    iluminar();
   }
   function up() {
     if (!arrastrando) return;
@@ -1436,11 +1332,9 @@ modulo('carta3d', function () {
   cubo.addEventListener('pointercancel', up);
   cubo.addEventListener('lostpointercapture', up);
 
-  /* 5 · flechas ◀ ▶ */
   on(document.getElementById('cuboPrev'), 'click', function () { irPaso(-1); });
   on(document.getElementById('cuboNext'), 'click', function () { irPaso(1); });
 
-  /* 6 · teclado sobre la carta (← → Home End) */
   var zona = cubo.closest('.carta3d');
   if (zona) {
     zona.setAttribute('tabindex', '0');
@@ -1448,26 +1342,20 @@ modulo('carta3d', function () {
     on(zona, 'keydown', function (e) {
       if (e.key === 'ArrowLeft')  { e.preventDefault(); irPaso(-1); }
       if (e.key === 'ArrowRight') { e.preventDefault(); irPaso(1); }
-      if (e.key === 'Home')       { e.preventDefault(); irA(0); }          /* [v14] */
-      if (e.key === 'End')        { e.preventDefault(); irA(N - 1); }      /* [v14] */
+      if (e.key === 'Home')       { e.preventDefault(); irA(0); }
+      if (e.key === 'End')        { e.preventDefault(); irA(N - 1); }
     });
   }
 
-  /* 7 · botón "Entrar →" de cada cara → abre el apartado */
   on(cubo, 'click', function (e) {
     var b = e.target.closest && e.target.closest('[data-abrir]'); if (!b) return;
     var t = document.getElementById(b.getAttribute('data-abrir'));
     if (t) t.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth' });
   });
 
-  /* estado inicial */
   calcularRadio(); marcarFrente(); aplicar();
-
-  /* [v14] recalcular radio al cambiar de tamaño (móvil/tablet/rotación) */
   var rt;
   on(window, 'resize', function () { clearTimeout(rt); rt = setTimeout(function () { calcularRadio(); aplicar(); }, 150); });
-
-  /* [v14] exponer API para "Volver al índice" */
   Carta3D = { irA: irA, activo: function () { return activo; } };
 });
 

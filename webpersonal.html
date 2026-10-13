@@ -110,24 +110,79 @@
 
       <!-- [MEJORA 2] el sumario se convierte en índice visual por JS -->
             <!-- ── CARTA-MENÚ del diario (sustituye al antiguo <nav class="sumario">) ── -->
-      <nav class="carta" aria-label="Índice del diario">
-        <div class="carta__marco">
-          <p class="carta__title">El diario de Joan</p>
-          <ol class="carta__lista">
-            <li><a class="carta__item" href="#sobre-mi"   data-id="sobre-mi"><span class="carta__num">01</span><span class="carta__dots" aria-hidden="true"></span><span class="carta__name">Quién soy</span></a></li>
-            <li><a class="carta__item" href="#esgrima"    data-id="esgrima"><span class="carta__num">02</span><span class="carta__dots" aria-hidden="true"></span><span class="carta__name">Siete años de esgrima</span></a></li>
-            <li><a class="carta__item" href="#viajar"     data-id="viajar"><span class="carta__num">03</span><span class="carta__dots" aria-hidden="true"></span><span class="carta__name">Viajar</span></a></li>
-            <li><a class="carta__item" href="#musica"     data-id="musica"><span class="carta__num">04</span><span class="carta__dots" aria-hidden="true"></span><span class="carta__name">Música</span></a></li>
-            <li><a class="carta__item" href="#ingles"     data-id="ingles"><span class="carta__num">05</span><span class="carta__dots" aria-hidden="true"></span><span class="carta__name">Aprender inglés</span></a></li>
-            <li><a class="carta__item" href="#estudios"   data-id="estudios"><span class="carta__num">06</span><span class="carta__dots" aria-hidden="true"></span><span class="carta__name">Estudios</span></a></li>
-            <li><a class="carta__item" href="#ia"         data-id="ia"><span class="carta__num">07</span><span class="carta__dots" aria-hidden="true"></span><span class="carta__name">Inteligencia artificial</span></a></li>
-            <li><a class="carta__item" href="#proyectos"  data-id="proyectos"><span class="carta__num">08</span><span class="carta__dots" aria-hidden="true"></span><span class="carta__name">Mis proyectos</span></a></li>
-          </ol>
-          <button class="carta__empezar" id="empezarLeer" type="button">↓ Empezar a leer ↓</button>
-        </div>
-      </nav>
-    </header>
+           <!-- ══ CARTA-3D: índice cilíndrico girable ══ -->
+      <section class="carta3d" aria-label="Índice del diario (girable)">
+        <div class="carta3d__fx" id="cartaFx" aria-hidden="true"></div>
 
+        <div class="carta3d__escena">
+          <div class="carta3d__cubo" id="cubo" style="--r:362px">
+
+            <article class="cara" data-cara data-id="sobre-mi" data-tema="destello" style="--a:0">
+              <span class="cara__num">01</span>
+              <h3 class="cara__title">Quién soy</h3>
+              <p class="cara__desc">Mi forma de trabajar: medir, ejecutar, corregir.</p>
+              <button class="cara__abrir" type="button" data-abrir="sobre-mi">Abrir →</button>
+            </article>
+
+            <article class="cara" data-cara data-id="esgrima" data-tema="corte" style="--a:1">
+              <span class="cara__num">02</span>
+              <h3 class="cara__title">Siete años de esgrima</h3>
+              <p class="cara__desc">Disciplina, pista y el hábito de revisar el error.</p>
+              <button class="cara__abrir" type="button" data-abrir="esgrima">Abrir →</button>
+            </article>
+
+            <article class="cara" data-cara data-id="viajar" data-tema="viaje" style="--a:2">
+              <span class="cara__num">03</span>
+              <h3 class="cara__title">Viajar</h3>
+              <p class="cara__desc">Experiencias fuera de casa para desenvolverse solo.</p>
+              <button class="cara__abrir" type="button" data-abrir="viajar">Abrir →</button>
+            </article>
+
+            <article class="cara" data-cara data-id="musica" data-tema="musica" style="--a:3">
+              <span class="cara__num">04</span>
+              <h3 class="cara__title">Música</h3>
+              <p class="cara__desc">Una herramienta diaria, no un adorno.</p>
+              <button class="cara__abrir" type="button" data-abrir="musica">Abrir →</button>
+            </article>
+
+            <article class="cara" data-cara data-id="ingles" data-tema="idioma" style="--a:4">
+              <span class="cara__num">05</span>
+              <h3 class="cara__title">Aprender inglés</h3>
+              <p class="cara__desc">Independencia para moverme sin depender de nadie.</p>
+              <button class="cara__abrir" type="button" data-abrir="ingles">Abrir →</button>
+            </article>
+
+            <article class="cara" data-cara data-id="estudios" data-tema="codigo" style="--a:5">
+              <span class="cara__num">06</span>
+              <h3 class="cara__title">Estudios</h3>
+              <p class="cara__desc">Bachillerato, 1º DAM y el C1 de valenciano.</p>
+              <button class="cara__abrir" type="button" data-abrir="estudios">Abrir →</button>
+            </article>
+
+            <article class="cara" data-cara data-id="ia" data-tema="ia" style="--a:6">
+              <span class="cara__num">07</span>
+              <h3 class="cara__title">Inteligencia artificial</h3>
+              <p class="cara__desc">Vivir de crear. Prototipo al día, criterio primero.</p>
+              <button class="cara__abrir" type="button" data-abrir="ia">Abrir →</button>
+            </article>
+
+            <article class="cara" data-cara data-id="proyectos" data-tema="proyectos" style="--a:7">
+              <span class="cara__num">08</span>
+              <h3 class="cara__title">Mis proyectos</h3>
+              <p class="cara__desc">Lo que estoy construyendo ahora mismo.</p>
+              <button class="cara__abrir" type="button" data-abrir="proyectos">Abrir →</button>
+            </article>
+
+          </div>
+        </div>
+
+        <div class="carta3d__controles">
+          <button class="carta3d__nav" id="cuboPrev" type="button" aria-label="Anterior">◀</button>
+          <div class="carta3d__puntos" id="cuboPuntos" role="tablist"></div>
+          <button class="carta3d__nav" id="cuboNext" type="button" aria-label="Siguiente">▶</button>
+        </div>
+        <p class="carta3d__pista">◀ arrastra o usa las flechas ▶</p>
+      </section>
     <!-- ────────────────────────────────────────────────────────────
          [MEJORA 5] ficha de perfil rápido
          ──────────────────────────────────────────────────────────── -->

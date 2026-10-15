@@ -81,6 +81,9 @@
       <button class="btn4" type="button" data-ir="portada">⌂ portada</button>
       <button class="btn4" type="button" data-ir="bar">☰ el bar</button>
       <button class="btn4" type="button" data-ir="contacto">✉ contactar</button>
+      <!-- [v17] accesos directos de la barra (la imagen los pone en la nav superior) -->
+<button class="btn4" type="button" data-scroll="proyectos">⌗ proyectos</button>
+<button class="btn4" type="button" data-scroll="herramientas">⚙ herramientas</button>
       <button class="btn4" type="button" data-tema aria-pressed="false">☀ claro</button>
     </div>
 
@@ -276,6 +279,25 @@
         <a href="mailto:catalajoan19@gmail.com">catalajoan19@gmail.com</a>
         <button type="button" id="diarioCopyMail" data-copy="catalajoan19@gmail.com" data-carga="no">copiar</button>
       </p>
+      <!-- [v17] · Formulario que abre tu gestor de correo (no necesita servidor).
+     Si no lo quieres, bórralo: el botón ✉ Contactar de arriba sigue igual. -->
+<form class="form-contacto" id="formContacto" novalidate>
+  <label class="fc__campo">
+    <span>Nombre</span>
+    <input type="text" name="nombre" required autocomplete="name">
+  </label>
+  <label class="fc__campo">
+    <span>Email</span>
+    <input type="email" name="email" required autocomplete="email">
+  </label>
+  <label class="fc__campo">
+    <span>Mensaje</span>
+    <textarea name="mensaje" rows="4" required></textarea>
+  </label>
+  <p class="fc__estado" id="formEstado" role="status" aria-live="polite"></p>
+  <button class="fc__enviar" type="submit">Enviar mensaje →</button>
+  <p class="fc__nota">Se abrirá tu aplicación de correo con el mensaje escrito.</p>
+</form>
       <ul class="contacto__redes">
         <li><a href="https://github.com/" target="_blank" rel="noopener">GitHub</a></li>
         <li><a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a></li>
@@ -525,7 +547,32 @@
         <h2>Proyectos</h2>
         <p class="post__meta">2025 · Lo que estoy construyendo</p>
       </header>
+<!-- [v17] · Proyectos como tarjetas visuales (enlazan a secciones reales) -->
+<div class="grid-proy">
+  <article class="tar-proy">
+    <span class="tar-proy__ico" aria-hidden="true">🏠</span>
+    <h3 class="tar-proy__tit">Casa Joan</h3>
+    <p class="tar-proy__desc">Esta web: diario, bar e índice 3D hechos a mano.</p>
+    <p class="tar-proy__etq"><span>Web</span><span>Personal</span></p>
+    <button class="tar-proy__link" type="button" data-ir="portada">Ver proyecto →</button>
+  </article>
 
+  <article class="tar-proy">
+    <span class="tar-proy__ico" aria-hidden="true">🛠️</span>
+    <h3 class="tar-proy__tit">Herramientas</h3>
+    <p class="tar-proy__desc">Conversor, clima, países y curiosidades con APIs reales.</p>
+    <p class="tar-proy__etq"><span>APIs</span><span>Utilidades</span></p>
+    <button class="tar-proy__link" type="button" data-scroll="herramientas">Ver herramientas →</button>
+  </article>
+
+  <article class="tar-proy">
+    <span class="tar-proy__ico" aria-hidden="true">🚧</span>
+    <h3 class="tar-proy__tit">En desarrollo…</h3>
+    <p class="tar-proy__desc">Mis próximos proyectos con IA. Lo mejor está por llegar.</p>
+    <p class="tar-proy__etq"><span>Idea</span><span>Futuro</span></p>
+    <button class="tar-proy__link" type="button" data-scroll="ia">Ver más →</button>
+  </article>
+</div>
       
 
       <p>
@@ -538,7 +585,37 @@
         <h2>El tiempo ahora</h2>
         <p class="post__meta">OpenWeather · en vivo</p>
       </header>
+<!-- [v17] · HERRAMIENTAS: agrupa las 4 utilidades que ya existen -->
+<article class="post" id="herramientas">
+  <header class="post__head">
+    <h2>Herramientas</h2>
+    <p class="post__meta">Utilidades en vivo · sin base de datos</p>
+  </header>
+  <p>Pequeñas utilidades, grandes momentos. Cada tarjeta abre su herramienta.</p>
 
+  <div class="grid-herr">
+    <a class="tar-herr" href="#monedas"   data-scroll="monedas">
+      <span class="tar-herr__ico" aria-hidden="true">💱</span>
+      <span class="tar-herr__tit">Conversor de divisas</span>
+      <span class="tar-herr__sub">Tipo de cambio en tiempo real</span>
+    </a>
+    <a class="tar-herr" href="#clima"     data-scroll="clima">
+      <span class="tar-herr__ico" aria-hidden="true">☀️</span>
+      <span class="tar-herr__tit">El tiempo</span>
+      <span class="tar-herr__sub">El clima donde estés</span>
+    </a>
+    <a class="tar-herr" href="#paises"    data-scroll="paises">
+      <span class="tar-herr__ico" aria-hidden="true">🌐</span>
+      <span class="tar-herr__tit">Países</span>
+      <span class="tar-herr__sub">Explora el mundo</span>
+    </a>
+    <a class="tar-herr" href="#curiosidades" data-scroll="curiosidades">
+      <span class="tar-herr__ico" aria-hidden="true">💡</span>
+      <span class="tar-herr__tit">Curiosidades</span>
+      <span class="tar-herr__sub">¿Sabías que…?</span>
+    </a>
+  </div>
+</article>
       <div class="clima" data-clima>
         <p class="clima__estado" data-clima-estado>Cargando el tiempo…</p>
         <p class="clima__temp" data-clima-temp>— °C</p>
@@ -667,5 +744,7 @@
 </script>
 
 <script src="script.js" defer></script>
+<!-- [v17] · volver arriba: aparece al bajar en diario/bar -->
+<button class="backtop" id="backTop" type="button" aria-label="Volver arriba">↑</button>
 </body>
 </html>

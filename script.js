@@ -96,7 +96,7 @@ PLATOS = leerPlatos();
    1b. CLIMA OPENWEATHER
    ══════════════════════════════════════════════════════════════════════ */
 var CLIMA = {
-  key: '5796a0d1d068a83ebae6d0f194fce351',
+  key: '', // Configurar solo en servidor; no publicar claves en el navegador.
   ciudad: 'Valencia,ES',
   lat: null, lon: null,
   unidades: 'metric', lang: 'es', cadaMinutos: 10
@@ -159,17 +159,24 @@ function pintarErrorClima(mensaje) {
   });
 }
 function cargarClima() {
-  if (!CLIMA.key || CLIMA.key.indexOf('TU_API_KEY') > -1) { pintarErrorClima('Falta la API key en script.js.'); return; }
-  fetch(climaUrl())
+  var cfg = window.CASA_JOAN_CONFIG || {};
+  if (!cfg.climaUrl && !CLIMA.key) {
+    pintarErrorClima('Configura el endpoint seguro /api/clima en el servidor.');
+    return;
+  }
+  fetch(climaUrl(), { headers: { 'Accept': 'application/json' } })
     .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(pintarClima)
+    .then(function (data) {
+      if (!data || !Array.isArray(data.weather) || !data.main) throw new Error('Respuesta del clima no válida');
+      pintarClima(data);
+    })
     .catch(function (e) { console.error('[clima]', e); pintarErrorClima(e.message); });
 }
 
 /* ══════════════════════════════════════════════════════════════════════
    1c. DIVISAS
    ══════════════════════════════════════════════════════════════════════ */
-var MONEDAS = { key: '26b774ebd2e1fc8cd152b215', base: 'EUR', cadaMinutos: 30 };
+var MONEDAS = { key: '', base: 'EUR', cadaMinutos: 30 }; // La clave debe permanecer en el servidor.
 var LISTA_MONEDAS = [
   { code:'EUR', name:'Euro' },{ code:'USD', name:'Dólar estadounidense' },
   { code:'GBP', name:'Libra esterlina' },{ code:'JPY', name:'Yen japonés' },
@@ -237,11 +244,17 @@ function pintarErrorMonedas(mensaje) {
   });
 }
 function cargarTasas() {
-  if (!MONEDAS.key || MONEDAS.key.indexOf('PEGA_TU_KEY') > -1) { pintarErrorMonedas('Falta la API key de ExchangeRate-API en script.js.'); return; }
-  fetch(monedasUrl(MONEDAS.base))
+  var cfg = window.CASA_JOAN_CONFIG || {};
+  if (!cfg.monedasUrl && !MONEDAS.key) {
+    pintarErrorMonedas('Configura el endpoint seguro /api/tasas en el servidor.');
+    return;
+  }
+  fetch(monedasUrl(MONEDAS.base), { headers: { 'Accept': 'application/json' } })
     .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(function (data) {
-      if (data.result && data.result !== 'success') throw new Error(data['error-type'] || 'respuesta de error');
+      if (!data || (data.result && data.result !== 'success') || !data.conversion_rates) {
+        throw new Error((data && data['error-type']) || 'Respuesta de tasas no válida');
+      }
       ultimaTasas = data; pintarMonedas();
     })
     .catch(function (e) { console.error('[monedas]', e); pintarErrorMonedas('No se pudieron cargar las tasas: ' + e.message); });
@@ -1204,9 +1217,15 @@ modulo('carta3d', function () {
   var rot = 0, activo = 0;
 
   function calcularRadio() {
+    // El radio depende del ancho real de las caras y del número de caras.
+    // No imponer un mínimo fijo: en móvil deformaría el polígono.
     var ancho = cubo.getBoundingClientRect().width || 320;
-    var r = Math.round((ancho / 2) / Math.tan(Math.PI / N));
-    cubo.style.setProperty('--r', Math.max(150, r) + 'px');
+    var r = (ancho / 2) / Math.tan(Math.PI / N);
+    cubo.style.setProperty('--r', Math.max(1, r).toFixed(2) + 'px');
+  }
+  function indiceDesdeRotacion() {
+    // irA(i) aplica -i * paso; por eso el índice necesita invertir el signo.
+    return ((-Math.round(rot / paso) % N) + N) % N;
   }
   function iluminar() {
     caras.forEach(function (c, i) {
@@ -1251,15 +1270,19 @@ modulo('carta3d', function () {
   });
 
   function marcarFrente() {
-    caras.forEach(function (c, i) { c.classList.toggle('is-frente', i === activo); });
+    caras.forEach(function (c, i) {
+      c.classList.toggle('is-frente', i === activo);
+      c.setAttribute('aria-current', i === activo ? 'true' : 'false');
+    });
     puntos.forEach(function (p, i) {
       p.classList.toggle('is-on', i === activo);
       p.setAttribute('aria-selected', i === activo ? 'true' : 'false');
+      p.tabIndex = i === activo ? 0 : -1;
     });
   }
   function aplicar() {
     cubo.style.transform = 'translateZ(calc(-1 * var(--r))) rotateY(' + rot + 'deg)';
-    var idx = ((Math.round(rot / paso) % N) + N) % N;
+    var idx = indiceDesdeRotacion();
     if (idx !== activo) { activo = idx; marcarFrente(); fxTema(caras[activo].dataset.fx); } // [v15.2] era dataset.tema
     else marcarFrente();
     iluminar();
@@ -1313,7 +1336,7 @@ modulo('carta3d', function () {
     var d = x - lastX; lastX = x; moved += Math.abs(d); vel = d;
     rot += d * 0.35;
     cubo.style.transform = 'translateZ(calc(-1 * var(--r))) rotateY(' + rot + 'deg)';
-    var idx = ((Math.round(rot / paso) % N) + N) % N;
+    var idx = indiceDesdeRotacion();
     if (idx !== activo) { activo = idx; marcarFrente(); }
     iluminar();
   }

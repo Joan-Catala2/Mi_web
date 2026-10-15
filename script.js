@@ -1,7 +1,7 @@
 /* ══════════════════════════════════════════════════════════════════════
-   script.js v17 · Joan Català Mateu (tema ARCADE, sin cambiar paleta)
-   v17 = v15.2 + [scroll-directo] + [backtop] + [form-mailto]
-   Nada de colores nuevos: solo reutiliza lo que ya hacía la web.
+   script.js v19 · Joan Català Mateu (tema ARCADE, sin cambiar paleta)
+   v19 = v18 + Herramientas es una PANTALLA aparte (como el bar),
+         no una entrada del diario.
    ══════════════════════════════════════════════════════════════════════ */
 (function () {
 'use strict';
@@ -46,12 +46,7 @@ var CARTA = {
   'ingles'   : { precio:'B2 en curso',    dicho:'Inglés por independencia. Se equivoca uno hablando y deja de equivocarse leyendo.' },
   'estudios' : { precio:'DAM · C1',       dicho:'Bachillerato, primero de DAM en el Simarro y el C1 de valencià enmarcado en la pared.' },
   'ia'       : { precio:'a futuro',       dicho:'Esto es lo serio: vivir de crear con IA. Un prototipo al día, criterio el primero.' },
-  'proyectos': { precio:'en marcha',      dicho:'De postre, lo que estoy construyendo ahora mismo. Café y código.' },
-  'herramientas': { precio:'4 utilidades', dicho:'Conversor, clima, países y curiosidades. Todo en vivo, sin base de datos.' }, // [v17]
-  'clima'    : { precio:'en vivo',        dicho:'Esto lo pide la casa: el tiempo de ahora, sin salir del bar.' },
-  'monedas'  : { precio:'con clave',      dicho:'Cambio de moneda al momento, con tasas reales de ExchangeRate-API.' },
-  'paises'   : { precio:'gratis',         dicho:'Países, banderas, población y más. Un mundo entero en un solo plato.' },
-  'curiosidades': { precio:'gratis',      dicho:'¿Sabías que…? Una curiosidad aleatoria de la Wikipedia, recién servida.' }
+  'proyectos': { precio:'en marcha',      dicho:'De postre, lo que estoy construyendo ahora mismo. Café y código.' }
 };
 var SALUDO = [
   'Buenas. Siéntate donde quieras, hoy no hay prisa.',
@@ -186,14 +181,16 @@ function inicializarCuriosidades(){ $$('[data-curiosidades]').forEach(inicializa
    2. CONMUTADOR DE PANTALLAS
    ══════════════════════════════════════════════════════════════════════ */
 var bar, panel, listaEl, cuerpo, sello, txtEl, ecoEl;
-function setPantalla(p){ document.body.dataset.pantalla=p; Escena.corriendo(p==='bar'); if(p==='diario') window.scrollTo(0,0); if(p==='portada') animarPortada(); }
+function setPantalla(p){ document.body.dataset.pantalla=p; Escena.corriendo(p==='bar'); if(p==='diario'||p==='herramientas') window.scrollTo(0,0); if(p==='portada') animarPortada(); }
 
 var DESTINOS={
   portada :{txt:'⌂ portada',acc:function(){setPantalla('portada');}},
   bar     :{txt:'☰ el bar',acc:function(){setPantalla('bar'); verVista('carta'); saludar();}},
   diario  :{txt:'📖 el diario',acc:function(){setPantalla('diario');}},
   contacto:{txt:'✉ contactar',acc:function(){ if(document.body.dataset.pantalla==='bar'){setPantalla('bar'); verVista('contacto'); decir('La cuenta no corre. El correo está ahí mismo.',true);} else {setPantalla('diario'); var c=document.getElementById('contacto'); if(c)c.scrollIntoView({behavior:REDUCED?'auto':'smooth'});} }},
-  carta   :{txt:'← atrás',acc:function(){irCarta();}}
+  carta   :{txt:'← atrás',acc:function(){irCarta();}},
+  /* [v19] Herramientas = pantalla aparte (como el bar) */
+  herramientas:{txt:'⚙ herramientas',acc:function(){ setPantalla('herramientas'); }}
 };
 function volverAlIndice(id){ if(document.body.dataset.pantalla!=='diario')setPantalla('diario'); var carta=$('.carta3d'); if(carta)carta.scrollIntoView({behavior:REDUCED?'auto':'smooth',block:'center'}); var pos=CARAS_INDICE.indexOf(id); if(pos>=0&&Carta3D&&Carta3D.irA)Carta3D.irA(pos); }
 function botonera(actual){ var html=''; ['bar','diario','contacto'].forEach(function(k){var d=DESTINOS[k],cur=(k===actual); html+='<button class="jn-btn jn-btn--linea" type="button" data-ir="'+k+'"'+(cur?' aria-current="page"':'')+'>'+d.txt+'</button>';}); return html; }
@@ -223,7 +220,6 @@ modulo('diario',function(){ var cuerpoD=document.getElementById('diarioCuerpo');
   cuerpoD.innerHTML=PLATOS.map(function(p){ var clon=p.art.cloneNode(true); clon.removeAttribute('id'); var pos=CARAS_INDICE.indexOf(p.id);
     var volver=pos>=0?'<button class="entrada__volver" type="button" data-volver="'+p.id+'">← Volver al índice<span class="entrada__pos">'+('0'+(pos+1)).slice(-2)+'/'+('0'+CARAS_INDICE.length).slice(-2)+'</span></button>':'';
     return '<section class="entrada" id="'+p.id+'">'+volver+'<p class="num">plato '+('0'+p.n).slice(-2)+'</p>'+clon.innerHTML+'<div class="nav3">'+botonera('diario')+'</div></section>'; }).join('');
-  pintarClima(ultimaData); inicializarMonedas(); pintarMonedas(); inicializarPaises(); inicializarCuriosidades();
   on(document.getElementById('diario'),'click',function(e){ var a=e.target.closest&&e.target.closest('a[href^="#"]'); if(!a)return; var t=document.getElementById(a.getAttribute('href').slice(1)); if(t){e.preventDefault(); t.scrollIntoView({behavior:REDUCED?'auto':'smooth'});} });
   var n3=document.getElementById('nav3Contacto'); if(n3)n3.innerHTML=botonera('contacto');
   on(document.getElementById('diarioCopyMail'),'click',function(){copiar(this);}); });
@@ -238,7 +234,6 @@ function verVista(v){ if(panel)panel.dataset.vista=v; }
 function servirPlato(i){ var p=PLATOS[i]; if(!p||!cuerpo)return; actual=i; var clon=p.art.cloneNode(true); clon.removeAttribute('id'); clon.className='plato-post'; cuerpo.replaceChildren(clon);
   var sig=PLATOS[(i+1)%PLATOS.length]; var fin=document.createElement('div'); fin.className='servido__fin';
   fin.innerHTML='<button class="jn-btn jn-btn--linea" type="button" data-ir="carta">← atrás</button><button class="jn-btn" type="button" data-siguiente="'+PLATOS.indexOf(sig)+'">Siguiente · '+sig.name+' →</button>'+botonera('bar'); cuerpo.appendChild(fin);
-  pintarClima(ultimaData); var m=cuerpo.querySelector('[data-monedas]'); if(m){m.dataset.monedasListo=''; inicializarBloqueMonedas(m);} var pp=cuerpo.querySelector('[data-paises]'); if(pp){pp.dataset.paisesListo=''; inicializarBloquePaises(pp);} var cc=cuerpo.querySelector('[data-curiosidades]'); if(cc){cc.dataset.curiosidadesListo=''; inicializarBloqueCuriosidades(cc);}
   if(sello)sello.textContent='plato '+('0'+p.n).slice(-2)+' · '+p.min+' min'; verVista('plato'); decir(p.dicho,true); Escena.pulso(); setTimeout(function(){try{cuerpo.focus({preventScroll:true});}catch(e){}},240); }
 function irCarta(){ verVista('carta'); decir('¿Otra cosa? Mira la pizarra tranquilamente.',true); var primero=$('.plato',listaEl); if(primero)primero.focus(); }
 function saludar(){ decir(SALUDO[0],true); decir(SALUDO[1]); }
@@ -319,10 +314,10 @@ function copiar(btn){ var c=btn.getAttribute('data-copy'); var ok=function(){var
 var cargaOcupada=false;
 modulo('carga',function(){ var cargaEl=document.getElementById('carga'),msgEl=document.getElementById('cargaMsg'),pistaEl=document.getElementById('cargaPista'); if(!cargaEl||!msgEl||!pistaEl)return;
   var CARGA_BASE=520,CARGA_EXTRA=1500; function durCarga(){ return REDUCED?Math.max(CARGA_EXTRA,400):(CARGA_BASE+Math.random()*380)+CARGA_EXTRA; }
-  var DESTINOS_CON_CARGA=['portada','diario','contacto'];
+  var DESTINOS_CON_CARGA=['portada','diario','contacto','herramientas'];
   function accionDesdeBoton(b){ if(!b)return null; if(b.hasAttribute('data-ir')){var d=DESTINOS[b.getAttribute('data-ir')]; return d?function(){d.acc();}:null;} return null; }
   function esBotonCarga(b){ if(!b||b.tagName!=='BUTTON')return false; if(b.getAttribute('data-carga')==='no')return false; if(b.hasAttribute('data-copy'))return false; if(b.id==='barSon')return false; if(b.disabled)return false; var ir=b.getAttribute('data-ir'); if(!ir)return false; return DESTINOS_CON_CARGA.indexOf(ir)!==-1; }
-  function mensajeDe(b){ var ir=b.getAttribute('data-ir'); if(ir==='portada')return pick(['Encendiendo la portada…','Poniendo el nombre en neón…','Volviendo a la puerta de la casa…']); if(ir==='diario')return pick(['Abriendo el diario entero…','Pasando servilletas…','Compilando la vida de Joan…']); if(ir==='bar')return pick(['Empujando la puerta del bar…','Encendiendo el ABIERTO…','El camarero se acerca…']); if(ir==='contacto')return pick(['Llamando al camarero…','Pidiendo la cuenta…','Buscando papel y boli…']); if(ir==='carta')return pick(['Volviendo a la pizarra…','Repasando la carta…']); return pick(MENSAJES_ENTRADA); }
+  function mensajeDe(b){ var ir=b.getAttribute('data-ir'); if(ir==='portada')return pick(['Encendiendo la portada…','Poniendo el nombre en neón…','Volviendo a la puerta de la casa…']); if(ir==='diario')return pick(['Abriendo el diario entero…','Pasando servilletas…','Compilando la vida de Joan…']); if(ir==='bar')return pick(['Empujando la puerta del bar…','Encendiendo el ABIERTO…','El camarero se acerca…']); if(ir==='contacto')return pick(['Llamando al camarero…','Pidiendo la cuenta…','Buscando papel y boli…']); if(ir==='carta')return pick(['Volviendo a la pizarra…','Repasando la carta…']); if(ir==='herramientas')return pick(['Encendiendo las utilidades…','Conectando con las APIs…','Preparando clima, divisas, países y curiosidades…']); return pick(MENSAJES_ENTRADA); }
   function correr(dur,fn){ cargaOcupada=true; var t0=performance.now(); function frame(now){ var p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3); pistaEl.style.transform='scaleX('+e+')'; if(p<1)requestAnimationFrame(frame); else {cargaEl.classList.remove('is-visible'); cargaEl.classList.add('is-salida'); setTimeout(function(){cargaEl.hidden=true; cargaEl.setAttribute('aria-hidden','true'); cargaEl.classList.remove('is-salida'); cargaOcupada=false; if(fn)fn();},REDUCED?0:230);} } requestAnimationFrame(frame); }
   function mostrarCarga(msg,fn){ if(cargaOcupada)return; msgEl.textContent=msg; cargaEl.hidden=false; cargaEl.setAttribute('aria-hidden','false'); void cargaEl.offsetWidth; cargaEl.classList.add('is-visible'); pistaEl.style.transform='scaleX(0)'; correr(durCarga(),fn); }
   correrCarga=function(msg,fn){ if(msg)msgEl.textContent=msg; cargaEl.hidden=false; cargaEl.setAttribute('aria-hidden','false'); void cargaEl.offsetWidth; cargaEl.classList.add('is-visible'); pistaEl.style.transform='scaleX(0)'; correr(durCarga(),fn); };
@@ -345,19 +340,19 @@ modulo('tema',function(){ var raiz=document.documentElement,clave='joan-tema',bo
    8. TECLADO y arranque
    ══════════════════════════════════════════════════════════════════════ */
 modulo('teclado',function(){ document.addEventListener('keydown',function(e){ if(cargaOcupada)return; if(e.ctrlKey||e.metaKey||e.altKey)return; var p=document.body.dataset.pantalla; if(e.key==='Escape'){setPantalla('portada'); return;} if(p!=='bar')return; var n=parseInt(e.key,10); if(n>=1&&n<=PLATOS.length){servirPlato(n-1); return;} var t=document.activeElement&&document.activeElement.tagName; if(/^(BUTTON|A|INPUT|TEXTAREA)$/.test(t))return; var k=e.key.toLowerCase(); if(k==='c')irCarta(); if(k==='s')servirPlato((actual+1)%PLATOS.length); if(k==='m')DESTINOS.contacto.acc(); }); });
-modulo('arranque',function(){ var hash=location.hash.replace('#',''); function destino(){ if(hash==='contacto'){DESTINOS.contacto.acc(); return;} var directo=PLATOS.filter(function(p){return p.id===hash;})[0]; if(directo){setPantalla('diario'); var t=document.getElementById(directo.id); if(t)setTimeout(function(){t.scrollIntoView({behavior:'smooth'});},120);} else animarPortada(); } if(correrCarga)correrCarga(pick(MENSAJES_ENTRADA),destino); else destino(); });
+modulo('arranque',function(){ var hash=location.hash.replace('#',''); function destino(){ if(hash==='contacto'){DESTINOS.contacto.acc(); return;} if(hash==='herramientas'){DESTINOS.herramientas.acc(); return;} var directo=PLATOS.filter(function(p){return p.id===hash;})[0]; if(directo){setPantalla('diario'); var t=document.getElementById(directo.id); if(t)setTimeout(function(){t.scrollIntoView({behavior:'smooth'});},120);} else animarPortada(); } if(correrCarga)correrCarga(pick(MENSAJES_ENTRADA),destino); else destino(); });
 modulo('clima',function(){ var cfg=window.CASA_JOAN_CONFIG||{}; var hay=!!cfg.climaUrl||!!CLIMA.key; cargarClima(); if(CLIMA.cadaMinutos>0&&hay)setInterval(cargarClima,CLIMA.cadaMinutos*60000); });
 modulo('monedas',function(){ var cfg=window.CASA_JOAN_CONFIG||{}; var hay=!!cfg.monedasUrl||!!MONEDAS.key; inicializarMonedas(); cargarTasas(); if(MONEDAS.cadaMinutos>0&&hay)setInterval(cargarTasas,MONEDAS.cadaMinutos*60000); });
 modulo('paises',function(){ inicializarPaises(); });
 modulo('curiosidades',function(){ inicializarCuriosidades(); });
 
-console.log('%c[web] v17 ARCADE · ' + PLATOS.length + ' apartados', 'color:#ff9f1c;font-weight:700');
+console.log('%c[web] v19 ARCADE · ' + PLATOS.length + ' apartados', 'color:#ff9f1c;font-weight:700');
 
 /* ══════════════════════════════════════════════════════════════════════
    9. [MEJORAS · CONÓCEME]
    ══════════════════════════════════════════════════════════════════════ */
 modulo('conoceme',function(){ document.documentElement.classList.add('mejoras');
-  var ETIQUETAS={'sobre-mi':{t:'Presentación'},'esgrima':{t:'Deporte'},'viajar':{t:'Viajes'},'musica':{t:'Costumbres'},'ingles':{t:'Idiomas'},'estudios':{t:'Formación'},'ia':{t:'Futuro'},'proyectos':{t:'Portfolio'},'herramientas':{t:'Utilidades'},'clima':{t:'Datos en vivo'},'monedas':{t:'Datos en vivo'},'paises':{t:'Datos en vivo'},'curiosidades':{t:'Datos en vivo'}};
+  var ETIQUETAS={'sobre-mi':{t:'Presentación'},'esgrima':{t:'Deporte'},'viajar':{t:'Viajes'},'musica':{t:'Costumbres'},'ingles':{t:'Idiomas'},'estudios':{t:'Formación'},'ia':{t:'Futuro'},'proyectos':{t:'Portfolio'}};
   var empezar=document.getElementById('empezarLeer'); on(empezar,'click',function(){var t=document.getElementById('sobre-mi'); if(t)t.scrollIntoView({behavior:REDUCED?'auto':'smooth'});});
   var entradas=$$('#diarioCuerpo .entrada'); entradas.forEach(function(sec,i){var e=ETIQUETAS[sec.id]; var num=$('.num',sec); if(num)num.textContent=('0'+(i+1)).slice(-2); if(e&&e.t)sec.setAttribute('data-etiqueta',e.t); sec.setAttribute('data-reveal','');});
   var barra=document.getElementById('lecturaBarra'),pct=$('.lectura__pct'); function progreso(){ if(!barra)return; var h=document.documentElement; var total=h.scrollHeight-h.clientHeight; var p=total>4?Math.min(1,(h.scrollTop||document.body.scrollTop)/total):0; barra.style.transform='scaleX('+p+')'; if(pct)pct.textContent=Math.round(p*100)+'%'; } on(window,'scroll',progreso); on(window,'resize',progreso); progreso();
@@ -386,19 +381,17 @@ modulo('carta3d',function(){ var cubo=document.getElementById('cubo'),fx=documen
   calcularRadio(); marcarFrente(); aplicar(); var rt; on(window,'resize',function(){clearTimeout(rt); rt=setTimeout(function(){calcularRadio(); aplicar();},150);}); Carta3D={irA:irA,activo:function(){return activo;}}; });
 
 /* ══════════════════════════════════════════════════════════════════════
-   11. [v17 · SCROLL-DIRECTO]  botones data-scroll de la barra y tarjetas
-        Abre el diario si estabas fuera y te lleva a la sección. Sin carga.
+   11. [v17 · SCROLL-DIRECTO]  botones data-scroll (barra proyectos)
    ══════════════════════════════════════════════════════════════════════ */
 modulo('scroll-directo',function(){ document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[data-scroll]'); if(!b)return; e.preventDefault(); var id=b.getAttribute('data-scroll'); if(document.body.dataset.pantalla!=='diario')setPantalla('diario'); var t=document.getElementById(id); if(t)setTimeout(function(){t.scrollIntoView({behavior:REDUCED?'auto':'smooth',block:'start'});},70); }); });
 
 /* ══════════════════════════════════════════════════════════════════════
-   12. [v17 · BACKTOP]  botón volver arriba (aparece al bajar en diario/bar)
+   12. [v17 · BACKTOP]  botón volver arriba
    ══════════════════════════════════════════════════════════════════════ */
-modulo('backtop',function(){ var bt=document.getElementById('backTop'); if(!bt)return; function revisar(){ var y=window.scrollY||document.documentElement.scrollTop; var p=document.body.dataset.pantalla; bt.classList.toggle('is-on',(p==='diario'||p==='bar')&&y>600); } on(window,'scroll',revisar); on(window,'resize',revisar); on(bt,'click',function(){window.scrollTo({top:0,behavior:REDUCED?'auto':'smooth'});}); revisar(); });
+modulo('backtop',function(){ var bt=document.getElementById('backTop'); if(!bt)return; function revisar(){ var y=window.scrollY||document.documentElement.scrollTop; var p=document.body.dataset.pantalla; bt.classList.toggle('is-on',(p==='diario'||p==='bar'||p==='herramientas')&&y>600); } on(window,'scroll',revisar); on(window,'resize',revisar); on(bt,'click',function(){window.scrollTo({top:0,behavior:REDUCED?'auto':'smooth'});}); revisar(); });
 
 /* ══════════════════════════════════════════════════════════════════════
-   13. [v17 · FORM-MAILTO]  el formulario abre tu gestor de correo.
-        No envía solo (no hay servidor): construye el mailto con lo escrito.
+   13. [v17 · FORM-MAILTO]  el formulario abre tu gestor de correo
    ══════════════════════════════════════════════════════════════════════ */
 modulo('form-mailto',function(){ var f=document.getElementById('formContacto'); if(!f)return; var estado=document.getElementById('formEstado'); var MAIL='catalajoan19@gmail.com';
   function set(txt,tipo){ if(!estado)return; estado.textContent=txt; estado.className='fc__estado'+(tipo?' is-'+tipo:''); }
@@ -406,6 +399,21 @@ modulo('form-mailto',function(){ var f=document.getElementById('formContacto'); 
     if(!nombre){set('Escribe tu nombre.', 'err'); return;} if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){set('El email no parece válido.', 'err'); return;} if(!msg){set('Escribe un mensaje.', 'err'); return;}
     var asunto='Contacto desde Casa Joan — '+nombre; var cuerpo='Nombre: '+nombre+'\nEmail: '+mail+'\n\n'+msg+'\n\n— Enviado desde webpersonal';
     set('Abriendo tu correo…', 'ok'); window.location.href='mailto:'+MAIL+'?subject='+encodeURIComponent(asunto)+'&body='+encodeURIComponent(cuerpo); });
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   14. [v18 · HERR-TABS]  una sola herramienta visible a la vez
+   ══════════════════════════════════════════════════════════════════════ */
+modulo('herr-tabs',function(){
+  function activar(grupo,clave){
+    $$('.herr-panel',grupo).forEach(function(p){ p.classList.toggle('is-on', p.getAttribute('data-panel')===clave); });
+    $$('.herr-tab',grupo).forEach(function(t){ var on=t.getAttribute('data-herr')===clave; t.classList.toggle('is-on',on); t.setAttribute('aria-selected',on?'true':'false'); });
+  }
+  document.addEventListener('click',function(e){
+    var t=e.target.closest&&e.target.closest('[data-herr]'); if(!t)return;
+    var grupo=t.closest('.herr'); if(!grupo)return;
+    e.preventDefault(); activar(grupo,t.getAttribute('data-herr')); Sonido.tintir();
+  });
 });
 
 })();

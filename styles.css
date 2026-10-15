@@ -2355,3 +2355,61 @@ html[data-tema="claro"] .carta3d__nav:hover{ background:#c2571a !important; colo
 html[data-tema="claro"] .carta3d__puntos button{ background:rgba(36,50,72,.22) !important; }
 html[data-tema="claro"] .carta3d__puntos button.is-on{ background:#c2571a !important; }
 html[data-tema="claro"] .carta3d__pista{ color:rgba(36,50,72,.55) !important; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   AJUSTES DE ESTABILIDAD · índice 3D y animaciones perceptibles
+   Sobrescribe únicamente el comportamiento del componente existente.
+   ══════════════════════════════════════════════════════════════════════ */
+.carta3d__escena {
+  perspective: 1200px;
+  overflow: visible;
+}
+.carta3d__cubo {
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  transition: transform 520ms cubic-bezier(.2,.8,.2,1);
+}
+.carta3d .cara {
+  transition:
+    opacity 420ms ease,
+    box-shadow 420ms ease,
+    border-color 420ms ease,
+    filter 420ms ease;
+}
+.carta3d .cara.is-frente {
+  filter: brightness(1.08);
+  animation: carta-cara-activa 480ms ease-out both;
+}
+@keyframes carta-cara-activa {
+  0% { filter: brightness(.78); }
+  58% { filter: brightness(1.2); }
+  100% { filter: brightness(1.08); }
+}
+.carta3d__puntos button {
+  transition: transform 220ms ease, box-shadow 220ms ease, background-color 220ms ease;
+}
+.carta3d__puntos button.is-on {
+  transform: scale(1.22);
+  box-shadow: 0 0 0 4px rgb(255 159 28 / 18%), 0 0 16px rgb(255 159 28 / 35%);
+}
+.carta3d__nav:active,
+.cara__abrir:active {
+  transform: translateY(1px) scale(.98);
+}
+@media (max-width: 560px) {
+  .carta3d { padding-inline: 10px; }
+  .carta3d__escena { perspective: 1000px; }
+  .carta3d__cubo { max-width: calc(100vw - 72px); }
+  .cara { padding: 14px 12px; }
+  .cara__title { font-size: clamp(10px, 2.8vw, 13px); }
+  .cara__desc { font-size: clamp(13px, 3.7vw, 15px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .carta3d__cubo,
+  .carta3d .cara,
+  .carta3d__puntos button {
+    transition: none !important;
+    animation: none !important;
+  }
+  .carta3d .cara.is-frente { filter: none; }
+}

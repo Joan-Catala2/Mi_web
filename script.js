@@ -1,8 +1,7 @@
 /* ══════════════════════════════════════════════════════════════════════
-   script.js v15.2 · Joan Català Mateu (tema ARCADE)
-   [v15.2] FIX índice: las caras del carrusel ya no usan data-tema (colisionaba
-           con el botón claro/oscuro). Ahora usan data-fx. El módulo 'tema' solo
-           captura <button data-tema>.
+   script.js v17 · Joan Català Mateu (tema ARCADE, sin cambiar paleta)
+   v17 = v15.2 + [scroll-directo] + [backtop] + [form-mailto]
+   Nada de colores nuevos: solo reutiliza lo que ya hacía la web.
    ══════════════════════════════════════════════════════════════════════ */
 (function () {
 'use strict';
@@ -12,9 +11,7 @@ var $  = function (s, c) { return (c || document).querySelector(s); };
 var $$ = function (s, c) { return [].slice.call((c || document).querySelectorAll(s)); };
 var on = function (el, ev, fn) { if (el) el.addEventListener(ev, fn); };
 var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-function modulo(nombre, fn) {
-  try { fn(); } catch (e) { console.error('[web] módulo "' + nombre + '":', e); }
-}
+function modulo(nombre, fn) { try { fn(); } catch (e) { console.error('[web] módulo "' + nombre + '":', e); } }
 function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
 
 var CARAS_INDICE = ['sobre-mi','esgrima','viajar','musica','ingles','estudios','ia','proyectos'];
@@ -22,34 +19,19 @@ var Carta3D = { irA: function () {}, activo: 0 };
 
 function botonReintento(bloque, fn) {
   if (!bloque) return;
-  var viejo = bloque.querySelector('.estado-reintento');
-  if (viejo) viejo.remove();
-  var b = document.createElement('button');
-  b.type = 'button';
-  b.className = 'estado-reintento';
-  b.textContent = '↻ Reintentar';
-  on(b, 'click', function () { b.textContent = '… reintentando'; fn(); });
-  bloque.appendChild(b);
+  var viejo = bloque.querySelector('.estado-reintento'); if (viejo) viejo.remove();
+  var b = document.createElement('button'); b.type='button'; b.className='estado-reintento'; b.textContent='↻ Reintentar';
+  on(b,'click',function(){ b.textContent='… reintentando'; fn(); }); bloque.appendChild(b);
 }
-function quitarReintento(bloque) {
-  var b = bloque && bloque.querySelector('.estado-reintento');
-  if (b) b.remove();
-}
+function quitarReintento(bloque){ var b=bloque&&bloque.querySelector('.estado-reintento'); if(b)b.remove(); }
 
 var MENSAJES_ENTRADA = [
-  'Entrando en Casa Joan…',
-  'Encendiendo el neón…',
-  'Abriendo la puerta del bar…',
-  'Poniendo el sable en su sitio…',
-  'Cargando el diario…',
-  'Guardando el C1 en la pared…'
+  'Entrando en Casa Joan…','Encendiendo el neón…','Abriendo la puerta del bar…',
+  'Poniendo el sable en su sitio…','Cargando el diario…','Guardando el C1 en la pared…'
 ];
 var correrCarga = null;
 
-modulo('year', function () {
-  var y = document.getElementById('year');
-  if (y) y.textContent = new Date().getFullYear();
-});
+modulo('year', function () { var y=document.getElementById('year'); if(y) y.textContent=new Date().getFullYear(); });
 
 /* ══════════════════════════════════════════════════════════════════════
    1. LOS DATOS
@@ -65,6 +47,7 @@ var CARTA = {
   'estudios' : { precio:'DAM · C1',       dicho:'Bachillerato, primero de DAM en el Simarro y el C1 de valencià enmarcado en la pared.' },
   'ia'       : { precio:'a futuro',       dicho:'Esto es lo serio: vivir de crear con IA. Un prototipo al día, criterio el primero.' },
   'proyectos': { precio:'en marcha',      dicho:'De postre, lo que estoy construyendo ahora mismo. Café y código.' },
+  'herramientas': { precio:'4 utilidades', dicho:'Conversor, clima, países y curiosidades. Todo en vivo, sin base de datos.' }, // [v17]
   'clima'    : { precio:'en vivo',        dicho:'Esto lo pide la casa: el tiempo de ahora, sin salir del bar.' },
   'monedas'  : { precio:'con clave',      dicho:'Cambio de moneda al momento, con tasas reales de ExchangeRate-API.' },
   'paises'   : { precio:'gratis',         dicho:'Países, banderas, población y más. Un mundo entero en un solo plato.' },
@@ -80,14 +63,10 @@ function leerPlatos() {
   if (!tpl) { console.error('[web] falta <template id="datosBar">'); return []; }
   return $$('article', tpl.content).map(function (art, i) {
     var h2 = $('h2', art);
-    var min = Math.max(1, Math.round(art.textContent.replace(/\s+/g, ' ').trim().split(' ').length / 170));
+    var min = Math.max(1, Math.round(art.textContent.replace(/\s+/g,' ').trim().split(' ').length / 170));
     var m = CARTA[art.id] || {};
-    return {
-      art: art, id: art.id || 'plato-' + (i + 1), n: i + 1,
-      name: h2 ? h2.textContent.trim() : art.id, min: min,
-      precio: m.precio || (min + ' min'),
-      dicho: m.dicho || 'Aquí tienes. Buen provecho.'
-    };
+    return { art:art, id:art.id||'plato-'+(i+1), n:i+1, name:h2?h2.textContent.trim():art.id, min:min,
+             precio:m.precio||(min+' min'), dicho:m.dicho||'Aquí tienes. Buen provecho.' };
   });
 }
 PLATOS = leerPlatos();
@@ -95,1293 +74,338 @@ PLATOS = leerPlatos();
 /* ══════════════════════════════════════════════════════════════════════
    1b. CLIMA OPENWEATHER
    ══════════════════════════════════════════════════════════════════════ */
-var CLIMA = {
-  key: '', // Configurar solo en servidor; no publicar claves en el navegador.
-  ciudad: 'Valencia,ES',
-  lat: null, lon: null,
-  unidades: 'metric', lang: 'es', cadaMinutos: 10
-};
+var CLIMA = { key:'5796a0d1d068a83ebae6d0f194fce351', ciudad:'Valencia,ES', lat:null, lon:null, unidades:'metric', lang:'es', cadaMinutos:10 };
 var ultimaData = null;
-
-function unidadTemp() { return CLIMA.unidades === 'imperial' ? '°F' : '°C'; }
-function iconoClima(code) {
-  var m = {
-    '01d':'☀️','01n':'🌙','02d':'⛅','02n':'☁️','03d':'☁️','03n':'☁️',
-    '04d':'☁️','04n':'☁️','09d':'🌧️','09n':'🌧️','10d':'🌦️','10n':'🌧️',
-    '11d':'⛈️','11n':'⛈️','13d':'❄️','13n':'❄️','50d':'🌫️','50n':'🌫️'
-  };
-  return m[code] || '🌡️';
-}
-function climaUrl() {
-  var cfg = window.CASA_JOAN_CONFIG || {};
-  if (cfg.climaUrl) return cfg.climaUrl;
-  var params = new URLSearchParams();
-  params.set('units', CLIMA.unidades); params.set('lang', CLIMA.lang); params.set('appid', CLIMA.key);
-  if (CLIMA.lat != null && CLIMA.lon != null) { params.set('lat', CLIMA.lat); params.set('lon', CLIMA.lon); }
-  else params.set('q', CLIMA.ciudad);
-  return 'https://api.openweathermap.org/data/2.5/weather?' + params.toString();
-}
-function pintarClima(data) {
-  if (data) ultimaData = data;
-  if (!ultimaData) return;
-  var w = ultimaData.weather && ultimaData.weather[0] ? ultimaData.weather[0] : {};
-  var estado = w.description ? w.description.charAt(0).toUpperCase() + w.description.slice(1) : 'Sin descripción';
-  var icon = iconoClima(w.icon);
-  var temp = ultimaData.main && ultimaData.main.temp != null ? Math.round(ultimaData.main.temp) : null;
-  var sens = ultimaData.main && ultimaData.main.feels_like != null ? Math.round(ultimaData.main.feels_like) : null;
-  var min = ultimaData.main && ultimaData.main.temp_min != null ? Math.round(ultimaData.main.temp_min) : null;
-  var max = ultimaData.main && ultimaData.main.temp_max != null ? Math.round(ultimaData.main.temp_max) : null;
-  var humedad = ultimaData.main ? ultimaData.main.humidity : null;
-  var viento = ultimaData.wind ? ultimaData.wind.speed : null;
-  var ciudad = ultimaData.name || CLIMA.ciudad;
-  var hora = new Date().toLocaleString('es-ES');
-  $$('[data-clima]').forEach(function (bloque) {
-    var e = bloque.querySelector('[data-clima-estado]'), t = bloque.querySelector('[data-clima-temp]');
-    var x = bloque.querySelector('[data-clima-extra]'), n = bloque.querySelector('[data-clima-nota]');
-    if (e) e.textContent = icon + ' ' + estado;
-    if (t) t.textContent = (temp != null ? temp : '—') + ' ' + unidadTemp();
-    if (x) x.textContent = 'Sensación ' + (sens != null ? sens : '—') + ' ' + unidadTemp() +
-      ' · mín ' + (min != null ? min : '—') + ' · máx ' + (max != null ? max : '—') +
-      ' · humedad ' + (humedad != null ? humedad : '—') + '%' + ' · viento ' + (viento != null ? viento : '—') + ' m/s';
-    if (n) n.textContent = 'Ciudad: ' + ciudad + ' · Actualizado: ' + hora;
-    quitarReintento(bloque);
-  });
-}
-function pintarErrorClima(mensaje) {
-  $$('[data-clima]').forEach(function (bloque) {
-    var e = bloque.querySelector('[data-clima-estado]'), t = bloque.querySelector('[data-clima-temp]');
-    var x = bloque.querySelector('[data-clima-extra]'), n = bloque.querySelector('[data-clima-nota]');
-    if (e) e.textContent = '☁️ Tiempo no disponible';
-    if (t) t.textContent = '— ' + unidadTemp();
-    if (x) x.textContent = 'Revisa la API key, la ciudad o la conexión.';
-    if (n) n.textContent = mensaje || 'Error desconocido';
-    botonReintento(bloque, cargarClima);
-  });
-}
-function cargarClima() {
-  var cfg = window.CASA_JOAN_CONFIG || {};
-  if (!cfg.climaUrl && !CLIMA.key) {
-    pintarErrorClima('Configura el endpoint seguro /api/clima en el servidor.');
-    return;
-  }
-  fetch(climaUrl(), { headers: { 'Accept': 'application/json' } })
-    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(function (data) {
-      if (!data || !Array.isArray(data.weather) || !data.main) throw new Error('Respuesta del clima no válida');
-      pintarClima(data);
-    })
-    .catch(function (e) { console.error('[clima]', e); pintarErrorClima(e.message); });
-}
+function unidadTemp(){ return CLIMA.unidades==='imperial'?'°F':'°C'; }
+function iconoClima(code){ var m={'01d':'☀️','01n':'🌙','02d':'⛅','02n':'☁️','03d':'☁️','03n':'☁️','04d':'☁️','04n':'☁️','09d':'🌧️','09n':'🌧️','10d':'🌦️','10n':'🌧️','11d':'⛈️','11n':'⛈️','13d':'❄️','13n':'❄️','50d':'🌫️','50n':'🌫️'}; return m[code]||'🌡️'; }
+function climaUrl(){ var cfg=window.CASA_JOAN_CONFIG||{}; if(cfg.climaUrl) return cfg.climaUrl;
+  var p=new URLSearchParams(); p.set('units',CLIMA.unidades); p.set('lang',CLIMA.lang); p.set('appid',CLIMA.key);
+  if(CLIMA.lat!=null&&CLIMA.lon!=null){p.set('lat',CLIMA.lat);p.set('lon',CLIMA.lon);}else p.set('q',CLIMA.ciudad);
+  return 'https://api.openweathermap.org/data/2.5/weather?'+p.toString(); }
+function pintarClima(data){ if(data) ultimaData=data; if(!ultimaData) return;
+  var w=ultimaData.weather&&ultimaData.weather[0]?ultimaData.weather[0]:{};
+  var estado=w.description?w.description.charAt(0).toUpperCase()+w.description.slice(1):'Sin descripción';
+  var icon=iconoClima(w.icon);
+  var temp=ultimaData.main&&ultimaData.main.temp!=null?Math.round(ultimaData.main.temp):null;
+  var sens=ultimaData.main&&ultimaData.main.feels_like!=null?Math.round(ultimaData.main.feels_like):null;
+  var min=ultimaData.main&&ultimaData.main.temp_min!=null?Math.round(ultimaData.main.temp_min):null;
+  var max=ultimaData.main&&ultimaData.main.temp_max!=null?Math.round(ultimaData.main.temp_max):null;
+  var humedad=ultimaData.main?ultimaData.main.humidity:null; var viento=ultimaData.wind?ultimaData.wind.speed:null;
+  var ciudad=ultimaData.name||CLIMA.ciudad; var hora=new Date().toLocaleString('es-ES');
+  $$('[data-clima]').forEach(function(b){ var e=b.querySelector('[data-clima-estado]'),t=b.querySelector('[data-clima-temp]'),x=b.querySelector('[data-clima-extra]'),n=b.querySelector('[data-clima-nota]');
+    if(e)e.textContent=icon+' '+estado; if(t)t.textContent=(temp!=null?temp:'—')+' '+unidadTemp();
+    if(x)x.textContent='Sensación '+(sens!=null?sens:'—')+' '+unidadTemp()+' · mín '+(min!=null?min:'—')+' · máx '+(max!=null?max:'—')+' · humedad '+(humedad!=null?humedad:'—')+'% · viento '+(viento!=null?viento:'—')+' m/s';
+    if(n)n.textContent='Ciudad: '+ciudad+' · Actualizado: '+hora; quitarReintento(b); }); }
+function pintarErrorClima(mensaje){ $$('[data-clima]').forEach(function(b){ var e=b.querySelector('[data-clima-estado]'),t=b.querySelector('[data-clima-temp]'),x=b.querySelector('[data-clima-extra]'),n=b.querySelector('[data-clima-nota]');
+  if(e)e.textContent='☁️ Tiempo no disponible'; if(t)t.textContent='— '+unidadTemp(); if(x)x.textContent='Revisa la API key, la ciudad o la conexión.'; if(n)n.textContent=mensaje||'Error desconocido'; botonReintento(b,cargarClima); }); }
+function cargarClima(){ if(!CLIMA.key||CLIMA.key.indexOf('TU_API_KEY')>-1){pintarErrorClima('Falta la API key en script.js.');return;}
+  fetch(climaUrl()).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(pintarClima)
+  .catch(function(e){console.error('[clima]',e);pintarErrorClima(e.message);}); }
 
 /* ══════════════════════════════════════════════════════════════════════
    1c. DIVISAS
    ══════════════════════════════════════════════════════════════════════ */
-var MONEDAS = { key: '', base: 'EUR', cadaMinutos: 30 }; // La clave debe permanecer en el servidor.
-var LISTA_MONEDAS = [
-  { code:'EUR', name:'Euro' },{ code:'USD', name:'Dólar estadounidense' },
-  { code:'GBP', name:'Libra esterlina' },{ code:'JPY', name:'Yen japonés' },
-  { code:'MXN', name:'Peso mexicano' },{ code:'ARS', name:'Peso argentino' },
-  { code:'COP', name:'Peso colombiano' },{ code:'CLP', name:'Peso chileno' },
-  { code:'PEN', name:'Sol peruano' },{ code:'BRL', name:'Real brasileño' },
-  { code:'CAD', name:'Dólar canadiense' },{ code:'CHF', name:'Franco suizo' },
-  { code:'CNY', name:'Yuan chino' },{ code:'AUD', name:'Dólar australiano' },
-  { code:'KRW', name:'Won surcoreano' },{ code:'INR', name:'Rupia india' },
-  { code:'TRY', name:'Lira turca' },{ code:'MAD', name:'Dírham marroquí' }
-];
-var SIMBOLOS = { EUR:'€',USD:'$',GBP:'£',JPY:'¥',MXN:'$',ARS:'$',COP:'$',CLP:'$',
-  PEN:'S/',BRL:'R$',CAD:'$',CHF:'CHF',CNY:'¥',AUD:'$',KRW:'₩',INR:'₹',TRY:'₺',MAD:'DH' };
+var MONEDAS = { key:'26b774ebd2e1fc8cd152b215', base:'EUR', cadaMinutos:30 };
+var LISTA_MONEDAS = [{code:'EUR',name:'Euro'},{code:'USD',name:'Dólar estadounidense'},{code:'GBP',name:'Libra esterlina'},{code:'JPY',name:'Yen japonés'},{code:'MXN',name:'Peso mexicano'},{code:'ARS',name:'Peso argentino'},{code:'COP',name:'Peso colombiano'},{code:'CLP',name:'Peso chileno'},{code:'PEN',name:'Sol peruano'},{code:'BRL',name:'Real brasileño'},{code:'CAD',name:'Dólar canadiense'},{code:'CHF',name:'Franco suizo'},{code:'CNY',name:'Yuan chino'},{code:'AUD',name:'Dólar australiano'},{code:'KRW',name:'Won surcoreano'},{code:'INR',name:'Rupia india'},{code:'TRY',name:'Lira turca'},{code:'MAD',name:'Dírham marroquí'}];
+var SIMBOLOS = {EUR:'€',USD:'$',GBP:'£',JPY:'¥',MXN:'$',ARS:'$',COP:'$',CLP:'$',PEN:'S/',BRL:'R$',CAD:'$',CHF:'CHF',CNY:'¥',AUD:'$',KRW:'₩',INR:'₹',TRY:'₺',MAD:'DH'};
 var ultimaTasas = null;
-
-function monedasUrl(base) {
-  var cfg = window.CASA_JOAN_CONFIG || {};
-  if (cfg.monedasUrl) return cfg.monedasUrl;
-  return 'https://v6.exchangerate-api.com/v6/' + MONEDAS.key + '/latest/' + base;
-}
-function nombreMoneda(code) { var m = LISTA_MONEDAS.filter(function (x) { return x.code === code; })[0]; return m ? m.name : code; }
-function simboloMoneda(code) { return SIMBOLOS[code] || code; }
-function formatearImporte(valor, code) {
-  if (valor == null || isNaN(valor)) return '—';
-  var decimales = (code === 'JPY' || code === 'KRW' || code === 'CLP' || code === 'COP' || code === 'ARS' || code === 'INR') ? 0 : 2;
-  return new Intl.NumberFormat('es-ES', { minimumFractionDigits: decimales, maximumFractionDigits: decimales }).format(valor);
-}
-function poblarSelects(bloque) {
-  var selO = bloque.querySelector('[data-m-origen]'), selD = bloque.querySelector('[data-m-destino]');
-  if (!selO || !selD || selO.options.length) return;
-  var html = LISTA_MONEDAS.map(function (m) { return '<option value="' + m.code + '">' + m.code + ' · ' + m.name + '</option>'; }).join('');
-  selO.innerHTML = html; selD.innerHTML = html;
-  selO.value = MONEDAS.base; selD.value = 'USD';
-}
-function calcularConversion(cantidad, origen, destino) {
-  if (!ultimaTasas || !ultimaTasas.conversion_rates) return null;
-  var tasas = ultimaTasas.conversion_rates;
-  var tOrigen = tasas[origen], tDestino = tasas[destino];
-  if (tOrigen == null || tDestino == null) return null;
-  return { resultado: (cantidad / tOrigen) * tDestino, tasaUnitaria: tDestino / tOrigen };
-}
-function pintarBloqueMonedas(bloque) {
-  var cantidadEl = bloque.querySelector('[data-m-cantidad]'), origenEl = bloque.querySelector('[data-m-origen]');
-  var destinoEl = bloque.querySelector('[data-m-destino]'), resEl = bloque.querySelector('[data-m-resultado]');
-  var tasaEl = bloque.querySelector('[data-m-tasa]');
-  if (!resEl || !tasaEl) return;
-  if (!ultimaTasas) { resEl.textContent = '—'; tasaEl.textContent = 'Cargando tasas…'; return; }
-  var cantidad = parseFloat(cantidadEl && cantidadEl.value); if (isNaN(cantidad)) cantidad = 0;
-  var origen = origenEl ? origenEl.value : MONEDAS.base;
-  var destino = destinoEl ? destinoEl.value : 'USD';
-  var conv = calcularConversion(cantidad, origen, destino);
-  if (!conv) { resEl.textContent = '—'; tasaEl.textContent = 'No hay tasa para ' + origen + ' → ' + destino; return; }
-  resEl.textContent = cantidad + ' ' + origen + ' = ' + formatearImporte(conv.resultado, destino) + ' ' + simboloMoneda(destino);
-  tasaEl.textContent = '1 ' + origen + ' = ' + formatearImporte(conv.tasaUnitaria, destino) + ' ' + simboloMoneda(destino) +
-    ' · base ' + ultimaTasas.base + ' · actualizado ' + new Date(ultimaTasas.time_last_update_utc || Date.now()).toLocaleString('es-ES');
-  quitarReintento(bloque);
-}
-function pintarMonedas() { $$('[data-monedas]').forEach(pintarBloqueMonedas); }
-function pintarErrorMonedas(mensaje) {
-  $$('[data-monedas]').forEach(function (bloque) {
-    var resEl = bloque.querySelector('[data-m-resultado]'), tasaEl = bloque.querySelector('[data-m-tasa]');
-    if (resEl) resEl.textContent = '—';
-    if (tasaEl) tasaEl.textContent = mensaje || 'Error al cargar las tasas.';
-    botonReintento(bloque, cargarTasas);
-  });
-}
-function cargarTasas() {
-  var cfg = window.CASA_JOAN_CONFIG || {};
-  if (!cfg.monedasUrl && !MONEDAS.key) {
-    pintarErrorMonedas('Configura el endpoint seguro /api/tasas en el servidor.');
-    return;
-  }
-  fetch(monedasUrl(MONEDAS.base), { headers: { 'Accept': 'application/json' } })
-    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(function (data) {
-      if (!data || (data.result && data.result !== 'success') || !data.conversion_rates) {
-        throw new Error((data && data['error-type']) || 'Respuesta de tasas no válida');
-      }
-      ultimaTasas = data; pintarMonedas();
-    })
-    .catch(function (e) { console.error('[monedas]', e); pintarErrorMonedas('No se pudieron cargar las tasas: ' + e.message); });
-}
-function inicializarBloqueMonedas(bloque) {
-  if (bloque.dataset.monedasListo === '1') return;
-  poblarSelects(bloque);
-  var cantidadEl = bloque.querySelector('[data-m-cantidad]'), origenEl = bloque.querySelector('[data-m-origen]');
-  var destinoEl = bloque.querySelector('[data-m-destino]'), cambiarEl = bloque.querySelector('[data-m-cambiar]');
-  var refrescar = function () { pintarBloqueMonedas(bloque); };
-  on(cantidadEl, 'input', refrescar); on(origenEl, 'change', refrescar);
-  on(destinoEl, 'change', refrescar);
-  on(cambiarEl, 'click', function () { var a = origenEl.value; origenEl.value = destinoEl.value; destinoEl.value = a; refrescar(); });
-  bloque.dataset.monedasListo = '1';
-  pintarBloqueMonedas(bloque);
-}
-function inicializarMonedas() { $$('[data-monedas]').forEach(inicializarBloqueMonedas); }
+function monedasUrl(base){ var cfg=window.CASA_JOAN_CONFIG||{}; if(cfg.monedasUrl) return cfg.monedasUrl; return 'https://v6.exchangerate-api.com/v6/'+MONEDAS.key+'/latest/'+base; }
+function simboloMoneda(code){ return SIMBOLOS[code]||code; }
+function formatearImporte(valor,code){ if(valor==null||isNaN(valor))return '—'; var d=(code==='JPY'||code==='KRW'||code==='CLP'||code==='COP'||code==='ARS'||code==='INR')?0:2; return new Intl.NumberFormat('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d}).format(valor); }
+function poblarSelects(b){ var o=b.querySelector('[data-m-origen]'),d=b.querySelector('[data-m-destino]'); if(!o||!d||o.options.length)return; var html=LISTA_MONEDAS.map(function(m){return '<option value="'+m.code+'">'+m.code+' · '+m.name+'</option>';}).join(''); o.innerHTML=html; d.innerHTML=html; o.value=MONEDAS.base; d.value='USD'; }
+function calcularConversion(c,o,d){ if(!ultimaTasas||!ultimaTasas.conversion_rates)return null; var t=ultimaTasas.conversion_rates; var a=t[o],b=t[d]; if(a==null||b==null)return null; return {resultado:(c/a)*b, tasaUnitaria:b/a}; }
+function pintarBloqueMonedas(b){ var cEl=b.querySelector('[data-m-cantidad]'),oEl=b.querySelector('[data-m-origen]'),dEl=b.querySelector('[data-m-destino]'),rEl=b.querySelector('[data-m-resultado]'),tEl=b.querySelector('[data-m-tasa]'); if(!rEl||!tEl)return; if(!ultimaTasas){rEl.textContent='—';tEl.textContent='Cargando tasas…';return;}
+  var c=parseFloat(cEl&&cEl.value); if(isNaN(c))c=0; var o=oEl?oEl.value:MONEDAS.base, d=dEl?dEl.value:'USD'; var conv=calcularConversion(c,o,d);
+  if(!conv){rEl.textContent='—';tEl.textContent='No hay tasa para '+o+' → '+d;return;}
+  rEl.textContent=c+' '+o+' = '+formatearImporte(conv.resultado,d)+' '+simboloMoneda(d);
+  tEl.textContent='1 '+o+' = '+formatearImporte(conv.tasaUnitaria,d)+' '+simboloMoneda(d)+' · base '+ultimaTasas.base+' · actualizado '+new Date(ultimaTasas.time_last_update_utc||Date.now()).toLocaleString('es-ES'); quitarReintento(b); }
+function pintarMonedas(){ $$('[data-monedas]').forEach(pintarBloqueMonedas); }
+function pintarErrorMonedas(m){ $$('[data-monedas]').forEach(function(b){ var r=b.querySelector('[data-m-resultado]'),t=b.querySelector('[data-m-tasa]'); if(r)r.textContent='—'; if(t)t.textContent=m||'Error al cargar las tasas.'; botonReintento(b,cargarTasas); }); }
+function cargarTasas(){ if(!MONEDAS.key||MONEDAS.key.indexOf('PEGA_TU_KEY')>-1){pintarErrorMonedas('Falta la API key de ExchangeRate-API en script.js.');return;}
+  fetch(monedasUrl(MONEDAS.base)).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+  .then(function(d){ if(d.result&&d.result!=='success')throw new Error(d['error-type']||'respuesta de error'); ultimaTasas=d; pintarMonedas(); })
+  .catch(function(e){console.error('[monedas]',e);pintarErrorMonedas('No se pudieron cargar las tasas: '+e.message);}); }
+function inicializarBloqueMonedas(b){ if(b.dataset.monedasListo==='1')return; poblarSelects(b);
+  var cEl=b.querySelector('[data-m-cantidad]'),oEl=b.querySelector('[data-m-origen]'),dEl=b.querySelector('[data-m-destino]'),chEl=b.querySelector('[data-m-cambiar]');
+  var r=function(){pintarBloqueMonedas(b);}; on(cEl,'input',r); on(oEl,'change',r); on(dEl,'change',r);
+  on(chEl,'click',function(){var a=oEl.value;oEl.value=dEl.value;dEl.value=a;r();}); b.dataset.monedasListo='1'; pintarBloqueMonedas(b); }
+function inicializarMonedas(){ $$('[data-monedas]').forEach(inicializarBloqueMonedas); }
 
 /* ══════════════════════════════════════════════════════════════════════
    1d. PAÍSES
    ══════════════════════════════════════════════════════════════════════ */
-var PAISES = { codigo: 'ESP' };
-var CODIGOS_PAI = ['ESP','ARG','MEX','COL','CHL','PER','URY','ECU','BOL','PRY','CRI','PAN','VEN','CUB','DOM',
-  'USA','CAN','GBR','FRA','DEU','ITA','PRT','NLD','BEL','IRL','ISL','NOR','SWE','DNK','FIN','POL','CZE',
-  'SVK','HUN','ROU','BGR','HRV','SRB','GRC','CHE','AUT','BRA','JPN','CHN','KOR','VNM','THA','MYS','SGP',
-  'IDN','PHL','IND','PAK','LKA','TUR','RUS','UKR','MAR','DZA','TUN','EGY','ETH','KEN','ZAF','SAU','ARE',
-  'ISR','JOR','LBN','IRQ','IRN','AUS','NZL','BHS','JAM'];
-var listaPaisesCache = null;
-
-function paisesUrl(codigo) { return 'https://countries.dev/alpha/' + codigo; }
-function paisesListaUrl() { return 'https://countries.dev/countries?fields=alpha3Code'; }
-function formatearPoblacion(n) { return (n == null || isNaN(n)) ? '—' : new Intl.NumberFormat('es-ES').format(n); }
-function formatearArea(n) { return (n == null || isNaN(n)) ? '—' : new Intl.NumberFormat('es-ES').format(n) + ' km²'; }
-function formatearCapital(c) {
-  if (!c) return '—';
-  if (Array.isArray(c)) return c.length ? c.join(', ') : '—';
-  if (typeof c === 'string') return c;
-  return '—';
-}
-function formatearIdiomas(obj) {
-  if (!obj) return '—';
-  var vistos = {}, res = [];
-  Object.keys(obj).forEach(function (k) {
-    var nombre = obj[k];
-    var txt = nombre && nombre.name ? nombre.name : (typeof nombre === 'string' ? nombre : k);
-    if (txt && !vistos[txt]) { vistos[txt] = true; res.push(txt); }
-  });
-  return res.length ? res.join(', ') : '—';
-}
-function formatearMonedas(obj) {
-  if (!obj) return '—';
-  var res = [];
-  Object.keys(obj).forEach(function (k) { var v = obj[k]; if (v && v.name) res.push(v.name + ' (' + k + ')'); else res.push(k); });
-  return res.length ? res.join(', ') : '—';
-}
-function pintarBloquePaises(bloque, data) {
-  var banderaEl = bloque.querySelector('[data-p-bandera]'), nombreEl = bloque.querySelector('[data-p-nombre]');
-  var capitalEl = bloque.querySelector('[data-p-capital]'), pobEl = bloque.querySelector('[data-p-poblacion]');
-  var regionEl = bloque.querySelector('[data-p-region]'), subEl = bloque.querySelector('[data-p-subregion]');
-  var idiomEl = bloque.querySelector('[data-p-idiomas]'), monEdEl = bloque.querySelector('[data-p-moneda]');
-  var areaEl = bloque.querySelector('[data-p-area]'), errEl = bloque.querySelector('[data-p-error]');
-  if (!data) return;
-  if (errEl) { errEl.hidden = true; errEl.textContent = ''; }
-  quitarReintento(bloque);
-  var name = typeof data.name === 'string' ? data.name : ((data.name && (data.name.common || data.name.official)) || '—');
-  var flags = data.flags || {};
-  var imgSrc = flags.svg || flags.png || '';
-  if (banderaEl) {
-    banderaEl.innerHTML = imgSrc
-      ? '<img src="' + imgSrc + '" alt="Bandera de ' + name + '" loading="lazy">'
-      : '<span class="paises__bandera-vacia">Sin bandera</span>';
-  }
-  if (nombreEl) nombreEl.textContent = name;
-  if (capitalEl) capitalEl.textContent = formatearCapital(data.capital);
-  if (pobEl) pobEl.textContent = formatearPoblacion(data.population);
-  if (regionEl) regionEl.textContent = data.region || '—';
-  if (subEl) subEl.textContent = data.subregion || '—';
-  if (idiomEl) idiomEl.textContent = formatearIdiomas(data.languages);
-  if (monEdEl) monEdEl.textContent = formatearMonedas(data.currencies);
-  if (areaEl) areaEl.textContent = formatearArea(data.area);
-}
-function pintarErrorPaises(bloque, mensaje) {
-  var errEl = bloque.querySelector('[data-p-error]'), nombreEl = bloque.querySelector('[data-p-nombre]');
-  var banderaEl = bloque.querySelector('[data-p-bandera]');
-  if (errEl) { errEl.hidden = false; errEl.textContent = mensaje || 'No se pudo cargar el país.'; }
-  if (nombreEl) nombreEl.textContent = '—';
-  if (banderaEl) banderaEl.innerHTML = '';
-  var codEl = bloque.querySelector('[data-p-codigo]');
-  botonReintento(bloque, function () { cargarPais(bloque, (codEl && codEl.value) || 'ESP'); });
-}
-function cargarPais(bloque, codigo) {
-  var errEl = bloque.querySelector('[data-p-error]'), nombreEl = bloque.querySelector('[data-p-nombre]');
-  var banderaEl = bloque.querySelector('[data-p-bandera]');
-  codigo = (codigo || '').toUpperCase().trim();
-  if (!/^[A-Z]{3}$/.test(codigo)) { pintarErrorPaises(bloque, 'El código debe ser de 3 letras (ISO alfa-3). Ejemplo: ESP'); return; }
-  if (nombreEl) nombreEl.textContent = 'Cargando ' + codigo + '…';
-  if (banderaEl) banderaEl.innerHTML = '';
-  if (errEl) errEl.hidden = true;
-  fetch(paisesUrl(codigo))
-    .then(function (r) {
-      if (r.status === 404) throw new Error('País no encontrado: ' + codigo);
-      if (r.status === 429) throw new Error('Límite de peticiones alcanzado (429). Espera un momento.');
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    })
-    .then(function (res) {
-      var data = Array.isArray(res) ? res[0] : res;
-      if (!data || !data.name) throw new Error('País no encontrado: ' + codigo);
-      pintarBloquePaises(bloque, data);
-    })
-    .catch(function (e) { console.error('[paises]', e); pintarErrorPaises(bloque, e.message || 'No se pudo cargar el país.'); });
-}
-function obtenerListaPaises() {
-  if (listaPaisesCache && listaPaisesCache.length) return Promise.resolve(listaPaisesCache);
-  return fetch(paisesListaUrl())
-    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(function (arr) {
-      var codes = (arr || []).map(function (x) { return x.alpha3Code || x.cca3; }).filter(Boolean);
-      if (!codes.length) throw new Error('lista vacía');
-      listaPaisesCache = codes; return codes;
-    })
-    .catch(function (e) { console.error('[paises lista]', e); return CODIGOS_PAI.slice(); });
-}
-function inicializarBloquePaises(bloque) {
-  if (bloque.dataset.paisesListo === '1') return;
-  var codigoEl = bloque.querySelector('[data-p-codigo]'), buscarEl = bloque.querySelector('[data-p-buscar]');
-  var aleatEl = bloque.querySelector('[data-p-aleatorio]');
-  var buscar = function () { var cod = codigoEl ? codigoEl.value : PAISES.codigo; cargarPais(bloque, cod); };
-  on(buscarEl, 'click', buscar);
-  on(codigoEl, 'keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); buscar(); } });
-  on(aleatEl, 'click', function () {
-    obtenerListaPaises().then(function (lista) { var cod = pick(lista); if (codigoEl) codigoEl.value = cod; cargarPais(bloque, cod); });
-  });
-  bloque.dataset.paisesListo = '1';
-  cargarPais(bloque, codigoEl ? codigoEl.value : PAISES.codigo);
-  obtenerListaPaises().catch(function () {});
-}
-function inicializarPaises() { $$('[data-paises]').forEach(inicializarBloquePaises); }
+var PAISES={codigo:'ESP'};
+var CODIGOS_PAI=['ESP','ARG','MEX','COL','CHL','PER','URY','ECU','BOL','PRY','CRI','PAN','VEN','CUB','DOM','USA','CAN','GBR','FRA','DEU','ITA','PRT','NLD','BEL','IRL','ISL','NOR','SWE','DNK','FIN','POL','CZE','SVK','HUN','ROU','BGR','HRV','SRB','GRC','CHE','AUT','BRA','JPN','CHN','KOR','VNM','THA','MYS','SGP','IDN','PHL','IND','PAK','LKA','TUR','RUS','UKR','MAR','DZA','TUN','EGY','ETH','KEN','ZAF','SAU','ARE','ISR','JOR','LBN','IRQ','IRN','AUS','NZL','BHS','JAM'];
+var listaPaisesCache=null;
+function paisesUrl(c){ return 'https://countries.dev/alpha/'+c; }
+function paisesListaUrl(){ return 'https://countries.dev/countries?fields=alpha3Code'; }
+function formatearPoblacion(n){ return (n==null||isNaN(n))?'—':new Intl.NumberFormat('es-ES').format(n); }
+function formatearArea(n){ return (n==null||isNaN(n))?'—':new Intl.NumberFormat('es-ES').format(n)+' km²'; }
+function formatearCapital(c){ if(!c)return '—'; if(Array.isArray(c))return c.length?c.join(', '):'—'; if(typeof c==='string')return c; return '—'; }
+function formatearIdiomas(o){ if(!o)return '—'; var v={},r=[]; Object.keys(o).forEach(function(k){var n=o[k];var t=n&&n.name?n.name:(typeof n==='string'?n:k); if(t&&!v[t]){v[t]=1;r.push(t);}}); return r.length?r.join(', '):'—'; }
+function formatearMonedas(o){ if(!o)return '—'; var r=[]; Object.keys(o).forEach(function(k){var v=o[k]; if(v&&v.name)r.push(v.name+' ('+k+')'); else r.push(k);}); return r.length?r.join(', '):'—'; }
+function pintarBloquePaises(b,data){ var f=b.querySelector('[data-p-bandera]'),n=b.querySelector('[data-p-nombre]'),c=b.querySelector('[data-p-capital]'),p=b.querySelector('[data-p-poblacion]'),rg=b.querySelector('[data-p-region]'),sr=b.querySelector('[data-p-subregion]'),id=b.querySelector('[data-p-idiomas]'),mo=b.querySelector('[data-p-moneda]'),ar=b.querySelector('[data-p-area]'),er=b.querySelector('[data-p-error]'); if(!data)return; if(er){er.hidden=true;er.textContent='';} quitarReintento(b);
+  var name=typeof data.name==='string'?data.name:((data.name&&(data.name.common||data.name.official))||'—'); var fl=data.flags||{}; var img=fl.svg||fl.png||'';
+  if(f) f.innerHTML=img?'<img src="'+img+'" alt="Bandera de '+name+'" loading="lazy">':'<span class="paises__bandera-vacia">Sin bandera</span>';
+  if(n)n.textContent=name; if(c)c.textContent=formatearCapital(data.capital); if(p)p.textContent=formatearPoblacion(data.population);
+  if(rg)rg.textContent=data.region||'—'; if(sr)sr.textContent=data.subregion||'—'; if(id)id.textContent=formatearIdiomas(data.languages); if(mo)mo.textContent=formatearMonedas(data.currencies); if(ar)ar.textContent=formatearArea(data.area); }
+function pintarErrorPaises(b,m){ var er=b.querySelector('[data-p-error]'),n=b.querySelector('[data-p-nombre]'),f=b.querySelector('[data-p-bandera]'); if(er){er.hidden=false;er.textContent=m||'No se pudo cargar el país.';} if(n)n.textContent='—'; if(f)f.innerHTML=''; var cod=b.querySelector('[data-p-codigo]'); botonReintento(b,function(){cargarPais(b,(cod&&cod.value)||'ESP');}); }
+function cargarPais(b,codigo){ var er=b.querySelector('[data-p-error]'),n=b.querySelector('[data-p-nombre]'),f=b.querySelector('[data-p-bandera]'); codigo=(codigo||'').toUpperCase().trim();
+  if(!/^[A-Z]{3}$/.test(codigo)){pintarErrorPaises(b,'El código debe ser de 3 letras (ISO alfa-3). Ejemplo: ESP');return;}
+  if(n)n.textContent='Cargando '+codigo+'…'; if(f)f.innerHTML=''; if(er)er.hidden=true;
+  fetch(paisesUrl(codigo)).then(function(r){ if(r.status===404)throw new Error('País no encontrado: '+codigo); if(r.status===429)throw new Error('Límite de peticiones (429). Espera un momento.'); if(!r.ok)throw new Error('HTTP '+r.status); return r.json(); })
+  .then(function(res){ var d=Array.isArray(res)?res[0]:res; if(!d||!d.name)throw new Error('País no encontrado: '+codigo); pintarBloquePaises(b,d); })
+  .catch(function(e){console.error('[paises]',e);pintarErrorPaises(b,e.message||'No se pudo cargar el país.');}); }
+function obtenerListaPaises(){ if(listaPaisesCache&&listaPaisesCache.length)return Promise.resolve(listaPaisesCache);
+  return fetch(paisesListaUrl()).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+  .then(function(a){ var c=(a||[]).map(function(x){return x.alpha3Code||x.cca3;}).filter(Boolean); if(!c.length)throw new Error('lista vacía'); listaPaisesCache=c; return c; })
+  .catch(function(e){console.error('[paises lista]',e); return CODIGOS_PAI.slice();}); }
+function inicializarBloquePaises(b){ if(b.dataset.paisesListo==='1')return; var cod=b.querySelector('[data-p-codigo]'),bu=b.querySelector('[data-p-buscar]'),al=b.querySelector('[data-p-aleatorio]');
+  var buscar=function(){var c=cod?cod.value:PAISES.codigo; cargarPais(b,c);}; on(bu,'click',buscar); on(cod,'keydown',function(e){if(e.key==='Enter'){e.preventDefault();buscar();}});
+  on(al,'click',function(){ obtenerListaPaises().then(function(l){var c=pick(l); if(cod)cod.value=c; cargarPais(b,c);}); });
+  b.dataset.paisesListo='1'; cargarPais(b,cod?cod.value:PAISES.codigo); obtenerListaPaises().catch(function(){}); }
+function inicializarPaises(){ $$('[data-paises]').forEach(inicializarBloquePaises); }
 
 /* ══════════════════════════════════════════════════════════════════════
    1e. CURIOSIDADES
    ══════════════════════════════════════════════════════════════════════ */
-var CURIOSIDADES = { url: 'https://es.wikipedia.org/api/rest_v1/page/random/summary', maxCaracteres: 320 };
-function truncarTexto(txt, n) {
-  if (!txt) return '—';
-  var limpio = txt.replace(/\s+/g, ' ').trim();
-  if (limpio.length <= n) return limpio;
-  var corte = limpio.slice(0, n); var m = corte.lastIndexOf(' ');
-  if (m > 0) corte = corte.slice(0, m);
-  return corte + '…';
-}
-function pintarCuriosidad(bloque, data) {
-  var tituloEl = bloque.querySelector('[data-c-titulo]'), textoEl = bloque.querySelector('[data-c-texto]');
-  var imgEl = bloque.querySelector('[data-c-imagen]'), enlaceEl = bloque.querySelector('[data-c-enlace]');
-  var errEl = bloque.querySelector('[data-c-error]');
-  if (errEl) { errEl.hidden = true; errEl.textContent = ''; }
-  quitarReintento(bloque);
-  var titulo = (data && data.title) || '—';
-  var extract = (data && data.extract) || '';
-  var url = (data && data.content_urls && data.content_urls.desktop) ? data.content_urls.desktop.page : '';
-  var img = (data && data.thumbnail) ? data.thumbnail.source : '';
-  if (tituloEl) tituloEl.textContent = titulo;
-  if (textoEl) textoEl.textContent = extract ? truncarTexto(extract, CURIOSIDADES.maxCaracteres) : 'Sin texto para esta curiosidad.';
-  if (imgEl) imgEl.innerHTML = img ? '<img src="' + img + '" alt="' + titulo + '" loading="lazy">' : '';
-  if (enlaceEl) { if (url) { enlaceEl.hidden = false; enlaceEl.href = url; } else { enlaceEl.hidden = true; } }
-}
-function pintarErrorCuriosidad(bloque, mensaje) {
-  var errEl = bloque.querySelector('[data-c-error]'), tituloEl = bloque.querySelector('[data-c-titulo]');
-  var textoEl = bloque.querySelector('[data-c-texto]'), imgEl = bloque.querySelector('[data-c-imagen]');
-  if (errEl) { errEl.hidden = false; errEl.textContent = mensaje || 'No se pudo cargar la curiosidad.'; }
-  if (tituloEl) tituloEl.textContent = '—';
-  if (textoEl) textoEl.textContent = '—';
-  if (imgEl) imgEl.innerHTML = '';
-  botonReintento(bloque, function () { cargarCuriosidad(bloque); });
-}
-function cargarCuriosidad(bloque) {
-  var errEl = bloque.querySelector('[data-c-error]'), tituloEl = bloque.querySelector('[data-c-titulo]');
-  if (tituloEl) tituloEl.textContent = 'Buscando algo curioso…';
-  if (errEl) errEl.hidden = true;
-  fetch(CURIOSIDADES.url)
-    .then(function (r) {
-      if (r.status === 429) throw new Error('Demasiadas peticiones seguidas. Espera un momento y vuelve a pulsar.');
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    })
-    .then(function (data) { pintarCuriosidad(bloque, data); })
-    .catch(function (e) { console.error('[curiosidades]', e); pintarErrorCuriosidad(bloque, e.message); });
-}
-function inicializarBloqueCuriosidades(bloque) {
-  if (bloque.dataset.curiosidadesListo === '1') return;
-  var nuevaEl = bloque.querySelector('[data-c-nueva]');
-  on(nuevaEl, 'click', function () { cargarCuriosidad(bloque); });
-  bloque.dataset.curiosidadesListo = '1';
-  cargarCuriosidad(bloque);
-}
-function inicializarCuriosidades() { $$('[data-curiosidades]').forEach(inicializarBloqueCuriosidades); }
+var CURIOSIDADES={url:'https://es.wikipedia.org/api/rest_v1/page/random/summary',maxCaracteres:320};
+function truncarTexto(t,n){ if(!t)return '—'; var l=t.replace(/\s+/g,' ').trim(); if(l.length<=n)return l; var c=l.slice(0,n); var m=c.lastIndexOf(' '); if(m>0)c=c.slice(0,m); return c+'…'; }
+function pintarCuriosidad(b,data){ var ti=b.querySelector('[data-c-titulo]'),tx=b.querySelector('[data-c-texto]'),im=b.querySelector('[data-c-imagen]'),en=b.querySelector('[data-c-enlace]'),er=b.querySelector('[data-c-error]'); if(er){er.hidden=true;er.textContent='';} quitarReintento(b);
+  var titulo=(data&&data.title)||'—'; var ex=(data&&data.extract)||''; var url=(data&&data.content_urls&&data.content_urls.desktop)?data.content_urls.desktop.page:''; var img=(data&&data.thumbnail)?data.thumbnail.source:'';
+  if(ti)ti.textContent=titulo; if(tx)tx.textContent=ex?truncarTexto(ex,CURIOSIDADES.maxCaracteres):'Sin texto para esta curiosidad.';
+  if(im)im.innerHTML=img?'<img src="'+img+'" alt="'+titulo+'" loading="lazy">':''; if(en){ if(url){en.hidden=false;en.href=url;} else en.hidden=true; } }
+function pintarErrorCuriosidad(b,m){ var er=b.querySelector('[data-c-error]'),ti=b.querySelector('[data-c-titulo]'),tx=b.querySelector('[data-c-texto]'),im=b.querySelector('[data-c-imagen]'); if(er){er.hidden=false;er.textContent=m||'No se pudo cargar la curiosidad.';} if(ti)ti.textContent='—'; if(tx)tx.textContent='—'; if(im)im.innerHTML=''; botonReintento(b,function(){cargarCuriosidad(b);}); }
+function cargarCuriosidad(b){ var er=b.querySelector('[data-c-error]'),ti=b.querySelector('[data-c-titulo]'); if(ti)ti.textContent='Buscando algo curioso…'; if(er)er.hidden=true;
+  fetch(CURIOSIDADES.url).then(function(r){ if(r.status===429)throw new Error('Demasiadas peticiones seguidas. Espera un momento y vuelve a pulsar.'); if(!r.ok)throw new Error('HTTP '+r.status); return r.json(); })
+  .then(function(d){pintarCuriosidad(b,d);}).catch(function(e){console.error('[curiosidades]',e);pintarErrorCuriosidad(b,e.message);}); }
+function inicializarBloqueCuriosidades(b){ if(b.dataset.curiosidadesListo==='1')return; on(b.querySelector('[data-c-nueva]'),'click',function(){cargarCuriosidad(b);}); b.dataset.curiosidadesListo='1'; cargarCuriosidad(b); }
+function inicializarCuriosidades(){ $$('[data-curiosidades]').forEach(inicializarBloqueCuriosidades); }
 
 /* ══════════════════════════════════════════════════════════════════════
    2. CONMUTADOR DE PANTALLAS
    ══════════════════════════════════════════════════════════════════════ */
 var bar, panel, listaEl, cuerpo, sello, txtEl, ecoEl;
+function setPantalla(p){ document.body.dataset.pantalla=p; Escena.corriendo(p==='bar'); if(p==='diario') window.scrollTo(0,0); if(p==='portada') animarPortada(); }
 
-function setPantalla(p) {
-  document.body.dataset.pantalla = p;
-  Escena.corriendo(p === 'bar');
-  if (p === 'diario') window.scrollTo(0, 0);
-  if (p === 'portada') animarPortada();
-}
-
-var DESTINOS = {
-  portada : { txt:'⌂ portada',    acc:function(){ setPantalla('portada'); } },
-  bar     : { txt:'☰ el bar',     acc:function(){ setPantalla('bar'); verVista('carta'); saludar(); } },
-  diario  : { txt:'📖 el diario', acc:function(){ setPantalla('diario'); } },
-  contacto: { txt:'✉ contactar',  acc:function(){
-    if (document.body.dataset.pantalla === 'bar') { setPantalla('bar'); verVista('contacto'); decir('La cuenta no corre. El correo está ahí mismo.', true); }
-    else { setPantalla('diario'); var c = document.getElementById('contacto');
-           if (c) c.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth' }); }
-  } },
-  carta   : { txt:'← atrás',      acc:function(){ irCarta(); } }
+var DESTINOS={
+  portada :{txt:'⌂ portada',acc:function(){setPantalla('portada');}},
+  bar     :{txt:'☰ el bar',acc:function(){setPantalla('bar'); verVista('carta'); saludar();}},
+  diario  :{txt:'📖 el diario',acc:function(){setPantalla('diario');}},
+  contacto:{txt:'✉ contactar',acc:function(){ if(document.body.dataset.pantalla==='bar'){setPantalla('bar'); verVista('contacto'); decir('La cuenta no corre. El correo está ahí mismo.',true);} else {setPantalla('diario'); var c=document.getElementById('contacto'); if(c)c.scrollIntoView({behavior:REDUCED?'auto':'smooth'});} }},
+  carta   :{txt:'← atrás',acc:function(){irCarta();}}
 };
-
-function volverAlIndice(id) {
-  if (document.body.dataset.pantalla !== 'diario') setPantalla('diario');
-  var carta = $('.carta3d');
-  if (carta) carta.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'center' });
-  var pos = CARAS_INDICE.indexOf(id);
-  if (pos >= 0 && Carta3D && Carta3D.irA) Carta3D.irA(pos);
-}
-
-function botonera(actual) {
-  var html = '';
-  ['bar','diario','contacto'].forEach(function (k) {
-    var d = DESTINOS[k], cur = (k === actual);
-    html += '<button class="jn-btn jn-btn--linea" type="button" data-ir="' + k + '"' +
-            (cur ? ' aria-current="page"' : '') + '>' + d.txt + '</button>';
-  });
-  return html;
-}
-
-document.addEventListener('click', function (e) {
-  var b = e.target.closest && e.target.closest('[data-ir]');
-  if (!b) return;
-  var d = DESTINOS[b.getAttribute('data-ir')];
-  if (d) d.acc();
-});
-document.addEventListener('click', function (e) {
-  var b = e.target.closest && e.target.closest('[data-volver]');
-  if (!b) return;
-  e.preventDefault();
-  volverAlIndice(b.getAttribute('data-volver'));
-});
+function volverAlIndice(id){ if(document.body.dataset.pantalla!=='diario')setPantalla('diario'); var carta=$('.carta3d'); if(carta)carta.scrollIntoView({behavior:REDUCED?'auto':'smooth',block:'center'}); var pos=CARAS_INDICE.indexOf(id); if(pos>=0&&Carta3D&&Carta3D.irA)Carta3D.irA(pos); }
+function botonera(actual){ var html=''; ['bar','diario','contacto'].forEach(function(k){var d=DESTINOS[k],cur=(k===actual); html+='<button class="jn-btn jn-btn--linea" type="button" data-ir="'+k+'"'+(cur?' aria-current="page"':'')+'>'+d.txt+'</button>';}); return html; }
+document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[data-ir]'); if(!b)return; var d=DESTINOS[b.getAttribute('data-ir')]; if(d)d.acc(); });
+document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[data-volver]'); if(!b)return; e.preventDefault(); volverAlIndice(b.getAttribute('data-volver')); });
 
 /* ══════════════════════════════════════════════════════════════════════
    2b. PORTADA: neón
    ══════════════════════════════════════════════════════════════════════ */
-var letrasPortada = [];
-var portadaTimer = null;
-
-function prepararLetrasPortada() {
-  var h1 = document.getElementById('portada-title');
-  if (!h1 || h1.dataset.partido === '1') return;
-  var palabras = $$('.palabra', h1);
-  var todas = [];
-  palabras.forEach(function (p) {
-    var esGold = p.classList.contains('gold');
-    var txt = p.textContent;
-    p.textContent = '';
-    for (var i = 0; i < txt.length; i++) {
-      var ch = txt.charAt(i);
-      var s = document.createElement('span');
-      s.className = 'letra' + (esGold ? ' gold' : '');
-      if (ch === ' ') { s.classList.add('espacio'); s.innerHTML = '&nbsp;'; }
-      else { s.textContent = ch; todas.push(s); }
-      p.appendChild(s);
-    }
-  });
-  h1.dataset.partido = '1';
-  letrasPortada = todas;
-}
-function animarPortada() {
-  prepararLetrasPortada();
-  var h1 = document.getElementById('portada-title');
-  var portadaEl = document.getElementById('portada');
-  if (!h1 || !letrasPortada.length) return;
-  h1.classList.remove('is-parpadeo');
-  letrasPortada.forEach(function (l) { l.classList.remove('is-on'); });
-  clearTimeout(portadaTimer);
-  if (REDUCED) { letrasPortada.forEach(function (l) { l.classList.add('is-on'); }); return; }
-  if (portadaEl) { portadaEl.classList.remove('is-encendiendo'); void portadaEl.offsetWidth; portadaEl.classList.add('is-encendiendo'); }
-  var orden = letrasPortada.slice();
-  for (var i = orden.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1)); var t = orden[i]; orden[i] = orden[j]; orden[j] = t;
-  }
-  var k = 0;
-  function encender() {
-    if (k < orden.length) { orden[k].classList.add('is-on'); k++; portadaTimer = setTimeout(encender, 55 + Math.random() * 80); }
-    else { if (portadaEl) portadaEl.classList.remove('is-encendiendo'); h1.classList.add('is-parpadeo'); }
-  }
-  portadaTimer = setTimeout(encender, 140);
-}
-
-modulo('tilt', function () {
-  if (REDUCED) return;
-  $$('.tarjeta3d').forEach(function (t) {
-    on(t, 'pointermove', function (e) {
-      var r = t.getBoundingClientRect();
-      var x = (e.clientX - r.left) / r.width - .5;
-      var y = (e.clientY - r.top) / r.height - .5;
-      t.style.setProperty('--ty', (x * 10).toFixed(2) + 'deg');
-      t.style.setProperty('--tx', (-y * 10).toFixed(2) + 'deg');
-    });
-    on(t, 'pointerleave', function () { t.style.setProperty('--tx', '0deg'); t.style.setProperty('--ty', '0deg'); });
-  });
-});
+var letrasPortada=[], portadaTimer=null;
+function prepararLetrasPortada(){ var h1=document.getElementById('portada-title'); if(!h1||h1.dataset.partido==='1')return; var ps=$$('.palabra',h1); var todas=[];
+  ps.forEach(function(p){ var gold=p.classList.contains('gold'); var txt=p.textContent; p.textContent=''; for(var i=0;i<txt.length;i++){var ch=txt.charAt(i); var s=document.createElement('span'); s.className='letra'+(gold?' gold':''); if(ch===' '){s.classList.add('espacio');s.innerHTML='&nbsp;';} else {s.textContent=ch; todas.push(s);} p.appendChild(s);} });
+  h1.dataset.partido='1'; letrasPortada=todas; }
+function animarPortada(){ prepararLetrasPortada(); var h1=document.getElementById('portada-title'); var portadaEl=document.getElementById('portada'); if(!h1||!letrasPortada.length)return;
+  h1.classList.remove('is-parpadeo'); letrasPortada.forEach(function(l){l.classList.remove('is-on');}); clearTimeout(portadaTimer);
+  if(REDUCED){letrasPortada.forEach(function(l){l.classList.add('is-on');}); return;}
+  if(portadaEl){portadaEl.classList.remove('is-encendiendo'); void portadaEl.offsetWidth; portadaEl.classList.add('is-encendiendo');}
+  var orden=letrasPortada.slice(); for(var i=orden.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)); var t=orden[i]; orden[i]=orden[j]; orden[j]=t;} var k=0;
+  function encender(){ if(k<orden.length){orden[k].classList.add('is-on'); k++; portadaTimer=setTimeout(encender,55+Math.random()*80);} else {if(portadaEl)portadaEl.classList.remove('is-encendiendo'); h1.classList.add('is-parpadeo');} }
+  portadaTimer=setTimeout(encender,140); }
+modulo('tilt',function(){ if(REDUCED)return; $$('.tarjeta3d').forEach(function(t){ on(t,'pointermove',function(e){var r=t.getBoundingClientRect(); var x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5; t.style.setProperty('--ty',(x*10).toFixed(2)+'deg'); t.style.setProperty('--tx',(-y*10).toFixed(2)+'deg');}); on(t,'pointerleave',function(){t.style.setProperty('--tx','0deg'); t.style.setProperty('--ty','0deg');}); }); });
 
 /* ══════════════════════════════════════════════════════════════════════
    3. EL DIARIO
    ══════════════════════════════════════════════════════════════════════ */
-modulo('diario', function () {
-  var cuerpoD = document.getElementById('diarioCuerpo');
-  if (!cuerpoD) return;
-
-  cuerpoD.innerHTML = PLATOS.map(function (p) {
-    var clon = p.art.cloneNode(true);
-    clon.removeAttribute('id');
-    var pos = CARAS_INDICE.indexOf(p.id);
-    var volver = pos >= 0
-      ? '<button class="entrada__volver" type="button" data-volver="' + p.id + '">← Volver al índice' +
-        '<span class="entrada__pos">' + ('0' + (pos + 1)).slice(-2) + '/' + ('0' + CARAS_INDICE.length).slice(-2) + '</span></button>'
-      : '';
-    return '<section class="entrada" id="' + p.id + '">' + volver +
-             '<p class="num">plato ' + ('0' + p.n).slice(-2) + '</p>' +
-             clon.innerHTML +
-             '<div class="nav3">' + botonera('diario') + '</div>' +
-           '</section>';
-  }).join('');
-
-  pintarClima(ultimaData);
-  inicializarMonedas();
-  pintarMonedas();
-  inicializarPaises();
-  inicializarCuriosidades();
-
-  on(document.getElementById('diario'), 'click', function (e) {
-    var a = e.target.closest && e.target.closest('a[href^="#"]');
-    if (!a) return;
-    var t = document.getElementById(a.getAttribute('href').slice(1));
-    if (t) { e.preventDefault(); t.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth' }); }
-  });
-
-  var n3 = document.getElementById('nav3Contacto');
-  if (n3) n3.innerHTML = botonera('contacto');
-  on(document.getElementById('diarioCopyMail'), 'click', function () { copiar(this); });
-});
+modulo('diario',function(){ var cuerpoD=document.getElementById('diarioCuerpo'); if(!cuerpoD)return;
+  cuerpoD.innerHTML=PLATOS.map(function(p){ var clon=p.art.cloneNode(true); clon.removeAttribute('id'); var pos=CARAS_INDICE.indexOf(p.id);
+    var volver=pos>=0?'<button class="entrada__volver" type="button" data-volver="'+p.id+'">← Volver al índice<span class="entrada__pos">'+('0'+(pos+1)).slice(-2)+'/'+('0'+CARAS_INDICE.length).slice(-2)+'</span></button>':'';
+    return '<section class="entrada" id="'+p.id+'">'+volver+'<p class="num">plato '+('0'+p.n).slice(-2)+'</p>'+clon.innerHTML+'<div class="nav3">'+botonera('diario')+'</div></section>'; }).join('');
+  pintarClima(ultimaData); inicializarMonedas(); pintarMonedas(); inicializarPaises(); inicializarCuriosidades();
+  on(document.getElementById('diario'),'click',function(e){ var a=e.target.closest&&e.target.closest('a[href^="#"]'); if(!a)return; var t=document.getElementById(a.getAttribute('href').slice(1)); if(t){e.preventDefault(); t.scrollIntoView({behavior:REDUCED?'auto':'smooth'});} });
+  var n3=document.getElementById('nav3Contacto'); if(n3)n3.innerHTML=botonera('contacto');
+  on(document.getElementById('diarioCopyMail'),'click',function(){copiar(this);}); });
 
 /* ══════════════════════════════════════════════════════════════════════
    4. EL BAR
    ══════════════════════════════════════════════════════════════════════ */
-function construirCarta() {
-  if (!listaEl) return;
-  listaEl.innerHTML = PLATOS.map(function (p, i) {
-    return '<li><button class="plato" type="button" data-i="' + i + '" style="--i:' + i + '">' +
-             '<span class="plato__num">' + ('0' + p.n).slice(-2) + '</span>' +
-             '<span class="plato__name">' + p.name + '</span>' +
-             '<span class="plato__dots" aria-hidden="true"></span>' +
-             '<span class="plato__tag">' + p.precio + '</span>' +
-           '</button></li>';
-  }).join('');
-  var total = document.getElementById('barTotal');
-  if (total) total.textContent = PLATOS.length;
-  var hint = document.querySelector('.bar__hint');
-  if (hint) hint.textContent = '1–' + PLATOS.length + ' saltar a un plato · c carta · s siguiente · m contactar · esc carta';
-}
-function verVista(v) { if (panel) panel.dataset.vista = v; }
-function servirPlato(i) {
-  var p = PLATOS[i]; if (!p || !cuerpo) return;
-  actual = i;
-  var clon = p.art.cloneNode(true);
-  clon.removeAttribute('id'); clon.className = 'plato-post';
-  cuerpo.replaceChildren(clon);
-  var sig = PLATOS[(i + 1) % PLATOS.length];
-  var fin = document.createElement('div');
-  fin.className = 'servido__fin';
-  fin.innerHTML =
-    '<button class="jn-btn jn-btn--linea" type="button" data-ir="carta">← atrás</button>' +
-    '<button class="jn-btn" type="button" data-siguiente="' + PLATOS.indexOf(sig) + '">Siguiente · ' + sig.name + ' →</button>' +
-    botonera('bar');
-  cuerpo.appendChild(fin);
-  pintarClima(ultimaData);
-  var bloqueM = cuerpo.querySelector('[data-monedas]');
-  if (bloqueM) { bloqueM.dataset.monedasListo = ''; inicializarBloqueMonedas(bloqueM); }
-  var bloqueP = cuerpo.querySelector('[data-paises]');
-  if (bloqueP) { bloqueP.dataset.paisesListo = ''; inicializarBloquePaises(bloqueP); }
-  var bloqueC = cuerpo.querySelector('[data-curiosidades]');
-  if (bloqueC) { bloqueC.dataset.curiosidadesListo = ''; inicializarBloqueCuriosidades(bloqueC); }
-  if (sello) sello.textContent = 'plato ' + ('0' + p.n).slice(-2) + ' · ' + p.min + ' min';
-  verVista('plato');
-  decir(p.dicho, true);
-  Escena.pulso();
-  setTimeout(function () { try { cuerpo.focus({ preventScroll: true }); } catch (e) {} }, 240);
-}
-function irCarta() {
-  verVista('carta');
-  decir('¿Otra cosa? Mira la pizarra tranquilamente.', true);
-  var primero = $('.plato', listaEl); if (primero) primero.focus();
-}
-function saludar() { decir(SALUDO[0], true); decir(SALUDO[1]); }
-
-modulo('bar', function () {
-  bar     = document.getElementById('bar');
-  panel   = document.getElementById('barPanel');
-  listaEl = document.getElementById('barLista');
-  cuerpo  = document.getElementById('servidoCuerpo');
-  sello   = document.getElementById('servidoSello');
-  txtEl   = document.getElementById('burbujaTxt');
-  ecoEl   = document.getElementById('burbujaEco');
-  if (!bar || !panel || !listaEl || !cuerpo) { console.error('[bar] faltan referencias'); return; }
-
-  construirCarta();
-
-  on(listaEl, 'click', function (e) { var b = e.target.closest && e.target.closest('.plato'); if (b) servirPlato(+b.dataset.i); });
-  on(listaEl, 'mouseover', function (e) { if (e.target.closest && e.target.closest('.plato')) { Escena.pulso(); Sonido.tintir(); } });
-  on(listaEl, 'keydown', function (e) {
-    var items = $$('.plato', listaEl), i = items.indexOf(document.activeElement);
-    if (i < 0) return;
-    if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
-    if (e.key === 'ArrowUp')   { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
-  });
-  on(cuerpo, 'click', function (e) {
-    var s = e.target.closest && e.target.closest('[data-siguiente]');
-    var a = e.target.closest && e.target.closest('[data-anterior]');
-    if (s) servirPlato(+s.dataset.siguiente); else if (a) servirPlato(+a.dataset.anterior);
-  });
-  on(document.getElementById('barPrev'), 'click', function () { servirPlato((actual - 1 + PLATOS.length) % PLATOS.length); });
-  on(document.getElementById('barInicio'), 'click', irCarta);
-  on(document.getElementById('barContactoBack'), 'click', irCarta);
-  on(document.getElementById('burbuja'), 'click', saltarTexto);
-  on(document.getElementById('barCopyMail'), 'click', function () { copiar(this); });
-  on(document.getElementById('barSon'), 'click', function () {
-    var o = Sonido.conmutar();
-    this.setAttribute('aria-pressed', o ? 'true' : 'false');
-    this.textContent = 'sonido: ' + (o ? 'on' : 'off');
-  });
-  on(bar, 'keydown', function (e) {
-    if (e.key === 'Escape') { e.preventDefault(); setPantalla('portada'); return; }
-    if (e.key !== 'Tab') return;
-    var foco = $$('button, a[href], [tabindex="-1"]', bar).filter(function (el) { return el.offsetParent !== null && !el.disabled; });
-    if (!foco.length) return;
-    var a = foco[0], z = foco[foco.length - 1];
-    if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); }
-    else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
-  });
-  var escena = document.getElementById('barEscena');
-  on(escena, 'pointermove', function (e) {
-    var r = this.getBoundingClientRect();
-    this.style.setProperty('--px', (-((e.clientX - r.left) / r.width  - .5) * 7).toFixed(2) + 'px');
-    this.style.setProperty('--py', (-((e.clientY - r.top)  / r.height - .5) * 5).toFixed(2) + 'px');
-  });
-  on(escena, 'pointerleave', function () { this.style.setProperty('--px', '0px'); this.style.setProperty('--py', '0px'); });
-});
+function construirCarta(){ if(!listaEl)return; listaEl.innerHTML=PLATOS.map(function(p,i){ return '<li><button class="plato" type="button" data-i="'+i+'" style="--i:'+i+'"><span class="plato__num">'+('0'+p.n).slice(-2)+'</span><span class="plato__name">'+p.name+'</span><span class="plato__dots" aria-hidden="true"></span><span class="plato__tag">'+p.precio+'</span></button></li>'; }).join('');
+  var total=document.getElementById('barTotal'); if(total)total.textContent=PLATOS.length;
+  var hint=document.querySelector('.bar__hint'); if(hint)hint.textContent='1–'+PLATOS.length+' saltar a un plato · c carta · s siguiente · m contactar · esc carta'; }
+function verVista(v){ if(panel)panel.dataset.vista=v; }
+function servirPlato(i){ var p=PLATOS[i]; if(!p||!cuerpo)return; actual=i; var clon=p.art.cloneNode(true); clon.removeAttribute('id'); clon.className='plato-post'; cuerpo.replaceChildren(clon);
+  var sig=PLATOS[(i+1)%PLATOS.length]; var fin=document.createElement('div'); fin.className='servido__fin';
+  fin.innerHTML='<button class="jn-btn jn-btn--linea" type="button" data-ir="carta">← atrás</button><button class="jn-btn" type="button" data-siguiente="'+PLATOS.indexOf(sig)+'">Siguiente · '+sig.name+' →</button>'+botonera('bar'); cuerpo.appendChild(fin);
+  pintarClima(ultimaData); var m=cuerpo.querySelector('[data-monedas]'); if(m){m.dataset.monedasListo=''; inicializarBloqueMonedas(m);} var pp=cuerpo.querySelector('[data-paises]'); if(pp){pp.dataset.paisesListo=''; inicializarBloquePaises(pp);} var cc=cuerpo.querySelector('[data-curiosidades]'); if(cc){cc.dataset.curiosidadesListo=''; inicializarBloqueCuriosidades(cc);}
+  if(sello)sello.textContent='plato '+('0'+p.n).slice(-2)+' · '+p.min+' min'; verVista('plato'); decir(p.dicho,true); Escena.pulso(); setTimeout(function(){try{cuerpo.focus({preventScroll:true});}catch(e){}},240); }
+function irCarta(){ verVista('carta'); decir('¿Otra cosa? Mira la pizarra tranquilamente.',true); var primero=$('.plato',listaEl); if(primero)primero.focus(); }
+function saludar(){ decir(SALUDO[0],true); decir(SALUDO[1]); }
+modulo('bar',function(){ bar=document.getElementById('bar'); panel=document.getElementById('barPanel'); listaEl=document.getElementById('barLista'); cuerpo=document.getElementById('servidoCuerpo'); sello=document.getElementById('servidoSello'); txtEl=document.getElementById('burbujaTxt'); ecoEl=document.getElementById('burbujaEco');
+  if(!bar||!panel||!listaEl||!cuerpo){console.error('[bar] faltan referencias'); return;} construirCarta();
+  on(listaEl,'click',function(e){var b=e.target.closest&&e.target.closest('.plato'); if(b)servirPlato(+b.dataset.i);});
+  on(listaEl,'mouseover',function(e){if(e.target.closest&&e.target.closest('.plato')){Escena.pulso(); Sonido.tintir();}});
+  on(listaEl,'keydown',function(e){ var items=$$('.plato',listaEl),i=items.indexOf(document.activeElement); if(i<0)return; if(e.key==='ArrowDown'){e.preventDefault(); items[(i+1)%items.length].focus();} if(e.key==='ArrowUp'){e.preventDefault(); items[(i-1+items.length)%items.length].focus();} });
+  on(cuerpo,'click',function(e){ var s=e.target.closest&&e.target.closest('[data-siguiente]'), a=e.target.closest&&e.target.closest('[data-anterior]'); if(s)servirPlato(+s.dataset.siguiente); else if(a)servirPlato(+a.dataset.anterior); });
+  on(document.getElementById('barPrev'),'click',function(){servirPlato((actual-1+PLATOS.length)%PLATOS.length);});
+  on(document.getElementById('barInicio'),'click',irCarta); on(document.getElementById('barContactoBack'),'click',irCarta);
+  on(document.getElementById('burbuja'),'click',saltarTexto); on(document.getElementById('barCopyMail'),'click',function(){copiar(this);});
+  on(document.getElementById('barSon'),'click',function(){var o=Sonido.conmutar(); this.setAttribute('aria-pressed',o?'true':'false'); this.textContent='sonido: '+(o?'on':'off');});
+  on(bar,'keydown',function(e){ if(e.key==='Escape'){e.preventDefault(); setPantalla('portada'); return;} if(e.key!=='Tab')return; var foco=$$('button, a[href], [tabindex="-1"]',bar).filter(function(el){return el.offsetParent!==null&&!el.disabled;}); if(!foco.length)return; var a=foco[0],z=foco[foco.length-1]; if(e.shiftKey&&document.activeElement===a){e.preventDefault(); z.focus();} else if(!e.shiftKey&&document.activeElement===z){e.preventDefault(); a.focus();} });
+  var escena=document.getElementById('barEscena'); on(escena,'pointermove',function(e){var r=this.getBoundingClientRect(); this.style.setProperty('--px',(-((e.clientX-r.left)/r.width-.5)*7).toFixed(2)+'px'); this.style.setProperty('--py',(-((e.clientY-r.top)/r.height-.5)*5).toFixed(2)+'px');}); on(escena,'pointerleave',function(){this.style.setProperty('--px','0px'); this.style.setProperty('--py','0px');}); });
 
 /* ══════════════════════════════════════════════════════════════════════
    5. MÁQUINA DE ESCRIBIR
    ══════════════════════════════════════════════════════════════════════ */
-var cola = [], escribiendo = null, reloj = null;
-function fijar(t) { if (ecoEl) ecoEl.hidden = true; if (txtEl) txtEl.textContent = t; }
-function decir(frase, urgente) {
-  if (!txtEl) return;
-  if (urgente) { cola.length = 0; clearInterval(reloj); escribiendo = null; Escena.hablar(false); }
-  cola.push(frase);
-  if (!escribiendo) siguienteFrase();
-}
-function siguienteFrase() {
-  if (!cola.length) return;
-  var frase = cola.shift();
-  if (REDUCED) { fijar(frase); terminar(); return; }
-  var anterior = txtEl.textContent;
-  if (ecoEl) { ecoEl.textContent = anterior; ecoEl.hidden = !anterior; }
-  txtEl.textContent = '';
-  escribiendo = { txt: frase, i: 0 };
-  Escena.hablar(true);
-  reloj = setInterval(pompear, 24);
-}
-function pompear() {
-  if (!escribiendo) return;
-  var t = escribiendo.txt; escribiendo.i++;
-  txtEl.textContent = t.slice(0, escribiendo.i);
-  var ch = t.charAt(escribiendo.i - 1);
-  if (',;:'.indexOf(ch) > -1) escribiendo.i += 6; else if ('.!?'.indexOf(ch) > -1) escribiendo.i += 14;
-  if (escribiendo.i % 3 === 0) Sonido.blip();
-  if (escribiendo.i >= t.length) { txtEl.textContent = t; terminar(); }
-}
-function terminar() {
-  clearInterval(reloj); reloj = null; escribiendo = null; Escena.hablar(false);
-  if (cola.length) setTimeout(siguienteFrase, 340);
-}
-function saltarTexto() {
-  if (!escribiendo && !cola.length) return;
-  var destino = cola.length ? cola[cola.length - 1] : escribiendo.txt;
-  cola.length = 0; clearInterval(reloj); fijar(destino); terminar();
-}
+var cola=[], escribiendo=null, reloj=null;
+function fijar(t){ if(ecoEl)ecoEl.hidden=true; if(txtEl)txtEl.textContent=t; }
+function decir(frase,urgente){ if(!txtEl)return; if(urgente){cola.length=0; clearInterval(reloj); escribiendo=null; Escena.hablar(false);} cola.push(frase); if(!escribiendo)siguienteFrase(); }
+function siguienteFrase(){ if(!cola.length)return; var frase=cola.shift(); if(REDUCED){fijar(frase); terminar(); return;} var ant=txtEl.textContent; if(ecoEl){ecoEl.textContent=ant; ecoEl.hidden=!ant;} txtEl.textContent=''; escribiendo={txt:frase,i:0}; Escena.hablar(true); reloj=setInterval(pompear,24); }
+function pompear(){ if(!escribiendo)return; var t=escribiendo.txt; escribiendo.i++; txtEl.textContent=t.slice(0,escribiendo.i); var ch=t.charAt(escribiendo.i-1); if(',;:'.indexOf(ch)>-1)escribiendo.i+=6; else if('.!?'.indexOf(ch)>-1)escribiendo.i+=14; if(escribiendo.i%3===0)Sonido.blip(); if(escribiendo.i>=t.length){txtEl.textContent=t; terminar();} }
+function terminar(){ clearInterval(reloj); reloj=null; escribiendo=null; Escena.hablar(false); if(cola.length)setTimeout(siguienteFrase,340); }
+function saltarTexto(){ if(!escribiendo&&!cola.length)return; var d=cola.length?cola[cola.length-1]:escribiendo.txt; cola.length=0; clearInterval(reloj); fijar(d); terminar(); }
 
 /* ══════════════════════════════════════════════════════════════════════
    6. ESCENA PIXEL-ART (canvas)
    ══════════════════════════════════════════════════════════════════════ */
-var Escena = (function () {
-  var cv = document.getElementById('barCanvas');
-  function noop() {}
-  if (!cv || !cv.getContext) return { corriendo: noop, hablar: noop, pulso: noop };
-  var g = cv.getContext('2d', { alpha: false });
-  if (!g) return { corriendo: noop, hablar: noop, pulso: noop };
-  var W = cv.width, H = cv.height, CY = 100;
-  g.imageSmoothingEnabled = false;
-  var C = {
-    pared:'#3a2418', junta:'#241505', marco:'#2b1a11', noche:'#0f1a2b', ciudad:'#0a1120',
-    luz:'#ffd27a', lluvia:'#9ecbe8', tablero:'#8f5a30', canto:'#c98a4f', frente:'#241710',
-    panelito:'#2d1c12', madera:'#4a2c1a', pizarra:'#1e2a24', tiza:'#dfe6da',
-    metal:'#b9c3cc', metal2:'#8d949c', metal3:'#3f464d', camisa:'#efe6d6', chaleco:'#26303f',
-    piel:'#e3ac82', piel2:'#c98d64', pelo:'#241a14', lazo:'#c04a3a', plato:'#cfc6b2',
-    cafe:'#5a3320', gato:'#3a2b22', planta:'#3f7a4a', tiesto:'#a4552f', bombilla:'#ffdf9e'
-  };
-  function R(x, y, w, h, c) { g.fillStyle = c; g.fillRect(x | 0, y | 0, w | 0, h | 0); }
-  function A(x, y, w, h, c, a) { g.globalAlpha = a; g.fillStyle = c; g.fillRect(x | 0, y | 0, w | 0, h | 0); g.globalAlpha = 1; }
-  function azar(n) { return (Math.sin(n * 12.9898) * 43758.5453) % 1; }
-  var grano = document.createElement('canvas'); grano.width = W; grano.height = H;
-  (function () {
-    var gg = grano.getContext('2d'), n = Math.floor(W * H * .05);
-    for (var i = 0; i < n; i++) {
-      gg.fillStyle = Math.random() > .5 ? 'rgba(255,240,210,.05)' : 'rgba(0,0,0,.07)';
-      gg.fillRect(Math.random() * W | 0, Math.random() * H | 0, 1, 1);
-    }
-  })();
-  var vin = g.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .92);
-  vin.addColorStop(0, 'rgba(0,0,0,0)'); vin.addColorStop(1, 'rgba(0,0,0,.72)');
-  var st = { t0: 0, raf: 0, corriendo: false, hablando: false, pulso: 0 };
-  var lluvia = [], vapor = [], polvo = [], i;
-  for (i = 0; i < 46; i++) lluvia.push({ x: Math.random(), y: Math.random(), v: .3 + Math.random() * .5, l: 2 + (Math.random() * 4 | 0) });
-  for (i = 0; i < 34; i++) polvo.push({ x: Math.random() * W, y: 16 + Math.random() * 78, v: .5 + Math.random(), f: Math.random() * 6.28 });
-  var lamparas = [{ x: 40 }, { x: 176 }];
-  function soltarVapor(x, y, n) {
-    if (vapor.length > 130) return;
-    for (var k = 0; k < n; k++) vapor.push({ x: x + Math.random() * 3 - 1.5, y: y, v: 7 + Math.random() * 9, vida: 1, f: Math.random() * 6 });
-  }
-  function pared() {
-    R(0, 10, W, CY - 10, C.pared);
-    for (var x = 0; x < W; x += 13) {
-      var s = azar(x * .37);
-      R(x, 10, 12, CY - 10, s > .66 ? '#402a1c' : (s > .33 ? '#37221a' : '#3e2820'));
-      R(x + 12, 10, 1, CY - 10, C.junta);
-    }
-    R(0, 78, W, 2, C.junta); R(0, 80, W, CY - 80, '#2e1c13');
-  }
-  var VX = 8, VY = 22, VW = 58, VH = 46;
-  function ventana(t, dt) {
-    R(VX - 3, VY - 3, VW + 6, VH + 6, C.marco); R(VX, VY, VW, VH, C.noche);
-    g.save(); g.beginPath(); g.rect(VX, VY, VW, VH); g.clip();
-    for (var b = 0; b < 6; b++) {
-      var bx = VX + b * 10 + 1, bh = 9 + azar(b * 7) * 22;
-      R(bx, VY + VH - bh, 9, bh, C.ciudad);
-      for (var w = 0; w < 4; w++)
-        if (azar(b * 13 + w * 3 + (t * .12 | 0)) > .58)
-          A(bx + 1 + (w % 2) * 4, VY + VH - bh + 2 + ((w / 2) | 0) * 5, 2, 2, C.luz, .8);
-    }
-    for (var k = 0; k < lluvia.length; k++) {
-      var d = lluvia[k]; d.y += d.v * dt; d.x -= d.v * dt * .12;
-      if (d.y > 1) { d.y = -.06; d.x = Math.random(); }
-      A(VX + d.x * VW, VY + d.y * VH, 1, d.l, C.lluvia, .5);
-    }
-    g.restore();
-    R(VX + (VW >> 1) - 1, VY, 2, VH, C.marco);
-    R(VX, VY + (VH >> 1) - 1, VW, 2, C.marco);
-    R(VX - 5, VY + VH + 3, VW + 10, 3, C.madera);
-  }
-  function menuPared() {
-    var BX = 140, BY = 26, BW = 62, BH = 42;
-    R(BX - 3, BY - 3, BW + 6, BH + 6, C.madera); R(BX, BY, BW, BH, C.pizarra);
-    A(BX + 2, BY + 2, BW - 4, 1, C.tiza, .25);
-    for (var f = 0; f < 5; f++) {
-      var y = BY + 9 + f * 7, w = 16 + azar(f * 3.3) * 26;
-      A(BX + 6, y, w, 1, C.tiza, .45); A(BX + 12 + w, y, 7, 1, '#e8c07a', .5);
-    }
-    var cx = BX + BW - 12, cy = BY + BH - 12;
-    A(cx, cy, 7, 5, C.tiza, .55); A(cx + 7, cy + 1, 2, 3, C.tiza, .45);
-  }
-  function estanteria(t) {
-    var EX = 212, EW = 42;
-    R(EX - 2, 42, EW + 4, 3, C.madera); R(EX - 2, 64, EW + 4, 3, C.madera);
-    var tarimas = ['#8a4a3a', '#c9a04a', '#4a7a6a', '#a4552f', '#6a4a8a'];
-    for (var f = 0; f < 5; f++) {
-      var h = 8 + azar(f * 5) * 8, x = EX + 1 + f * 8;
-      R(x, 42 - h, 6, h, tarimas[f]); R(x, 42 - h - 1, 6, 1, '#e8dcc8');
-    }
-    R(EX + 32, 56, 8, 8, C.tiesto);
-    for (var p = 0; p < 4; p++) R(EX + 33 + p * 2 + Math.round(Math.sin(t * .9 + p)), 48, 1, 8, C.planta);
-  }
-  function techo() {
-    R(0, 0, W, 10, '#140d09');
-    for (var x = 8; x < W; x += 34) R(x, 0, 3, 10, '#0d0806');
-    R(0, 9, W, 1, '#241710');
-  }
-  function lamparasE() {
-    for (var i = 0; i < lamparas.length; i++) {
-      var x = lamparas[i].x; R(x - 1, 0, 2, 20, '#1a1109');
-      for (var k = 0; k < 6; k++) R(x - (3 + k), 20 + k, (3 + k) * 2, 1, k % 2 ? '#7a3b2e' : '#8f4635');
-      R(x - 2, 26, 4, 3, C.bombilla);
-    }
-  }
-  function camarero(t) {
-    var bx = 104, bob = Math.round(Math.sin(t * 1.7)), y = CY - 2 + bob;
-    R(bx - 3, y - 38, 6, 4, C.piel2);
-    R(bx - 12, y - 35, 24, 40, C.camisa);
-    R(bx - 12, y - 35, 6, 40, C.chaleco); R(bx + 6, y - 35, 6, 40, C.chaleco);
-    R(bx - 4, y - 37, 3, 3, C.lazo); R(bx + 1, y - 37, 3, 3, C.lazo);
-    var ay = y - 24 + Math.round(Math.sin(t * 1.7 + 1));
-    R(bx + 12, y - 33, 4, 22, C.camisa);
-    R(bx - 22, ay, 12, 4, C.camisa); R(bx - 25, ay, 3, 4, C.piel);
-    R(bx - 31, ay - 3, 17, 3, C.metal); R(bx - 31, ay - 1, 17, 1, C.metal2);
-    R(bx - 25, ay - 8, 6, 5, C.plato); R(bx - 24, ay - 7, 4, 1, C.cafe);
-    if (Math.random() < .28) soltarVapor(bx - 22, ay - 9, 1);
-    R(bx - 8, y - 52, 16, 14, C.piel);
-    R(bx - 10, y - 46, 2, 4, C.piel2); R(bx + 8, y - 46, 2, 4, C.piel2);
-    R(bx - 9, y - 54, 18, 6, C.pelo); R(bx - 9, y - 50, 2, 8, C.pelo); R(bx + 7, y - 50, 2, 8, C.pelo);
-    R(bx - 6, y - 49, 4, 1, C.pelo); R(bx + 2, y - 49, 4, 1, C.pelo);
-    if ((t % 4.6) > 4.42) { R(bx - 5, y - 45, 3, 1, C.pelo); R(bx + 2, y - 45, 3, 1, C.pelo); }
-    else { R(bx - 5, y - 46, 3, 2, C.pelo); R(bx + 2, y - 46, 3, 2, C.pelo); }
-    if (st.hablando && (Math.floor(t * 9) % 2 === 0)) R(bx - 2, y - 42, 5, 3, '#7a2a20');
-    else R(bx - 2, y - 41, 4, 1, '#a35a44');
-  }
-  function barra() {
-    A(0, CY - 3, W, 3, '#000', .28);
-    R(0, CY, W, 4, C.tablero); R(0, CY, W, 1, C.canto); R(0, CY + 3, W, 1, C.madera);
-    R(0, CY + 4, W, H - CY - 4, C.frente);
-    for (var x = 4; x < W; x += 26) { R(x, CY + 9, 18, H - CY - 16, C.panelito); R(x, CY + 9, 18, 1, '#3a2418'); }
-    R(0, H - 4, W, 4, '#170f0a');
-  }
-  function cafetera(t) {
-    var x = 194, y = CY - 24;
-    R(x, y, 36, 24, C.metal2); R(x, y, 36, 4, C.metal); R(x + 1, y + 22, 34, 2, C.metal3);
-    R(x + 4, y + 8, 8, 6, C.metal3); R(x + 22, y + 8, 8, 6, C.metal3);
-    R(x + 6, y + 14, 4, 5, '#2b3138'); R(x + 24, y + 14, 4, 5, '#2b3138');
-    R(x + 14, y + 7, 7, 7, '#e8dcc8');
-    R(x + 16 + Math.round(Math.sin(t * 1.1) * 2), y + 9, 2, 2, C.lazo);
-    R(x + 32, y + 8, 2, 11, C.metal);
-    if (Math.random() < .45) soltarVapor(x + 33, y + 6, 1);
-  }
-  function taza(x) {
-    R(x - 4, CY - 2, 9, 2, C.plato); R(x - 2, CY - 7, 5, 5, '#efe6d2');
-    R(x - 1, CY - 6, 3, 1, C.cafe); R(x + 3, CY - 6, 2, 2, '#efe6d2');
-    if (Math.random() < .18) soltarVapor(x, CY - 8, 1);
-  }
-  function gato(t) {
-    var x = 46, y = CY - 2;
-    R(x, y - 6, 16, 6, C.gato); R(x + 12, y - 9, 7, 6, C.gato);
-    R(x + 13, y - 11, 1, 2, C.gato); R(x + 18, y - 11, 1, 2, C.gato);
-    R(x + 13, y - 7, 2, 1, '#120c09');
-    R(x - 4, y - 5, 4, 2, C.gato); R(x - 5, y - 6 + Math.round(Math.sin(t * 1.6) * 2), 2, 3, C.gato);
-  }
-  function conos(t) {
-    for (var i = 0; i < lamparas.length; i++) {
-      var x = lamparas[i].x;
-      var f = .78 + Math.sin(t * 6.3 + i * 2) * .05 + Math.sin(t * 21 + i) * .02 + st.pulso * .22;
-      A(x - 4, 26, 8, 4, '#ffb066', .55 * f);
-      for (var k = 0; k < CY - 30; k++) A(x - (8 + k * 1.9) / 2, 30 + k, 8 + k * 1.9, 1, '#ffc478', .026 * f);
-      A(x - 17, CY, 34, 2, '#ffd8a0', .18 * f);
-    }
-  }
-  function pintar(t, dt) {
-    R(0, 0, W, H, '#0d0908');
-    pared(); ventana(t, dt); menuPared(); estanteria(t); techo(); lamparasE();
-    camarero(t); barra(); cafetera(t); taza(128); taza(154); gato(t); conos(t);
-    for (var v = vapor.length - 1; v >= 0; v--) {
-      var p = vapor[v]; p.y -= p.v * dt; p.x += Math.sin(p.y * .17 + p.f) * .3; p.vida -= dt * .5;
-      if (p.vida <= 0 || p.y < 12) { vapor.splice(v, 1); continue; }
-      A(p.x, p.y, 1, 1, '#efe6d2', p.vida * .34);
-      if (p.vida < .65) A(p.x + 1, p.y - 1, 1, 1, '#efe6d2', p.vida * .2);
-    }
-    for (var d = 0; d < polvo.length; d++) {
-      var q = polvo[d]; q.x += Math.sin(t * .3 + q.f) * .07; q.y -= q.v * dt * 5;
-      if (q.y < 14) { q.y = CY - 6; q.x = Math.random() * W; }
-      var cerca = Math.min(Math.abs(q.x - lamparas[0].x), Math.abs(q.x - lamparas[1].x));
-      if (.17 - cerca * .0045 > 0) A(q.x, q.y, 1, 1, '#ffd8a0', .17 - cerca * .0045);
-    }
-    g.drawImage(grano, 0, 0); g.fillStyle = vin; g.fillRect(0, 0, W, H);
-    st.pulso *= .93;
-  }
-  var ultimo = 0;
-  function bucle(now) {
-    st.raf = requestAnimationFrame(bucle);
-    if (document.hidden) return;
-    var dt = Math.min(.05, (now - ultimo) / 1000) || .016; ultimo = now;
-    pintar((now - st.t0) / 1000, dt);
-  }
-  return {
-    corriendo: function (v) {
-      if (v && !st.corriendo) {
-        pintar(0, .016);
-        if (REDUCED) { st.corriendo = true; return; }
-        st.corriendo = true; st.t0 = performance.now(); ultimo = st.t0; st.raf = requestAnimationFrame(bucle);
-      } else if (!v && st.corriendo) { cancelAnimationFrame(st.raf); st.corriendo = false; }
-    },
-    hablar: function (v) { st.hablando = v; },
-    pulso: function () { st.pulso = 1; }
-  };
+var Escena=(function(){ var cv=document.getElementById('barCanvas'); function noop(){} if(!cv||!cv.getContext)return{corriendo:noop,hablar:noop,pulso:noop}; var g=cv.getContext('2d',{alpha:false}); if(!g)return{corriendo:noop,hablar:noop,pulso:noop};
+  var W=cv.width,H=cv.height,CY=100; g.imageSmoothingEnabled=false;
+  var C={pared:'#3a2418',junta:'#241505',marco:'#2b1a11',noche:'#0f1a2b',ciudad:'#0a1120',luz:'#ffd27a',lluvia:'#9ecbe8',tablero:'#8f5a30',canto:'#c98a4f',frente:'#241710',panelito:'#2d1c12',madera:'#4a2c1a',pizarra:'#1e2a24',tiza:'#dfe6da',metal:'#b9c3cc',metal2:'#8d949c',metal3:'#3f464d',camisa:'#efe6d6',chaleco:'#26303f',piel:'#e3ac82',piel2:'#c98d64',pelo:'#241a14',lazo:'#c04a3a',plato:'#cfc6b2',cafe:'#5a3320',gato:'#3a2b22',planta:'#3f7a4a',tiesto:'#a4552f',bombilla:'#ffdf9e'};
+  function R(x,y,w,h,c){g.fillStyle=c; g.fillRect(x|0,y|0,w|0,h|0);} function A(x,y,w,h,c,a){g.globalAlpha=a; g.fillStyle=c; g.fillRect(x|0,y|0,w|0,h|0); g.globalAlpha=1;} function azar(n){return (Math.sin(n*12.9898)*43758.5453)%1;}
+  var grano=document.createElement('canvas'); grano.width=W; grano.height=H; (function(){var gg=grano.getContext('2d'),n=Math.floor(W*H*.05); for(var i=0;i<n;i++){gg.fillStyle=Math.random()>.5?'rgba(255,240,210,.05)':'rgba(0,0,0,.07)'; gg.fillRect(Math.random()*W|0,Math.random()*H|0,1,1);}})();
+  var vin=g.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,H*.92); vin.addColorStop(0,'rgba(0,0,0,0)'); vin.addColorStop(1,'rgba(0,0,0,.72)');
+  var st={t0:0,raf:0,corriendo:false,hablando:false,pulso:0}; var lluvia=[],vapor=[],polvo=[],i;
+  for(i=0;i<46;i++)lluvia.push({x:Math.random(),y:Math.random(),v:.3+Math.random()*.5,l:2+(Math.random()*4|0)}); for(i=0;i<34;i++)polvo.push({x:Math.random()*W,y:16+Math.random()*78,v:.5+Math.random(),f:Math.random()*6.28});
+  var lamparas=[{x:40},{x:176}];
+  function soltarVapor(x,y,n){ if(vapor.length>130)return; for(var k=0;k<n;k++)vapor.push({x:x+Math.random()*3-1.5,y:y,v:7+Math.random()*9,vida:1,f:Math.random()*6}); }
+  function pared(){ R(0,10,W,CY-10,C.pared); for(var x=0;x<W;x+=13){var s=azar(x*.37); R(x,10,12,CY-10,s>.66?'#402a1c':(s>.33?'#37221a':'#3e2820')); R(x+12,10,1,CY-10,C.junta);} R(0,78,W,2,C.junta); R(0,80,W,CY-80,'#2e1c13'); }
+  var VX=8,VY=22,VW=58,VH=46; function ventana(t,dt){ R(VX-3,VY-3,VW+6,VH+6,C.marco); R(VX,VY,VW,VH,C.noche); g.save(); g.beginPath(); g.rect(VX,VY,VW,VH); g.clip();
+    for(var b=0;b<6;b++){var bx=VX+b*10+1,bh=9+azar(b*7)*22; R(bx,VY+VH-bh,9,bh,C.ciudad); for(var w=0;w<4;w++)if(azar(b*13+w*3+(t*.12|0))>.58)A(bx+1+(w%2)*4,VY+VH-bh+2+((w/2)|0)*5,2,2,C.luz,.8);}
+    for(var k=0;k<lluvia.length;k++){var d=lluvia[k]; d.y+=d.v*dt; d.x-=d.v*dt*.12; if(d.y>1){d.y=-.06;d.x=Math.random();} A(VX+d.x*VW,VY+d.y*VH,1,d.l,C.lluvia,.5);} g.restore();
+    R(VX+(VW>>1)-1,VY,2,VH,C.marco); R(VX,VY+(VH>>1)-1,VW,2,C.marco); R(VX-5,VY+VH+3,VW+10,3,C.madera); }
+  function menuPared(){ var BX=140,BY=26,BW=62,BH=42; R(BX-3,BY-3,BW+6,BH+6,C.madera); R(BX,BY,BW,BH,C.pizarra); A(BX+2,BY+2,BW-4,1,C.tiza,.25); for(var f=0;f<5;f++){var y=BY+9+f*7,w=16+azar(f*3.3)*26; A(BX+6,y,w,1,C.tiza,.45); A(BX+12+w,y,7,1,'#e8c07a',.5);} var cx=BX+BW-12,cy=BY+BH-12; A(cx,cy,7,5,C.tiza,.55); A(cx+7,cy+1,2,3,C.tiza,.45); }
+  function estanteria(t){ var EX=212,EW=42; R(EX-2,42,EW+4,3,C.madera); R(EX-2,64,EW+4,3,C.madera); var tar=['#8a4a3a','#c9a04a','#4a7a6a','#a4552f','#6a4a8a']; for(var f=0;f<5;f++){var h=8+azar(f*5)*8,x=EX+1+f*8; R(x,42-h,6,h,tar[f]); R(x,42-h-1,6,1,'#e8dcc8');} R(EX+32,56,8,8,C.tiesto); for(var p=0;p<4;p++)R(EX+33+p*2+Math.round(Math.sin(t*.9+p)),48,1,8,C.planta); }
+  function techo(){ R(0,0,W,10,'#140d09'); for(var x=8;x<W;x+=34)R(x,0,3,10,'#0d0806'); R(0,9,W,1,'#241710'); }
+  function lamparasE(){ for(var i=0;i<lamparas.length;i++){var x=lamparas[i].x; R(x-1,0,2,20,'#1a1109'); for(var k=0;k<6;k++)R(x-(3+k),20+k,(3+k)*2,1,k%2?'#7a3b2e':'#8f4635'); R(x-2,26,4,3,C.bombilla);} }
+  function camarero(t){ var bx=104,bob=Math.round(Math.sin(t*1.7)),y=CY-2+bob; R(bx-3,y-38,6,4,C.piel2); R(bx-12,y-35,24,40,C.camisa); R(bx-12,y-35,6,40,C.chaleco); R(bx+6,y-35,6,40,C.chaleco); R(bx-4,y-37,3,3,C.lazo); R(bx+1,y-37,3,3,C.lazo); var ay=y-24+Math.round(Math.sin(t*1.7+1)); R(bx+12,y-33,4,22,C.camisa); R(bx-22,ay,12,4,C.camisa); R(bx-25,ay,3,4,C.piel); R(bx-31,ay-3,17,3,C.metal); R(bx-31,ay-1,17,1,C.metal2); R(bx-25,ay-8,6,5,C.plato); R(bx-24,ay-7,4,1,C.cafe); if(Math.random()<.28)soltarVapor(bx-22,ay-9,1); R(bx-8,y-52,16,14,C.piel); R(bx-10,y-46,2,4,C.piel2); R(bx+8,y-46,2,4,C.piel2); R(bx-9,y-54,18,6,C.pelo); R(bx-9,y-50,2,8,C.pelo); R(bx+7,y-50,2,8,C.pelo); R(bx-6,y-49,4,1,C.pelo); R(bx+2,y-49,4,1,C.pelo); if((t%4.6)>4.42){R(bx-5,y-45,3,1,C.pelo); R(bx+2,y-45,3,1,C.pelo);} else {R(bx-5,y-46,3,2,C.pelo); R(bx+2,y-46,3,2,C.pelo);} if(st.hablando&&(Math.floor(t*9)%2===0))R(bx-2,y-42,5,3,'#7a2a20'); else R(bx-2,y-41,4,1,'#a35a44'); }
+  function barra(){ A(0,CY-3,W,3,'#000',.28); R(0,CY,W,4,C.tablero); R(0,CY,W,1,C.canto); R(0,CY+3,W,1,C.madera); R(0,CY+4,W,H-CY-4,C.frente); for(var x=4;x<W;x+=26){R(x,CY+9,18,H-CY-16,C.panelito); R(x,CY+9,18,1,'#3a2418');} R(0,H-4,W,4,'#170f0a'); }
+  function cafetera(t){ var x=194,y=CY-24; R(x,y,36,24,C.metal2); R(x,y,36,4,C.metal); R(x+1,y+22,34,2,C.metal3); R(x+4,y+8,8,6,C.metal3); R(x+22,y+8,8,6,C.metal3); R(x+6,y+14,4,5,'#2b3138'); R(x+24,y+14,4,5,'#2b3138'); R(x+14,y+7,7,7,'#e8dcc8'); R(x+16+Math.round(Math.sin(t*1.1)*2),y+9,2,2,C.lazo); R(x+32,y+8,2,11,C.metal); if(Math.random()<.45)soltarVapor(x+33,y+6,1); }
+  function taza(x){ R(x-4,CY-2,9,2,C.plato); R(x-2,CY-7,5,5,'#efe6d2'); R(x-1,CY-6,3,1,C.cafe); R(x+3,CY-6,2,2,'#efe6d2'); if(Math.random()<.18)soltarVapor(x,CY-8,1); }
+  function gato(t){ var x=46,y=CY-2; R(x,y-6,16,6,C.gato); R(x+12,y-9,7,6,C.gato); R(x+13,y-11,1,2,C.gato); R(x+18,y-11,1,2,C.gato); R(x+13,y-7,2,1,'#120c09'); R(x-4,y-5,4,2,C.gato); R(x-5,y-6+Math.round(Math.sin(t*1.6)*2),2,3,C.gato); }
+  function conos(t){ for(var i=0;i<lamparas.length;i++){var x=lamparas[i].x; var f=.78+Math.sin(t*6.3+i*2)*.05+Math.sin(t*21+i)*.02+st.pulso*.22; A(x-4,26,8,4,'#ffb066',.55*f); for(var k=0;k<CY-30;k++)A(x-(8+k*1.9)/2,30+k,8+k*1.9,1,'#ffc478',.026*f); A(x-17,CY,34,2,'#ffd8a0',.18*f);} }
+  function pintar(t,dt){ R(0,0,W,H,'#0d0908'); pared(); ventana(t,dt); menuPared(); estanteria(t); techo(); lamparasE(); camarero(t); barra(); cafetera(t); taza(128); taza(154); gato(t); conos(t);
+    for(var v=vapor.length-1;v>=0;v--){var p=vapor[v]; p.y-=p.v*dt; p.x+=Math.sin(p.y*.17+p.f)*.3; p.vida-=dt*.5; if(p.vida<=0||p.y<12){vapor.splice(v,1); continue;} A(p.x,p.y,1,1,'#efe6d2',p.vida*.34); if(p.vida<.65)A(p.x+1,p.y-1,1,1,'#efe6d2',p.vida*.2);}
+    for(var d=0;d<polvo.length;d++){var q=polvo[d]; q.x+=Math.sin(t*.3+q.f)*.07; q.y-=q.v*dt*5; if(q.y<14){q.y=CY-6;q.x=Math.random()*W;} var cerca=Math.min(Math.abs(q.x-lamparas[0].x),Math.abs(q.x-lamparas[1].x)); if(.17-cerca*.0045>0)A(q.x,q.y,1,1,'#ffd8a0',.17-cerca*.0045);}
+    g.drawImage(grano,0,0); g.fillStyle=vin; g.fillRect(0,0,W,H); st.pulso*=.93; }
+  var ultimo=0; function bucle(now){ st.raf=requestAnimationFrame(bucle); if(document.hidden)return; var dt=Math.min(.05,(now-ultimo)/1000)||.016; ultimo=now; pintar((now-st.t0)/1000,dt); }
+  return { corriendo:function(v){ if(v&&!st.corriendo){ pintar(0,.016); if(REDUCED){st.corriendo=true; return;} st.corriendo=true; st.t0=performance.now(); ultimo=st.t0; st.raf=requestAnimationFrame(bucle); } else if(!v&&st.corriendo){cancelAnimationFrame(st.raf); st.corriendo=false;} }, hablar:function(v){st.hablando=v;}, pulso:function(){st.pulso=1;} };
 })();
 
 /* ══════════════════════════════════════════════════════════════════════
    7. SONIDO + COPIAR
    ══════════════════════════════════════════════════════════════════════ */
-var Sonido = (function () {
-  var ctx = null, activo = false;
-  function audio() {
-    if (!ctx) { var AC = window.AudioContext || window.webkitAudioContext; if (AC) ctx = new AC(); }
-    if (ctx && ctx.state === 'suspended') ctx.resume();
-    return ctx;
-  }
-  function pita(f, vol, dur) {
-    if (!activo) return; var a = audio(); if (!a) return;
-    var o = a.createOscillator(), gn = a.createGain();
-    o.type = 'square'; o.frequency.value = f;
-    gn.gain.setValueAtTime(vol, a.currentTime);
-    gn.gain.exponentialRampToValueAtTime(.0005, a.currentTime + dur);
-    o.connect(gn); gn.connect(a.destination); o.start(); o.stop(a.currentTime + dur + .01);
-  }
-  return {
-    conmutar: function () { activo = !activo; if (activo) { audio(); pita(660, .02, .05); } return activo; },
-    blip: function () { pita(420 + Math.random() * 260, .014, .045); },
-    tintir: function () { pita(1180, .008, .06); }
-  };
+var Sonido=(function(){ var ctx=null,activo=false; function audio(){ if(!ctx){var AC=window.AudioContext||window.webkitAudioContext; if(AC)ctx=new AC();} if(ctx&&ctx.state==='suspended')ctx.resume(); return ctx; }
+  function pita(f,vol,dur){ if(!activo)return; var a=audio(); if(!a)return; var o=a.createOscillator(),gn=a.createGain(); o.type='square'; o.frequency.value=f; gn.gain.setValueAtTime(vol,a.currentTime); gn.gain.exponentialRampToValueAtTime(.0005,a.currentTime+dur); o.connect(gn); gn.connect(a.destination); o.start(); o.stop(a.currentTime+dur+.01); }
+  return { conmutar:function(){ activo=!activo; if(activo){audio(); pita(660,.02,.05);} return activo; }, blip:function(){pita(420+Math.random()*260,.014,.045);}, tintir:function(){pita(1180,.008,.06);} };
 })();
-function copiar(btn) {
-  var c = btn.getAttribute('data-copy');
-  var ok = function () { var antes = btn.textContent; btn.textContent = '¡copiado!'; setTimeout(function () { btn.textContent = antes; }, 2200); };
-  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(c).then(ok, function () {});
-  else {
-    var t = document.createElement('textarea'); t.value = c;
-    document.body.appendChild(t); t.select();
-    try { document.execCommand('copy'); ok(); } catch (e) {}
-    document.body.removeChild(t);
-  }
-}
+function copiar(btn){ var c=btn.getAttribute('data-copy'); var ok=function(){var a=btn.textContent; btn.textContent='¡copiado!'; setTimeout(function(){btn.textContent=a;},2200);};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c).then(ok,function(){});
+  else {var t=document.createElement('textarea'); t.value=c; document.body.appendChild(t); t.select(); try{document.execCommand('copy'); ok();}catch(e){} document.body.removeChild(t);} }
 
 /* ══════════════════════════════════════════════════════════════════════
    7b. PANTALLA DE CARGA
    ══════════════════════════════════════════════════════════════════════ */
-var cargaOcupada = false;
-modulo('carga', function () {
-  var cargaEl = document.getElementById('carga');
-  var msgEl   = document.getElementById('cargaMsg');
-  var pistaEl = document.getElementById('cargaPista');
-  if (!cargaEl || !msgEl || !pistaEl) return;
-  var CARGA_BASE = 520, CARGA_EXTRA = 1500;
-  function durCarga() { return REDUCED ? Math.max(CARGA_EXTRA, 400) : (CARGA_BASE + Math.random() * 380) + CARGA_EXTRA; }
-  var DESTINOS_CON_CARGA = ['portada', 'diario', 'contacto'];
-  function accionDesdeBoton(b) {
-    if (!b) return null;
-    if (b.hasAttribute('data-ir')) { var d = DESTINOS[b.getAttribute('data-ir')]; return d ? function () { d.acc(); } : null; }
-    return null;
-  }
-  function esBotonCarga(b) {
-    if (!b || b.tagName !== 'BUTTON') return false;
-    if (b.getAttribute('data-carga') === 'no') return false;
-    if (b.hasAttribute('data-copy')) return false;
-    if (b.id === 'barSon') return false;
-    if (b.disabled) return false;
-    var ir = b.getAttribute('data-ir');
-    if (!ir) return false;
-    return DESTINOS_CON_CARGA.indexOf(ir) !== -1;
-  }
-  function mensajeDe(b) {
-    var ir = b.getAttribute('data-ir');
-    if (ir === 'portada') return pick(['Encendiendo la portada…','Poniendo el nombre en neón…','Volviendo a la puerta de la casa…']);
-    if (ir === 'diario')  return pick(['Abriendo el diario entero…','Pasando servilletas…','Compilando la vida de Joan…']);
-    if (ir === 'bar')     return pick(['Empujando la puerta del bar…','Encendiendo el ABIERTO…','El camarero se acerca…']);
-    if (ir === 'contacto')return pick(['Llamando al camarero…','Pidiendo la cuenta…','Buscando papel y boli…']);
-    if (ir === 'carta')   return pick(['Volviendo a la pizarra…','Repasando la carta…']);
-    if (b.classList.contains('plato')) {
-      var nameEl = $('.plato__name', b); var name = nameEl ? nameEl.textContent.trim() : 'un plato';
-      return pick(['Sirviendo ' + name + '…','Buscando la servilleta de ' + name + '…','El camarero trae ' + name + '…']);
-    }
-    return pick(MENSAJES_ENTRADA);
-  }
-  function correr(dur, fn) {
-    cargaOcupada = true;
-    var t0 = performance.now();
-    function frame(now) {
-      var p = Math.min(1, (now - t0) / dur); var e = 1 - Math.pow(1 - p, 3);
-      pistaEl.style.transform = 'scaleX(' + e + ')';
-      if (p < 1) requestAnimationFrame(frame);
-      else {
-        cargaEl.classList.remove('is-visible'); cargaEl.classList.add('is-salida');
-        setTimeout(function () {
-          cargaEl.hidden = true; cargaEl.setAttribute('aria-hidden', 'true');
-          cargaEl.classList.remove('is-salida'); cargaOcupada = false;
-          if (fn) fn();
-        }, REDUCED ? 0 : 230);
-      }
-    }
-    requestAnimationFrame(frame);
-  }
-  function mostrarCarga(msg, fn) {
-    if (cargaOcupada) return;
-    msgEl.textContent = msg;
-    cargaEl.hidden = false; cargaEl.setAttribute('aria-hidden', 'false');
-    void cargaEl.offsetWidth; cargaEl.classList.add('is-visible');
-    pistaEl.style.transform = 'scaleX(0)';
-    correr(durCarga(), fn);
-  }
-  correrCarga = function (msg, fn) {
-    if (msg) msgEl.textContent = msg;
-    cargaEl.hidden = false; cargaEl.setAttribute('aria-hidden', 'false');
-    void cargaEl.offsetWidth; cargaEl.classList.add('is-visible');
-    pistaEl.style.transform = 'scaleX(0)';
-    correr(durCarga(), fn);
-  };
-  document.addEventListener('click', function (e) {
-    if (cargaOcupada) { var bloqueado = e.target.closest && e.target.closest('button'); if (bloqueado) { e.preventDefault(); e.stopPropagation(); } return; }
-    var b = e.target.closest && e.target.closest('button');
-    if (!b || !esBotonCarga(b)) return;
-    var accion = accionDesdeBoton(b); if (!accion) return;
-    e.preventDefault(); e.stopPropagation();
-    mostrarCarga(mensajeDe(b), accion);
-  }, true);
-});
+var cargaOcupada=false;
+modulo('carga',function(){ var cargaEl=document.getElementById('carga'),msgEl=document.getElementById('cargaMsg'),pistaEl=document.getElementById('cargaPista'); if(!cargaEl||!msgEl||!pistaEl)return;
+  var CARGA_BASE=520,CARGA_EXTRA=1500; function durCarga(){ return REDUCED?Math.max(CARGA_EXTRA,400):(CARGA_BASE+Math.random()*380)+CARGA_EXTRA; }
+  var DESTINOS_CON_CARGA=['portada','diario','contacto'];
+  function accionDesdeBoton(b){ if(!b)return null; if(b.hasAttribute('data-ir')){var d=DESTINOS[b.getAttribute('data-ir')]; return d?function(){d.acc();}:null;} return null; }
+  function esBotonCarga(b){ if(!b||b.tagName!=='BUTTON')return false; if(b.getAttribute('data-carga')==='no')return false; if(b.hasAttribute('data-copy'))return false; if(b.id==='barSon')return false; if(b.disabled)return false; var ir=b.getAttribute('data-ir'); if(!ir)return false; return DESTINOS_CON_CARGA.indexOf(ir)!==-1; }
+  function mensajeDe(b){ var ir=b.getAttribute('data-ir'); if(ir==='portada')return pick(['Encendiendo la portada…','Poniendo el nombre en neón…','Volviendo a la puerta de la casa…']); if(ir==='diario')return pick(['Abriendo el diario entero…','Pasando servilletas…','Compilando la vida de Joan…']); if(ir==='bar')return pick(['Empujando la puerta del bar…','Encendiendo el ABIERTO…','El camarero se acerca…']); if(ir==='contacto')return pick(['Llamando al camarero…','Pidiendo la cuenta…','Buscando papel y boli…']); if(ir==='carta')return pick(['Volviendo a la pizarra…','Repasando la carta…']); return pick(MENSAJES_ENTRADA); }
+  function correr(dur,fn){ cargaOcupada=true; var t0=performance.now(); function frame(now){ var p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3); pistaEl.style.transform='scaleX('+e+')'; if(p<1)requestAnimationFrame(frame); else {cargaEl.classList.remove('is-visible'); cargaEl.classList.add('is-salida'); setTimeout(function(){cargaEl.hidden=true; cargaEl.setAttribute('aria-hidden','true'); cargaEl.classList.remove('is-salida'); cargaOcupada=false; if(fn)fn();},REDUCED?0:230);} } requestAnimationFrame(frame); }
+  function mostrarCarga(msg,fn){ if(cargaOcupada)return; msgEl.textContent=msg; cargaEl.hidden=false; cargaEl.setAttribute('aria-hidden','false'); void cargaEl.offsetWidth; cargaEl.classList.add('is-visible'); pistaEl.style.transform='scaleX(0)'; correr(durCarga(),fn); }
+  correrCarga=function(msg,fn){ if(msg)msgEl.textContent=msg; cargaEl.hidden=false; cargaEl.setAttribute('aria-hidden','false'); void cargaEl.offsetWidth; cargaEl.classList.add('is-visible'); pistaEl.style.transform='scaleX(0)'; correr(durCarga(),fn); };
+  document.addEventListener('click',function(e){ if(cargaOcupada){var bl=e.target.closest&&e.target.closest('button'); if(bl){e.preventDefault(); e.stopPropagation();} return;} var b=e.target.closest&&e.target.closest('button'); if(!b||!esBotonCarga(b))return; var accion=accionDesdeBoton(b); if(!accion)return; e.preventDefault(); e.stopPropagation(); mostrarCarga(mensajeDe(b),accion); },true); });
 
 /* ══════════════════════════════════════════════════════════════════════
-   7c. TEMA CLARO / OSCURO
-   [v15.2] solo captura <button data-tema> (antes captaba también las caras
-           del carrusel, que llevaban data-tema por error).
+   7c. TEMA CLARO / OSCURO  (solo captura <button data-tema>)
    ══════════════════════════════════════════════════════════════════════ */
-modulo('tema', function () {
-  var raiz = document.documentElement, clave = 'joan-tema',
-      botones = $$('[data-tema]').filter(function (b) { return b.tagName === 'BUTTON'; }); // [v15.2]
-  if (!botones.length) return;
-  function leerGuardado() { var g = null; try { g = localStorage.getItem(clave); } catch (e) {} return (g === 'claro' || g === 'oscuro') ? g : null; }
-  function preferido() { var g = leerGuardado(); if (g) return g; return (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'claro' : 'oscuro'; }
-  function pintarBotones() {
-    var claro = raiz.getAttribute('data-tema') === 'claro';
-    botones.forEach(function (b) { b.setAttribute('aria-pressed', claro ? 'true' : 'false'); b.textContent = claro ? '☾ oscuro' : '☀ claro'; });
-    var meta = document.querySelector('meta[name="theme-color"]');
-    if (!meta) { meta = document.createElement('meta'); meta.setAttribute('name', 'theme-color'); document.head.appendChild(meta); }
-    meta.setAttribute('content', claro ? '#eef2f8' : '#04070d');
-  }
-  function aplicar(valor, guardar) { raiz.setAttribute('data-tema', valor); pintarBotones(); if (guardar) { try { localStorage.setItem(clave, valor); } catch (e) {} } }
-  botones.forEach(function (b) {
-    on(b, 'click', function () { var nuevo = raiz.getAttribute('data-tema') === 'claro' ? 'oscuro' : 'claro'; aplicar(nuevo, true); Sonido.tintir(); });
-  });
-  if (window.matchMedia) {
-    var mq = window.matchMedia('(prefers-color-scheme: light)');
-    var oyente = function (e) { if (!leerGuardado()) aplicar(e.matches ? 'claro' : 'oscuro', false); };
-    if (mq.addEventListener) mq.addEventListener('change', oyente); else if (mq.addListener) mq.addListener(oyente);
-  }
-  window.addEventListener('storage', function (e) { if (e.key === clave && (e.newValue === 'claro' || e.newValue === 'oscuro')) aplicar(e.newValue, false); });
-  aplicar(preferido(), false);
-});
+modulo('tema',function(){ var raiz=document.documentElement,clave='joan-tema',botones=$$('[data-tema]').filter(function(b){return b.tagName==='BUTTON';}); if(!botones.length)return;
+  function leerGuardado(){ var g=null; try{g=localStorage.getItem(clave);}catch(e){} return (g==='claro'||g==='oscuro')?g:null; }
+  function preferido(){ var g=leerGuardado(); if(g)return g; return (window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'claro':'oscuro'; }
+  function pintarBotones(){ var claro=raiz.getAttribute('data-tema')==='claro'; botones.forEach(function(b){b.setAttribute('aria-pressed',claro?'true':'false'); b.textContent=claro?'☾ oscuro':'☀ claro';}); var meta=document.querySelector('meta[name="theme-color"]'); if(!meta){meta=document.createElement('meta'); meta.setAttribute('name','theme-color'); document.head.appendChild(meta);} meta.setAttribute('content',claro?'#eef2f8':'#04070d'); }
+  function aplicar(v,g){ raiz.setAttribute('data-tema',v); pintarBotones(); if(g){try{localStorage.setItem(clave,v);}catch(e){}} }
+  botones.forEach(function(b){ on(b,'click',function(){var n=raiz.getAttribute('data-tema')==='claro'?'oscuro':'claro'; aplicar(n,true); Sonido.tintir();}); });
+  if(window.matchMedia){ var mq=window.matchMedia('(prefers-color-scheme: light)'); var oy=function(e){if(!leerGuardado())aplicar(e.matches?'claro':'oscuro',false);}; if(mq.addEventListener)mq.addEventListener('change',oy); else if(mq.addListener)mq.addListener(oy); }
+  window.addEventListener('storage',function(e){ if(e.key===clave&&(e.newValue==='claro'||e.newValue==='oscuro'))aplicar(e.newValue,false); });
+  aplicar(preferido(),false); });
 
 /* ══════════════════════════════════════════════════════════════════════
    8. TECLADO y arranque
    ══════════════════════════════════════════════════════════════════════ */
-modulo('teclado', function () {
-  document.addEventListener('keydown', function (e) {
-    if (cargaOcupada) return;
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-    var pantalla = document.body.dataset.pantalla;
-    if (e.key === 'Escape') { setPantalla('portada'); return; }
-    if (pantalla !== 'bar') return;
-    var n = parseInt(e.key, 10);
-    if (n >= 1 && n <= PLATOS.length) { servirPlato(n - 1); return; }
-    var t = document.activeElement && document.activeElement.tagName;
-    if (/^(BUTTON|A|INPUT|TEXTAREA)$/.test(t)) return;
-    var k = e.key.toLowerCase();
-    if (k === 'c') irCarta();
-    if (k === 's') servirPlato((actual + 1) % PLATOS.length);
-    if (k === 'm') DESTINOS.contacto.acc();
-  });
-});
-modulo('arranque', function () {
-  var hash = location.hash.replace('#', '');
-  function destino() {
-    if (hash === 'contacto') { DESTINOS.contacto.acc(); return; }
-    var directo = PLATOS.filter(function (p) { return p.id === hash; })[0];
-    if (directo) {
-      setPantalla('diario');
-      var t = document.getElementById(directo.id);
-      if (t) setTimeout(function () { t.scrollIntoView({ behavior: 'smooth' }); }, 120);
-    } else animarPortada();
-  }
-  if (correrCarga) correrCarga(pick(MENSAJES_ENTRADA), destino); else destino();
-});
-modulo('clima', function () { cargarClima(); if (CLIMA.cadaMinutos > 0) setInterval(cargarClima, CLIMA.cadaMinutos * 60000); });
-modulo('monedas', function () { inicializarMonedas(); cargarTasas(); if (MONEDAS.cadaMinutos > 0) setInterval(cargarTasas, MONEDAS.cadaMinutos * 60000); });
-modulo('paises', function () { inicializarPaises(); });
-modulo('curiosidades', function () { inicializarCuriosidades(); });
+modulo('teclado',function(){ document.addEventListener('keydown',function(e){ if(cargaOcupada)return; if(e.ctrlKey||e.metaKey||e.altKey)return; var p=document.body.dataset.pantalla; if(e.key==='Escape'){setPantalla('portada'); return;} if(p!=='bar')return; var n=parseInt(e.key,10); if(n>=1&&n<=PLATOS.length){servirPlato(n-1); return;} var t=document.activeElement&&document.activeElement.tagName; if(/^(BUTTON|A|INPUT|TEXTAREA)$/.test(t))return; var k=e.key.toLowerCase(); if(k==='c')irCarta(); if(k==='s')servirPlato((actual+1)%PLATOS.length); if(k==='m')DESTINOS.contacto.acc(); }); });
+modulo('arranque',function(){ var hash=location.hash.replace('#',''); function destino(){ if(hash==='contacto'){DESTINOS.contacto.acc(); return;} var directo=PLATOS.filter(function(p){return p.id===hash;})[0]; if(directo){setPantalla('diario'); var t=document.getElementById(directo.id); if(t)setTimeout(function(){t.scrollIntoView({behavior:'smooth'});},120);} else animarPortada(); } if(correrCarga)correrCarga(pick(MENSAJES_ENTRADA),destino); else destino(); });
+modulo('clima',function(){ var cfg=window.CASA_JOAN_CONFIG||{}; var hay=!!cfg.climaUrl||!!CLIMA.key; cargarClima(); if(CLIMA.cadaMinutos>0&&hay)setInterval(cargarClima,CLIMA.cadaMinutos*60000); });
+modulo('monedas',function(){ var cfg=window.CASA_JOAN_CONFIG||{}; var hay=!!cfg.monedasUrl||!!MONEDAS.key; inicializarMonedas(); cargarTasas(); if(MONEDAS.cadaMinutos>0&&hay)setInterval(cargarTasas,MONEDAS.cadaMinutos*60000); });
+modulo('paises',function(){ inicializarPaises(); });
+modulo('curiosidades',function(){ inicializarCuriosidades(); });
 
-console.log('%c[web] v15.2 ARCADE cargada · ' + PLATOS.length + ' apartados', 'color:#ff9f1c;font-weight:700');
+console.log('%c[web] v17 ARCADE · ' + PLATOS.length + ' apartados', 'color:#ff9f1c;font-weight:700');
 
 /* ══════════════════════════════════════════════════════════════════════
    9. [MEJORAS · CONÓCEME]
    ══════════════════════════════════════════════════════════════════════ */
-modulo('conoceme', function () {
-  document.documentElement.classList.add('mejoras');
-  var ETIQUETAS = {
-    'sobre-mi':     { c:'Sobre mí',      d:'Mi forma de trabajar',        t:'Presentación' },
-    'esgrima':      { c:'Esgrima',       d:'Disciplina y competición',    t:'Deporte' },
-    'viajar':       { c:'Viajes',        d:'Experiencias fuera de casa',  t:'Viajes' },
-    'musica':       { c:'Música',        d:'Una herramienta diaria',      t:'Costumbres' },
-    'ingles':       { c:'Inglés',        d:'Aprender por independencia',  t:'Idiomas' },
-    'estudios':     { c:'Estudios',      d:'Bachillerato · DAM · C1',     t:'Formación' },
-    'ia':           { c:'IA',            d:'Vivir de crear',              t:'Futuro' },
-    'proyectos':    { c:'Proyectos',     d:'Lo que estoy construyendo',   t:'Portfolio' },
-    'clima':        { c:'El tiempo',     d:'Clima en vivo',               t:'Datos en vivo' },
-    'monedas':      { c:'Divisas',       d:'Conversor en tiempo real',    t:'Datos en vivo' },
-    'paises':       { c:'Países',        d:'Un mundo de datos',           t:'Datos en vivo' },
-    'curiosidades': { c:'Curiosidades',  d:'¿Sabías que…?',               t:'Datos en vivo' }
-  };
-  var empezar = document.getElementById('empezarLeer');
-  on(empezar, 'click', function () { var t = document.getElementById('sobre-mi'); if (t) t.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth' }); });
-
-  var entradas = $$('#diarioCuerpo .entrada');
-  entradas.forEach(function (sec, i) {
-    var e = ETIQUETAS[sec.id]; var num = $('.num', sec);
-    if (num) num.textContent = ('0' + (i + 1)).slice(-2);
-    if (e && e.t) sec.setAttribute('data-etiqueta', e.t);
-    sec.setAttribute('data-reveal', '');
-  });
-
-  var barra = document.getElementById('lecturaBarra');
-  var pct = $('.lectura__pct');
-  function progreso() {
-    if (!barra) return;
-    var h = document.documentElement;
-    var total = h.scrollHeight - h.clientHeight;
-    var p = total > 4 ? Math.min(1, (h.scrollTop || document.body.scrollTop) / total) : 0;
-    barra.style.transform = 'scaleX(' + p + ')';
-    if (pct) pct.textContent = Math.round(p * 100) + '%';
-  }
-  on(window, 'scroll', progreso); on(window, 'resize', progreso); progreso();
-
-  if ('IntersectionObserver' in window) {
-    var io2 = new IntersectionObserver(function (ents) {
-      ents.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('is-vista'); io2.unobserve(en.target); } });
-    }, { rootMargin: '0px 0px -8% 0px', threshold: .08 });
-    $$('[data-reveal]').forEach(function (el) { io2.observe(el); });
-  } else {
-    $$('[data-reveal]').forEach(function (el) { el.classList.add('is-vista'); });
-  }
-});
+modulo('conoceme',function(){ document.documentElement.classList.add('mejoras');
+  var ETIQUETAS={'sobre-mi':{t:'Presentación'},'esgrima':{t:'Deporte'},'viajar':{t:'Viajes'},'musica':{t:'Costumbres'},'ingles':{t:'Idiomas'},'estudios':{t:'Formación'},'ia':{t:'Futuro'},'proyectos':{t:'Portfolio'},'herramientas':{t:'Utilidades'},'clima':{t:'Datos en vivo'},'monedas':{t:'Datos en vivo'},'paises':{t:'Datos en vivo'},'curiosidades':{t:'Datos en vivo'}};
+  var empezar=document.getElementById('empezarLeer'); on(empezar,'click',function(){var t=document.getElementById('sobre-mi'); if(t)t.scrollIntoView({behavior:REDUCED?'auto':'smooth'});});
+  var entradas=$$('#diarioCuerpo .entrada'); entradas.forEach(function(sec,i){var e=ETIQUETAS[sec.id]; var num=$('.num',sec); if(num)num.textContent=('0'+(i+1)).slice(-2); if(e&&e.t)sec.setAttribute('data-etiqueta',e.t); sec.setAttribute('data-reveal','');});
+  var barra=document.getElementById('lecturaBarra'),pct=$('.lectura__pct'); function progreso(){ if(!barra)return; var h=document.documentElement; var total=h.scrollHeight-h.clientHeight; var p=total>4?Math.min(1,(h.scrollTop||document.body.scrollTop)/total):0; barra.style.transform='scaleX('+p+')'; if(pct)pct.textContent=Math.round(p*100)+'%'; } on(window,'scroll',progreso); on(window,'resize',progreso); progreso();
+  if('IntersectionObserver' in window){ var io2=new IntersectionObserver(function(ents){ents.forEach(function(en){if(en.isIntersecting){en.target.classList.add('is-vista'); io2.unobserve(en.target);}});},{rootMargin:'0px 0px -8% 0px',threshold:.08}); $$('[data-reveal]').forEach(function(el){io2.observe(el);}); } else {$$('[data-reveal]').forEach(function(el){el.classList.add('is-vista');});} });
 
 /* ══════════════════════════════════════════════════════════════════════
    10. [CARTA-3D] índice cilíndrico girable
-   [v15.2] el tema visual de cada cara se guarda en data-fx (antes data-tema)
    ══════════════════════════════════════════════════════════════════════ */
-modulo('carta3d', function () {
-  var cubo = document.getElementById('cubo');
-  var fx   = document.getElementById('cartaFx');
-  var puntosBox = document.getElementById('cuboPuntos');
-  if (!cubo || !puntosBox) return;
-  var caras = $$('[data-cara]', cubo);
-  var N = caras.length; if (!N) return;
-  var paso = 360 / N;
-  var rot = 0, activo = 0;
+modulo('carta3d',function(){ var cubo=document.getElementById('cubo'),fx=document.getElementById('cartaFx'),puntosBox=document.getElementById('cuboPuntos'); if(!cubo||!puntosBox)return; var caras=$$('[data-cara]',cubo); var N=caras.length; if(!N)return; var paso=360/N; var rot=0,activo=0;
+  function calcularRadio(){ var ancho=cubo.getBoundingClientRect().width||320; var r=Math.round((ancho/2)/Math.tan(Math.PI/N)); cubo.style.setProperty('--r',Math.max(150,r)+'px'); }
+  function iluminar(){ caras.forEach(function(c,i){var ang=(i*paso+rot)*Math.PI/180; var l=Math.max(0,Math.cos(ang)); c.style.setProperty('--luz',l.toFixed(3)); c.style.setProperty('--giro',(i*paso)+'deg');}); }
+  var CARAS3D={'sobre-mi':{n:'01',ico:'🧭',title:'Quién soy',desc:'Mi forma de trabajar: medir, ejecutar, corregir.',fx:'destello'},'esgrima':{n:'02',ico:'⚔️',title:'Siete años de esgrima',desc:'Disciplina, pista y el hábito de revisar el error.',fx:'corte'},'viajar':{n:'03',ico:'✈️',title:'Viajar',desc:'Experiencias fuera de casa para valerte por ti.',fx:'viaje'},'musica':{n:'04',ico:'🎧',title:'Música',desc:'Una herramienta diaria, no un adorno.',fx:'musica'},'ingles':{n:'05',ico:'🗣️',title:'Aprender inglés',desc:'Independencia para moverte sin depender de nadie.',fx:'idioma'},'estudios':{n:'06',ico:'🎓',title:'Estudios',desc:'Bachillerato, 1º DAM y el C1 de valenciano.',fx:'codigo'},'ia':{n:'07',ico:'🤖',title:'Inteligencia artificial',desc:'Vivir de crear. Prototipo al día, criterio primero.',fx:'ia'},'proyectos':{n:'08',ico:'🚀',title:'Mis proyectos',desc:'Lo que estoy construyendo ahora mismo.',fx:'proyectos'}};
+  caras.forEach(function(c,i){ var id=c.dataset.id,d=CARAS3D[id]; if(!c.style.getPropertyValue('--a'))c.style.setProperty('--a',i); if(d)c.dataset.fx=c.dataset.fx||d.fx; if(!d||$('.cara__title',c))return; c.innerHTML='<span class="cara__num">'+d.n+'</span><span class="cara__ico" aria-hidden="true">'+d.ico+'</span><h3 class="cara__title">'+d.title+'</h3><p class="cara__desc">'+d.desc+'</p><button class="cara__abrir" type="button" data-abrir="'+id+'">Entrar →</button>'; });
+  var puntos=[]; caras.forEach(function(c,i){ var b=document.createElement('button'); b.type='button'; b.setAttribute('role','tab'); b.setAttribute('aria-label','Ir a '+(c.dataset.id||'sección '+(i+1))); b.setAttribute('aria-selected',i===0?'true':'false'); on(b,'click',function(){irA(i);}); puntosBox.appendChild(b); puntos.push(b); });
+  function marcarFrente(){ caras.forEach(function(c,i){c.classList.toggle('is-frente',i===activo);}); puntos.forEach(function(p,i){p.classList.toggle('is-on',i===activo); p.setAttribute('aria-selected',i===activo?'true':'false');}); }
+  function aplicar(){ cubo.style.transform='translateZ(calc(-1 * var(--r))) rotateY('+rot+'deg)'; var idx=((Math.round(rot/paso)%N)+N)%N; if(idx!==activo){activo=idx; marcarFrente(); fxTema(caras[activo].dataset.fx);} else marcarFrente(); iluminar(); }
+  function irA(i){ rot=-i*paso; aplicar(); } function irPaso(d){ rot-=d*paso; aplicar(); }
+  if('IntersectionObserver' in window){ var io=new IntersectionObserver(function(ents){ents.forEach(function(en){ if(!en.isIntersecting)return; var id=en.target.id,pos=CARAS_INDICE.indexOf(id); if(pos<0)return; caras.forEach(function(c){c.classList.toggle('is-activo',c.dataset.id===id);}); });},{rootMargin:'-28% 0px -55% 0px',threshold:0}); $$('#diarioCuerpo .entrada').forEach(function(s){io.observe(s);}); }
+  function fxTema(tema){ if(REDUCED||!fx)return; var set={'musica':{cls:'fx--nota',glifos:['♪','♫','♬','♩'],n:8},'viaje':{cls:'fx--avion',glifos:['✈'],n:3},'codigo':{cls:'fx--codigo',glifos:['{ }','</>','( )',';'],n:7},'idioma':{cls:'fx--globo',glifos:['“ ”','Aa','Bb','¿?'],n:6},'ia':{cls:'fx--chispa',glifos:null,n:12},'proyectos':{cls:'fx--card',glifos:null,n:5},'destello':{cls:'fx--destello',glifos:null,n:9},'corte':{cls:'fx--corte',glifos:null,n:1}}[tema]||{cls:'fx--destello',glifos:null,n:6};
+    for(var k=0;k<set.n;k++){ var s=document.createElement('span'); s.className='fx '+set.cls; if(set.cls!=='fx--corte'){s.style.left=(12+Math.random()*76)+'%'; s.style.top=(55+Math.random()*30)+'%'; s.style.animationDelay=(Math.random()*.25)+'s'; if(set.glifos)s.textContent=pick(set.glifos);} fx.appendChild(s); (function(el){setTimeout(function(){el.remove();},1300);})(s); } Sonido.tintir(); }
+  var arrastrando=false,lastX=0,moved=0,vel=0; function down(x){arrastrando=true; lastX=x; moved=0; vel=0; cubo.classList.add('is-drag');} function move(x){ if(!arrastrando)return; var d=x-lastX; lastX=x; moved+=Math.abs(d); vel=d; rot+=d*0.35; cubo.style.transform='translateZ(calc(-1 * var(--r))) rotateY('+rot+'deg)'; var idx=((Math.round(rot/paso)%N)+N)%N; if(idx!==activo){activo=idx; marcarFrente();} iluminar(); } function up(){ if(!arrastrando)return; arrastrando=false; cubo.classList.remove('is-drag'); if(moved<4){aplicar(); return;} rot+=vel*6; rot=Math.round(rot/paso)*paso; aplicar(); }
+  cubo.addEventListener('pointerdown',function(e){ if(e.target.closest&&e.target.closest('button'))return; down(e.clientX); try{cubo.setPointerCapture(e.pointerId);}catch(_){}}); cubo.addEventListener('pointermove',function(e){if(arrastrando)move(e.clientX);}); cubo.addEventListener('pointerup',up); cubo.addEventListener('pointercancel',up); cubo.addEventListener('lostpointercapture',up);
+  on(document.getElementById('cuboPrev'),'click',function(){irPaso(-1);}); on(document.getElementById('cuboNext'),'click',function(){irPaso(1);});
+  var zona=cubo.closest('.carta3d'); if(zona){ zona.setAttribute('tabindex','0'); zona.setAttribute('aria-roledescription','índice giratorio'); on(zona,'keydown',function(e){ if(e.key==='ArrowLeft'){e.preventDefault(); irPaso(-1);} if(e.key==='ArrowRight'){e.preventDefault(); irPaso(1);} if(e.key==='Home'){e.preventDefault(); irA(0);} if(e.key==='End'){e.preventDefault(); irA(N-1);} }); }
+  on(cubo,'click',function(e){ var b=e.target.closest&&e.target.closest('[data-abrir]'); if(!b)return; var t=document.getElementById(b.getAttribute('data-abrir')); if(t)t.scrollIntoView({behavior:REDUCED?'auto':'smooth'}); });
+  calcularRadio(); marcarFrente(); aplicar(); var rt; on(window,'resize',function(){clearTimeout(rt); rt=setTimeout(function(){calcularRadio(); aplicar();},150);}); Carta3D={irA:irA,activo:function(){return activo;}}; });
 
-  function calcularRadio() {
-    // El radio depende del ancho real de las caras y del número de caras.
-    // No imponer un mínimo fijo: en móvil deformaría el polígono.
-    var ancho = cubo.getBoundingClientRect().width || 320;
-    var r = (ancho / 2) / Math.tan(Math.PI / N);
-    cubo.style.setProperty('--r', Math.max(1, r).toFixed(2) + 'px');
-  }
-  function indiceDesdeRotacion() {
-    // irA(i) aplica -i * paso; por eso el índice necesita invertir el signo.
-    return ((-Math.round(rot / paso) % N) + N) % N;
-  }
-  function iluminar() {
-    caras.forEach(function (c, i) {
-      var ang = (i * paso + rot) * Math.PI / 180;
-      var l = Math.max(0, Math.cos(ang));
-      c.style.setProperty('--luz', l.toFixed(3));
-      c.style.setProperty('--giro', (i * paso) + 'deg');
-    });
-  }
+/* ══════════════════════════════════════════════════════════════════════
+   11. [v17 · SCROLL-DIRECTO]  botones data-scroll de la barra y tarjetas
+        Abre el diario si estabas fuera y te lleva a la sección. Sin carga.
+   ══════════════════════════════════════════════════════════════════════ */
+modulo('scroll-directo',function(){ document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[data-scroll]'); if(!b)return; e.preventDefault(); var id=b.getAttribute('data-scroll'); if(document.body.dataset.pantalla!=='diario')setPantalla('diario'); var t=document.getElementById(id); if(t)setTimeout(function(){t.scrollIntoView({behavior:REDUCED?'auto':'smooth',block:'start'});},70); }); });
 
-  var CARAS3D = {
-    'sobre-mi' : { n:'01', ico:'🧭', title:'Quién soy',               desc:'Mi forma de trabajar: medir, ejecutar, corregir.', tema:'destello' },
-    'esgrima'  : { n:'02', ico:'⚔️', title:'Siete años de esgrima',   desc:'Disciplina, pista y el hábito de revisar el error.', tema:'corte' },
-    'viajar'   : { n:'03', ico:'✈️', title:'Viajar',                  desc:'Experiencias fuera de casa para valerte por ti.', tema:'viaje' },
-    'musica'   : { n:'04', ico:'🎧', title:'Música',                  desc:'Una herramienta diaria, no un adorno.', tema:'musica' },
-    'ingles'   : { n:'05', ico:'🗣️', title:'Aprender inglés',         desc:'Independencia para moverte sin depender de nadie.', tema:'idioma' },
-    'estudios' : { n:'06', ico:'🎓', title:'Estudios',                desc:'Bachillerato, 1º DAM y el C1 de valenciano.', tema:'codigo' },
-    'ia'       : { n:'07', ico:'🤖', title:'Inteligencia artificial', desc:'Vivir de crear. Prototipo al día, criterio primero.', tema:'ia' },
-    'proyectos': { n:'08', ico:'🚀', title:'Mis proyectos',           desc:'Lo que estoy construyendo ahora mismo.', tema:'proyectos' }
-  };
-  caras.forEach(function (c, i) {
-    var id = c.dataset.id, d = CARAS3D[id];
-    if (!c.style.getPropertyValue('--a')) c.style.setProperty('--a', i);
-    if (d) c.dataset.fx = c.dataset.fx || d.tema;                 // [v15.2] era dataset.tema
-    if (!d || $('.cara__title', c)) return;
-    c.innerHTML =
-      '<span class="cara__num">' + d.n + '</span>' +
-      '<span class="cara__ico" aria-hidden="true">' + d.ico + '</span>' +
-      '<h3 class="cara__title">' + d.title + '</h3>' +
-      '<p class="cara__desc">' + d.desc + '</p>' +
-      '<button class="cara__abrir" type="button" data-abrir="' + id + '">Entrar →</button>';
-  });
+/* ══════════════════════════════════════════════════════════════════════
+   12. [v17 · BACKTOP]  botón volver arriba (aparece al bajar en diario/bar)
+   ══════════════════════════════════════════════════════════════════════ */
+modulo('backtop',function(){ var bt=document.getElementById('backTop'); if(!bt)return; function revisar(){ var y=window.scrollY||document.documentElement.scrollTop; var p=document.body.dataset.pantalla; bt.classList.toggle('is-on',(p==='diario'||p==='bar')&&y>600); } on(window,'scroll',revisar); on(window,'resize',revisar); on(bt,'click',function(){window.scrollTo({top:0,behavior:REDUCED?'auto':'smooth'});}); revisar(); });
 
-  var puntos = [];
-  caras.forEach(function (c, i) {
-    var b = document.createElement('button');
-    b.type = 'button'; b.setAttribute('role', 'tab');
-    b.setAttribute('aria-label', 'Ir a ' + (c.dataset.id || 'sección ' + (i + 1)));
-    b.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
-    on(b, 'click', function () { irA(i); });
-    puntosBox.appendChild(b); puntos.push(b);
-  });
-
-  function marcarFrente() {
-    caras.forEach(function (c, i) {
-      c.classList.toggle('is-frente', i === activo);
-      c.setAttribute('aria-current', i === activo ? 'true' : 'false');
-    });
-    puntos.forEach(function (p, i) {
-      p.classList.toggle('is-on', i === activo);
-      p.setAttribute('aria-selected', i === activo ? 'true' : 'false');
-      p.tabIndex = i === activo ? 0 : -1;
-    });
-  }
-  function aplicar() {
-    cubo.style.transform = 'translateZ(calc(-1 * var(--r))) rotateY(' + rot + 'deg)';
-    var idx = indiceDesdeRotacion();
-    if (idx !== activo) { activo = idx; marcarFrente(); fxTema(caras[activo].dataset.fx); } // [v15.2] era dataset.tema
-    else marcarFrente();
-    iluminar();
-  }
-  function irA(i) { rot = -i * paso; aplicar(); }
-  function irPaso(d) { rot -= d * paso; aplicar(); }
-
-  if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (ents) {
-      ents.forEach(function (en) {
-        if (!en.isIntersecting) return;
-        var id = en.target.id, pos = CARAS_INDICE.indexOf(id);
-        if (pos < 0) return;
-        caras.forEach(function (c) { c.classList.toggle('is-activo', c.dataset.id === id); });
-      });
-    }, { rootMargin: '-28% 0px -55% 0px', threshold: 0 });
-    $$('#diarioCuerpo .entrada').forEach(function (s) { io.observe(s); });
-  }
-
-  function fxTema(tema) {
-    if (REDUCED || !fx) return;
-    var set = {
-      musica:   { cls:'fx--nota',     glifos:['♪','♫','♬','♩'], n:8 },
-      viaje:    { cls:'fx--avion',    glifos:['✈'],             n:3 },
-      codigo:   { cls:'fx--codigo',   glifos:['{ }','</>','( )',';'], n:7 },
-      idioma:   { cls:'fx--globo',    glifos:['“ ”','Aa','Bb','¿?'], n:6 },
-      ia:       { cls:'fx--chispa',   glifos:null,               n:12 },
-      proyectos:{ cls:'fx--card',     glifos:null,               n:5 },
-      destello: { cls:'fx--destello', glifos:null,               n:9 },
-      corte:    { cls:'fx--corte',    glifos:null,               n:1 }
-    }[tema] || { cls:'fx--destello', glifos:null, n:6 };
-    for (var k = 0; k < set.n; k++) {
-      var s = document.createElement('span');
-      s.className = 'fx ' + set.cls;
-      if (set.cls !== 'fx--corte') {
-        s.style.left = (12 + Math.random() * 76) + '%';
-        s.style.top  = (55 + Math.random() * 30) + '%';
-        s.style.animationDelay = (Math.random() * .25) + 's';
-        if (set.glifos) s.textContent = pick(set.glifos);
-      }
-      fx.appendChild(s);
-      (function (el) { setTimeout(function () { el.remove(); }, 1300); })(s);
-    }
-    Sonido.tintir();
-  }
-
-  var arrastrando = false, lastX = 0, moved = 0, vel = 0;
-  function down(x) { arrastrando = true; lastX = x; moved = 0; vel = 0; cubo.classList.add('is-drag'); }
-  function move(x) {
-    if (!arrastrando) return;
-    var d = x - lastX; lastX = x; moved += Math.abs(d); vel = d;
-    rot += d * 0.35;
-    cubo.style.transform = 'translateZ(calc(-1 * var(--r))) rotateY(' + rot + 'deg)';
-    var idx = indiceDesdeRotacion();
-    if (idx !== activo) { activo = idx; marcarFrente(); }
-    iluminar();
-  }
-  function up() {
-    if (!arrastrando) return;
-    arrastrando = false; cubo.classList.remove('is-drag');
-    if (moved < 4) { aplicar(); return; }
-    rot += vel * 6;
-    rot = Math.round(rot / paso) * paso;
-    aplicar();
-  }
-  cubo.addEventListener('pointerdown', function (e) {
-    if (e.target.closest && e.target.closest('button')) return;
-    down(e.clientX); try { cubo.setPointerCapture(e.pointerId); } catch (_){}
-  });
-  cubo.addEventListener('pointermove', function (e) { if (arrastrando) move(e.clientX); });
-  cubo.addEventListener('pointerup', up);
-  cubo.addEventListener('pointercancel', up);
-  cubo.addEventListener('lostpointercapture', up);
-
-  on(document.getElementById('cuboPrev'), 'click', function () { irPaso(-1); });
-  on(document.getElementById('cuboNext'), 'click', function () { irPaso(1); });
-
-  var zona = cubo.closest('.carta3d');
-  if (zona) {
-    zona.setAttribute('tabindex', '0');
-    zona.setAttribute('aria-roledescription', 'índice giratorio');
-    on(zona, 'keydown', function (e) {
-      if (e.key === 'ArrowLeft')  { e.preventDefault(); irPaso(-1); }
-      if (e.key === 'ArrowRight') { e.preventDefault(); irPaso(1); }
-      if (e.key === 'Home')       { e.preventDefault(); irA(0); }
-      if (e.key === 'End')        { e.preventDefault(); irA(N - 1); }
-    });
-  }
-
-  on(cubo, 'click', function (e) {
-    var b = e.target.closest && e.target.closest('[data-abrir]'); if (!b) return;
-    var t = document.getElementById(b.getAttribute('data-abrir'));
-    if (t) t.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth' });
-  });
-
-  calcularRadio(); marcarFrente(); aplicar();
-  var rt;
-  on(window, 'resize', function () { clearTimeout(rt); rt = setTimeout(function () { calcularRadio(); aplicar(); }, 150); });
-  Carta3D = { irA: irA, activo: function () { return activo; } };
+/* ══════════════════════════════════════════════════════════════════════
+   13. [v17 · FORM-MAILTO]  el formulario abre tu gestor de correo.
+        No envía solo (no hay servidor): construye el mailto con lo escrito.
+   ══════════════════════════════════════════════════════════════════════ */
+modulo('form-mailto',function(){ var f=document.getElementById('formContacto'); if(!f)return; var estado=document.getElementById('formEstado'); var MAIL='catalajoan19@gmail.com';
+  function set(txt,tipo){ if(!estado)return; estado.textContent=txt; estado.className='fc__estado'+(tipo?' is-'+tipo:''); }
+  f.addEventListener('submit',function(e){ e.preventDefault(); var d=new FormData(f); var nombre=(d.get('nombre')||'').trim(), mail=(d.get('email')||'').trim(), msg=(d.get('mensaje')||'').trim();
+    if(!nombre){set('Escribe tu nombre.', 'err'); return;} if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){set('El email no parece válido.', 'err'); return;} if(!msg){set('Escribe un mensaje.', 'err'); return;}
+    var asunto='Contacto desde Casa Joan — '+nombre; var cuerpo='Nombre: '+nombre+'\nEmail: '+mail+'\n\n'+msg+'\n\n— Enviado desde webpersonal';
+    set('Abriendo tu correo…', 'ok'); window.location.href='mailto:'+MAIL+'?subject='+encodeURIComponent(asunto)+'&body='+encodeURIComponent(cuerpo); });
 });
 
 })();

@@ -46,27 +46,28 @@
 
   <div class="plataforma">
     <div class="arcade-fila">
-      <button class="tarjeta3d tarjeta3d--azul" type="button" data-ir="diario"
-              aria-label="Conóceme — abrir el diario">
-        <span class="tarjeta3d__ico" aria-hidden="true">👤</span>
-        <span class="tarjeta3d__tit">Conóceme</span>
-        <span class="tarjeta3d__sub">Mi historia</span>
-      </button>
-
-      <button class="tarjeta3d tarjeta3d--naranja" type="button" data-ir="bar"
-              aria-label="Entrar — abrir el bar">
-        <span class="tarjeta3d__ico" aria-hidden="true">🎮</span>
-        <span class="tarjeta3d__tit">Entrar</span>
-        <span class="tarjeta3d__sub">El bar</span>
-      </button>
-
-      <button class="tarjeta3d tarjeta3d--verde" type="button" data-ir="contacto"
-              aria-label="Contactar — escribirme">
-        <span class="tarjeta3d__ico" aria-hidden="true">✉️</span>
-        <span class="tarjeta3d__tit">Contactar</span>
-        <span class="tarjeta3d__sub">Escríbeme</span>
-      </button>
-    </div>
+  <button class="tarjeta3d tarjeta3d--azul" type="button" data-ir="diario" aria-label="Conóceme — abrir el diario">
+    <span class="tarjeta3d__ico" aria-hidden="true">👤</span>
+    <span class="tarjeta3d__tit">Conóceme</span>
+    <span class="tarjeta3d__sub">Mi historia</span>
+  </button>
+  <button class="tarjeta3d tarjeta3d--naranja" type="button" data-ir="bar" aria-label="Entrar — abrir el bar">
+    <span class="tarjeta3d__ico" aria-hidden="true">🎮</span>
+    <span class="tarjeta3d__tit">Entrar</span>
+    <span class="tarjeta3d__sub">El bar</span>
+  </button>
+  <button class="tarjeta3d tarjeta3d--verde" type="button" data-ir="contacto" aria-label="Contactar — escribirme">
+    <span class="tarjeta3d__ico" aria-hidden="true">✉️</span>
+    <span class="tarjeta3d__tit">Contactar</span>
+    <span class="tarjeta3d__sub">Escríbeme</span>
+  </button>
+  <!-- [v19] 4ª tarjeta: pantalla de Herramientas -->
+  <button class="tarjeta3d tarjeta3d--laton" type="button" data-ir="herramientas" aria-label="Herramientas — ver las utilidades">
+    <span class="tarjeta3d__ico" aria-hidden="true">⚙️</span>
+    <span class="tarjeta3d__tit">Herramientas</span>
+    <span class="tarjeta3d__sub">Utilidades</span>
+  </button>
+</div>
     <div class="plataforma__base" aria-hidden="true"></div>
   </div>
 </section>
@@ -83,7 +84,7 @@
       <button class="btn4" type="button" data-ir="contacto">✉ contactar</button>
       <!-- [v17] accesos directos de la barra (la imagen los pone en la nav superior) -->
 <button class="btn4" type="button" data-scroll="proyectos">⌗ proyectos</button>
-<button class="btn4" type="button" data-scroll="herramientas">⚙ herramientas</button>
+<button class="btn4" type="button" data-ir="herramientas">⚙ herramientas</button>
       <button class="btn4" type="button" data-tema aria-pressed="false">☀ claro</button>
     </div>
 
@@ -562,7 +563,7 @@
     <h3 class="tar-proy__tit">Herramientas</h3>
     <p class="tar-proy__desc">Conversor, clima, países y curiosidades con APIs reales.</p>
     <p class="tar-proy__etq"><span>APIs</span><span>Utilidades</span></p>
-    <button class="tar-proy__link" type="button" data-scroll="herramientas">Ver herramientas →</button>
+    <button class="tar-proy__link" type="button" data-ir="herramientas">Ver herramientas →</button>
   </article>
 
   <article class="tar-proy">
@@ -580,111 +581,66 @@
       </p>
     </article>
 
-    <article class="post" id="clima">
-      <header class="post__head">
-        <h2>El tiempo ahora</h2>
-        <p class="post__meta">OpenWeather · en vivo</p>
-      </header>
-<!-- [v17] · HERRAMIENTAS: agrupa las 4 utilidades que ya existen -->
-<article class="post" id="herramientas">
-  <header class="post__head">
-    <h2>Herramientas</h2>
-    <p class="post__meta">Utilidades en vivo · sin base de datos</p>
-  </header>
-  <p>Pequeñas utilidades, grandes momentos. Cada tarjeta abre su herramienta.</p>
+  </template>
 
-  <div class="grid-herr">
-    <a class="tar-herr" href="#monedas"   data-scroll="monedas">
-      <span class="tar-herr__ico" aria-hidden="true">💱</span>
-      <span class="tar-herr__tit">Conversor de divisas</span>
-      <span class="tar-herr__sub">Tipo de cambio en tiempo real</span>
-    </a>
-    <a class="tar-herr" href="#clima"     data-scroll="clima">
-      <span class="tar-herr__ico" aria-hidden="true">☀️</span>
-      <span class="tar-herr__tit">El tiempo</span>
-      <span class="tar-herr__sub">El clima donde estés</span>
-    </a>
-    <a class="tar-herr" href="#paises"    data-scroll="paises">
-      <span class="tar-herr__ico" aria-hidden="true">🌐</span>
-      <span class="tar-herr__tit">Países</span>
-      <span class="tar-herr__sub">Explora el mundo</span>
-    </a>
-    <a class="tar-herr" href="#curiosidades" data-scroll="curiosidades">
-      <span class="tar-herr__ico" aria-hidden="true">💡</span>
-      <span class="tar-herr__tit">Curiosidades</span>
-      <span class="tar-herr__sub">¿Sabías que…?</span>
-    </a>
+  <!-- ══ PANTALLA HERRAMIENTAS (aparte, como el bar). Se abre con ⚙.
+     [CORRECCIÓN] Antes estaba DENTRO del <template> y por eso no se veía.
+     Debe estar a nivel de <body>, como .portada / .diario / .bar. ══ -->
+<section class="herramientas" id="herramientas" aria-labelledby="herr-title">
+  <div class="herramientas__barra">
+    <a class="herramientas__marca" href="#herramientas">⚙ Herramientas</a>
+    <button class="btn4" type="button" data-ir="portada">⌂ portada</button>
+    <button class="btn4" type="button" data-ir="diario">📖 diario</button>
+    <button class="btn4" type="button" data-ir="bar">☰ el bar</button>
+    <button class="btn4" type="button" data-ir="contacto">✉ contactar</button>
+    <button class="btn4" type="button" data-tema aria-pressed="false">☀ claro</button>
   </div>
-</article>
+
+  <div class="herramientas__top">
+    <p class="hero__eyebrow">Utilidades · en vivo · sin base de datos</p>
+    <h2 class="hero__name" id="herr-title">Herramientas</h2>
+    <p class="hero__frase">Cuatro utilidades, una a la vez. Pulsa la pestaña y te la sirvo.</p>
+  </div>
+
+  <div class="herr">
+    <div class="herr__tabs" role="tablist" aria-label="Elegir herramienta">
+      <button class="herr-tab is-on" type="button" role="tab" aria-selected="true"  data-herr="clima">☀️ Clima</button>
+      <button class="herr-tab" type="button" role="tab" aria-selected="false" data-herr="monedas">💱 Divisas</button>
+      <button class="herr-tab" type="button" role="tab" aria-selected="false" data-herr="paises">🌐 Países</button>
+      <button class="herr-tab" type="button" role="tab" aria-selected="false" data-herr="curiosidades">💡 Curiosidades</button>
+    </div>
+
+    <section class="herr-panel is-on" data-panel="clima" role="tabpanel" aria-label="Clima">
       <div class="clima" data-clima>
         <p class="clima__estado" data-clima-estado>Cargando el tiempo…</p>
         <p class="clima__temp" data-clima-temp>— °C</p>
-        <p class="clima__extra" data-clima-extra>
-          Temperatura, sensación, viento y humedad aparecerán aquí.
-        </p>
-        <p class="clima__nota" data-clima-nota>
-          Configura tu API key en script.js.
-        </p>
+        <p class="clima__extra" data-clima-extra>Temperatura, sensación, viento y humedad aparecerán aquí.</p>
+        <p class="clima__nota" data-clima-nota>Configura tu API key en script.js.</p>
       </div>
+      <p>Este apartado se rellena solo con la API gratuita de OpenWeather. No necesita base de datos.</p>
+    </section>
 
-      <p>
-        Este apartado no lo he escrito a mano: se rellena solo con la API gratuita de OpenWeather.
-        No necesita base de datos.
-      </p>
-    </article>
-
-    <article class="post" id="monedas">
-      <header class="post__head">
-        <h2>Conversor de divisas</h2>
-        <p class="post__meta">ExchangeRate-API · en vivo</p>
-      </header>
-
+    <section class="herr-panel" data-panel="monedas" role="tabpanel" aria-label="Divisas">
       <div class="monedas" data-monedas>
         <div class="monedas__fila">
-          <label class="monedas__campo">
-            <span>Cantidad</span>
-            <input type="number" data-m-cantidad value="100" min="0" step="any" inputmode="decimal">
-          </label>
-
-          <label class="monedas__campo">
-            <span>De</span>
-            <select data-m-origen aria-label="Moneda de origen"></select>
-          </label>
-
+          <label class="monedas__campo"><span>Cantidad</span><input type="number" data-m-cantidad value="100" min="0" step="any" inputmode="decimal"></label>
+          <label class="monedas__campo"><span>De</span><select data-m-origen aria-label="Moneda de origen"></select></label>
           <button class="monedas__cambiar" type="button" data-m-cambiar aria-label="Cambiar monedas" title="Cambiar monedas">⇄</button>
-
-          <label class="monedas__campo">
-            <span>A</span>
-            <select data-m-destino aria-label="Moneda de destino"></select>
-          </label>
+          <label class="monedas__campo"><span>A</span><select data-m-destino aria-label="Moneda de destino"></select></label>
         </div>
-
         <p class="monedas__resultado" data-m-resultado>—</p>
         <p class="monedas__tasa" data-m-tasa>Cargando tasas…</p>
       </div>
+      <p>Este conversor usa la API gratuita de ExchangeRate-API con clave. Las tasas se actualizan solas y no hace falta base de datos.</p>
+    </section>
 
-      <p>
-        Este conversor usa la API gratuita de ExchangeRate-API con clave.
-        Las tasas se actualizan solas y no hace falta base de datos.
-      </p>
-    </article>
-
-    <article class="post" id="paises">
-      <header class="post__head">
-        <h2>Países del mundo</h2>
-        <p class="post__meta">countries.dev · en vivo</p>
-      </header>
-
+    <section class="herr-panel" data-panel="paises" role="tabpanel" aria-label="Países">
       <div class="paises" data-paises>
         <div class="paises__buscador">
-          <label class="paises__campo">
-            <span>Código ISO (3 letras)</span>
-            <input type="text" data-p-codigo value="ESP" maxlength="3" placeholder="ESP" autocomplete="off">
-          </label>
+          <label class="paises__campo"><span>Código ISO (3 letras)</span><input type="text" data-p-codigo value="ESP" maxlength="3" placeholder="ESP" autocomplete="off"></label>
           <button class="paises__btn" type="button" data-p-buscar>Buscar</button>
           <button class="paises__btn paises__btn--aleatorio" type="button" data-p-aleatorio>🎲 Aleatorio</button>
         </div>
-
         <div class="paises__tarjeta" data-p-tarjeta>
           <div class="paises__bandera" data-p-bandera></div>
           <p class="paises__nombre" data-p-nombre>—</p>
@@ -698,47 +654,25 @@
             <div class="paises__dato"><dt>Área</dt><dd data-p-area>—</dd></div>
           </dl>
         </div>
-
         <p class="paises__error" data-p-error hidden></p>
       </div>
+      <p>Este apartado usa la API pública de countries.dev: banderas, población, capital, idiomas y más, sin clave y sin base de datos.</p>
+    </section>
 
-      <p>
-        Este apartado usa la API pública de countries.dev: banderas, población,
-        capital, idiomas y más, sin clave y sin base de datos.
-      </p>
-
-    </article>
-        <article class="post" id="curiosidades">
-      <header class="post__head">
-        <h2>¿Sabías que…?</h2>
-        <p class="post__meta">Wikipedia · curiosidad aleatoria · gratis</p>
-      </header>
-
+    <section class="herr-panel" data-panel="curiosidades" role="tabpanel" aria-label="Curiosidades">
       <div class="curiosidades" data-curiosidades>
         <div class="curiosidades__imagen" data-c-imagen></div>
         <p class="curiosidades__titulo" data-c-titulo>Buscando algo curioso…</p>
         <p class="curiosidades__texto" data-c-texto>—</p>
-
-        <p class="curiosidades__acciones">
-          <button class="curiosidades__btn" type="button" data-c-nueva>🎲 Otra curiosidad</button>
-        </p>
-
-        <p class="curiosidades__enlace-linea">
-          <a class="curiosidades__enlace" data-c-enlace hidden href="#" target="_blank" rel="noopener">Leer en Wikipedia →</a>
-        </p>
-
+        <p class="curiosidades__acciones"><button class="curiosidades__btn" type="button" data-c-nueva>🎲 Otra curiosidad</button></p>
+        <p class="curiosidades__enlace-linea"><a class="curiosidades__enlace" data-c-enlace hidden href="#" target="_blank" rel="noopener">Leer en Wikipedia →</a></p>
         <p class="curiosidades__error" data-c-error hidden></p>
       </div>
+      <p>Esta curiosidad viene sola: un artículo aleatorio de la Wikipedia en español, de su API pública. Sin clave, sin registro y sin base de datos.</p>
+    </section>
+  </div>
+</section>
 
-      <p>
-        Esta curiosidad viene sola: es un artículo aleatorio de la Wikipedia en español,
-        sacado de su API pública. Sin clave, sin registro y sin base de datos.
-      </p>
-    </article>
-
-  </template>
-
-  
   <script>
   window.CASA_JOAN_CONFIG = { climaUrl: '/api/clima', monedasUrl: '/api/tasas' };
 </script>

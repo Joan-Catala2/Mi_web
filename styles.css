@@ -2413,3 +2413,132 @@ html[data-tema="claro"] .carta3d__pista{ color:rgba(36,50,72,.55) !important; }
   }
   .carta3d .cara.is-frente { filter: none; }
 }
+/* ══════════════════════════════════════════════════════════════════════
+   [v17] PULIDO + ORGANIZACIÓN (sin cambiar paleta ni tipografía)
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── 1 · Botones de la barra del diario: que no se peguen ── */
+.diario__barra{ gap:8px }
+.diario__barra .btn4{ white-space:nowrap }
+
+/* ── 2 · Rejilla de HERRAMIENTAS (mismo lenguaje que .perfil__dato) ── */
+.grid-herr{
+  display:grid; gap:14px; margin-top:18px;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+}
+.tar-herr{
+  display:grid; gap:6px; padding:18px 16px; text-decoration:none;
+  background:#0c1626; border:1px solid var(--jn-borde); border-radius:10px;
+  box-shadow:0 8px 20px var(--jn-sombra);
+  transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.tar-herr:hover,.tar-herr:focus-visible{
+  transform:translateY(-4px); border-color:var(--jn-ambar);
+  box-shadow:0 14px 28px var(--jn-sombra), 0 0 18px rgba(255,159,28,.25);
+}
+.tar-herr__ico{ font-size:26px; line-height:1; filter:drop-shadow(0 0 8px rgba(255,159,28,.4)) }
+.tar-herr__tit{ color:#fff; font:700 15px/1.2 var(--jn-display); letter-spacing:.04em }
+.tar-herr__sub{ color:rgba(201,214,232,.7); font:400 13px/1.4 var(--jn-terminal) }
+
+/* ── 3 · Tarjetas de PROYECTOS ── */
+.grid-proy{
+  display:grid; gap:16px; margin:18px 0;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+}
+.tar-proy{
+  display:grid; gap:8px; align-content:start; padding:20px 18px;
+  background:linear-gradient(165deg,#0e1a2e,#0a1322);
+  border:1px solid var(--jn-borde); border-radius:12px;
+  box-shadow:0 0 0 1px rgba(255,159,28,.1), 0 12px 28px var(--jn-sombra);
+  transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.tar-proy:hover,.tar-proy:focus-within{
+  transform:translateY(-5px); border-color:var(--jn-ambar);
+  box-shadow:0 18px 36px var(--jn-sombra), 0 0 22px rgba(255,159,28,.28);
+}
+.tar-proy__ico{ font-size:30px; line-height:1 }
+.tar-proy__tit{ margin:0; color:#fff; font:700 17px/1.2 var(--jn-display); letter-spacing:.03em }
+.tar-proy__desc{ margin:0; color:rgba(230,237,243,.78); font:400 14px/1.5 var(--jn-terminal) }
+.tar-proy__etq{ display:flex; flex-wrap:wrap; gap:6px; margin:2px 0 0 }
+.tar-proy__etq span{
+  font:700 9px/1 var(--jn-display); letter-spacing:.1em; text-transform:uppercase;
+  padding:5px 8px; color:var(--jn-laton); background:rgba(56,189,248,.08);
+  border:1px solid rgba(232,192,122,.35); border-radius:4px;
+}
+.tar-proy__link{
+  justify-self:start; margin-top:6px; cursor:pointer;
+  background:#0a1322; border:1px solid var(--jn-ambar); color:var(--jn-ambar);
+  font:700 12px/1 var(--jn-display); letter-spacing:.05em; padding:9px 12px; border-radius:6px;
+  transition:background .2s ease, color .2s ease, transform .15s ease;
+}
+.tar-proy__link:hover,.tar-proy__link:focus-visible{ background:var(--jn-ambar); color:#04070d; transform:translateX(2px) }
+
+/* ── 4 · Formulario de contacto (inputs = mismos colores que .monedas__campo) ── */
+.form-contacto{
+  display:grid; gap:12px; margin:18px 0;
+  grid-template-columns:1fr 1fr; align-items:end;
+}
+.fc__campo{ display:grid; gap:6px; color:var(--jn-laton); font:400 12px/1 var(--jn-display); letter-spacing:.08em; text-transform:uppercase }
+.fc__campo:nth-child(3){ grid-column:1 / -1 }          /* mensaje ocupa las 2 columnas */
+.fc__campo input,.fc__campo textarea{
+  width:100%; min-width:0; resize:vertical;
+  background:#0a1322; border:1px solid var(--jn-borde); color:var(--jn-crema);
+  font:400 15px/1.5 var(--jn-terminal); padding:11px 12px; border-radius:8px;
+}
+.fc__campo input:focus-visible,.fc__campo textarea:focus-visible{
+  outline:none; border-color:var(--jn-ambar);
+  box-shadow:0 0 0 2px rgba(255,159,28,.25);
+}
+.fc__estado{ grid-column:1 / -1; margin:0; min-height:1em; font:400 13px/1.4 var(--jn-terminal); color:rgba(201,214,232,.7) }
+.fc__estado.is-ok{ color:var(--jn-verde) }
+.fc__estado.is-err{ color:var(--jn-rojo) }
+.fc__enviar{
+  grid-column:1 / -1; justify-self:start; cursor:pointer;
+  background:var(--jn-ambar); color:#04070d; border:1px solid var(--jn-ambar);
+  font:700 13px/1 var(--jn-display); letter-spacing:.05em; padding:12px 16px; border-radius:8px;
+  box-shadow:0 4px 0 rgba(0,0,0,.5);
+  transition:background .2s ease, transform .15s ease, box-shadow .15s ease;
+}
+.fc__enviar:hover,.fc__enviar:focus-visible{ background:#ffb84d; transform:translate(-1px,-1px); box-shadow:0 6px 0 rgba(0,0,0,.5) }
+.fc__enviar:active{ transform:translate(1px,1px); box-shadow:0 1px 0 rgba(0,0,0,.5) }
+.fc__nota{ grid-column:1 / -1; margin:0; color:rgba(201,214,232,.5); font:400 12px/1.4 var(--jn-terminal) }
+
+/* ── 5 · Botón volver arriba ── */
+.backtop{
+  position:fixed; right:16px; bottom:16px; z-index:60;
+  width:46px; height:46px; border-radius:50%; cursor:pointer;
+  display:grid; place-items:center;
+  background:var(--jn-ambar); color:#04070d; border:2px solid var(--jn-laton);
+  font:700 18px/1 var(--jn-display);
+  box-shadow:0 8px 22px var(--jn-sombra), 0 0 18px rgba(255,159,28,.4);
+  opacity:0; transform:translateY(14px) scale(.9); pointer-events:none;
+  transition:opacity .3s ease, transform .3s ease;
+}
+.backtop.is-on{ opacity:1; transform:none; pointer-events:auto }
+.backtop:hover,.backtop:focus-visible{ background:#ffb84d; box-shadow:0 10px 26px var(--jn-sombra), 0 0 26px rgba(255,159,28,.6) }
+
+/* ── 6 · Responsive: las rejillas se apilan sin desbordar ── */
+@media (max-width:640px){
+  .form-contacto{ grid-template-columns:1fr }
+  .fc__campo:nth-child(3){ grid-column:auto }
+  .grid-proy,.grid-herr{ gap:12px }
+  .backtop{ right:12px; bottom:12px; width:44px; height:44px }
+}
+
+/* ── 7 · Modo claro: mismo trato que las tarjetas oscuras (contraste) ── */
+html[data-tema="claro"] .tar-herr,
+html[data-tema="claro"] .tar-proy{ background:#fff; border-color:var(--jn-borde) }
+html[data-tema="claro"] .tar-herr__tit,
+html[data-tema="claro"] .tar-proy__tit{ color:#16233c }
+html[data-tema="claro"] .tar-herr__sub,
+html[data-tema="claro"] .tar-proy__desc{ color:#4a5a74 }
+html[data-tema="claro"] .fc__campo input,
+html[data-tema="claro"] .fc__campo textarea{ background:#fff; border-color:var(--jn-borde); color:#16233c }
+html[data-tema="claro"] .tar-proy__link{ background:#fff }
+
+/* ── 8 · Movimiento reducido: sin desplazamientos, solo color ── */
+@media (prefers-reduced-motion:reduce){
+  .tar-herr,.tar-proy,.tar-proy:hover,.tar-proy:focus-within,.tar-herr:hover,
+  .fc__enviar,.tar-proy__link,.backtop.is-on{ transform:none !important }
+  .backtop{ transition:opacity .01ms }
+}

@@ -2542,3 +2542,33 @@ html[data-tema="claro"] .tar-proy__link{ background:#fff }
   .fc__enviar,.tar-proy__link,.backtop.is-on{ transform:none !important }
   .backtop{ transition:opacity .01ms }
 }
+/* ══════════════════════════════════════════════════════════════════════
+   [v18] APARTADO HERRAMIENTAS con pestañas (una a la vez) + 4ª tarjeta portada
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* 4ª tarjeta de portada, color latón (ya existe en la paleta) */
+.tarjeta3d--laton{ --acento:var(--jn-laton) }
+/* con 4 tarjetas, en móvil se reparten 2+2 (anula el 100% de la verde) */
+@media (max-width:520px){ .tarjeta3d--verde{ width:calc(50% - 8px) } }
+
+/* Pestañas del apartado herramientas (mismo lenguaje que .btn4 / .jn-btn) */
+.herr{ margin-top:16px }
+.herr__tabs{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px }
+.herr-tab{
+  cursor:pointer; background:#0a1322; border:2px solid var(--jn-borde); color:var(--jn-crema);
+  font:700 12px/1 var(--jn-display); letter-spacing:.05em; padding:10px 12px; border-radius:8px;
+  box-shadow:0 3px 0 rgba(0,0,0,.5);
+  transition:background .2s,color .2s,border-color .2s,transform .12s,box-shadow .12s;
+}
+.herr-tab:hover,.herr-tab:focus-visible{ border-color:var(--jn-ambar); color:var(--jn-ambar); transform:translateY(-1px) }
+.herr-tab.is-on{ background:var(--jn-ambar); border-color:var(--jn-ambar); color:#04070d; box-shadow:0 0 16px rgba(255,159,28,.4),0 3px 0 rgba(0,0,0,.5) }
+
+/* Una herramienta visible a la vez (como las vistas del camarero) */
+.herr-panel{ display:none; animation:herrIn .28s ease }
+.herr-panel.is-on{ display:block }
+@keyframes herrIn{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+@media (prefers-reduced-motion:reduce){ .herr-panel{ animation:none } }
+
+/* Modo claro: pestañas legibles sobre papel */
+html[data-tema="claro"] .herr-tab{ background:#fff; border-color:var(--jn-borde); color:#16233c }
+html[data-tema="claro"] .herr-tab.is-on{ background:#c2571a; border-color:#c2571a; color:#fff; box-shadow:0 0 12px rgba(194,87,26,.35),0 3px 0 rgba(0,0,0,.15) }

@@ -100,7 +100,7 @@ function cargarClima(){ if(!CLIMA.key||CLIMA.key.indexOf('TU_API_KEY')>-1){pinta
 /* ══════════════════════════════════════════════════════════════════════
    1c. DIVISAS
    ══════════════════════════════════════════════════════════════════════ */
-var MONEDAS = { key:'26b774ebd2e1fc8cd152b215', base:'EUR', cadaMinutos:30 };
+var MONEDAS = { key:'19a31b8724061174adf01e63', base:'EUR', cadaMinutos:30 };
 var LISTA_MONEDAS = [{code:'EUR',name:'Euro'},{code:'USD',name:'Dólar estadounidense'},{code:'GBP',name:'Libra esterlina'},{code:'JPY',name:'Yen japonés'},{code:'MXN',name:'Peso mexicano'},{code:'ARS',name:'Peso argentino'},{code:'COP',name:'Peso colombiano'},{code:'CLP',name:'Peso chileno'},{code:'PEN',name:'Sol peruano'},{code:'BRL',name:'Real brasileño'},{code:'CAD',name:'Dólar canadiense'},{code:'CHF',name:'Franco suizo'},{code:'CNY',name:'Yuan chino'},{code:'AUD',name:'Dólar australiano'},{code:'KRW',name:'Won surcoreano'},{code:'INR',name:'Rupia india'},{code:'TRY',name:'Lira turca'},{code:'MAD',name:'Dírham marroquí'}];
 var SIMBOLOS = {EUR:'€',USD:'$',GBP:'£',JPY:'¥',MXN:'$',ARS:'$',COP:'$',CLP:'$',PEN:'S/',BRL:'R$',CAD:'$',CHF:'CHF',CNY:'¥',AUD:'$',KRW:'₩',INR:'₹',TRY:'₺',MAD:'DH'};
 var ultimaTasas = null;

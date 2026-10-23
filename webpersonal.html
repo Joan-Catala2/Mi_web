@@ -7,6 +7,22 @@
   <meta name="description" content="Diario personal de Joan Català Mateu: esgrima, viajar, aprender inglés y crear proyectos con inteligencia artificial. Bachillerato, 1º DAM (IES Simarro) y C1 de valenciano.">
   <meta name="author" content="Joan Català Mateu">
 
+  <!-- [FIX] theme-color + favicon propio (SVG inline, sin archivo externo) -->
+  <meta name="theme-color" content="#04070d">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2304070d'/%3E%3Crect x='2' y='2' width='12' height='2' fill='%23ff9f1c'/%3E%3Crect x='12' y='2' width='2' height='10' fill='%23ff9f1c'/%3E%3Crect x='2' y='10' width='12' height='2' fill='%23ff9f1c'/%3E%3Crect x='2' y='10' width='2' height='4' fill='%23ff9f1c'/%3E%3C/svg%3E">
+
+  <!-- [FIX] Open Graph + Twitter Card (reemplaza TU-USUARIO y la URL por tu dominio real) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Joan Català Mateu — Diario personal">
+  <meta property="og:description" content="Diario personal de Joan Català Mateu: esgrima, DAM, idiomas y proyectos con IA. Una web hecha a mano.">
+  <meta property="og:image" content="https://TU-USUARIO.github.io/casa-joan/img/joan.jpg">
+  <meta property="og:url" content="https://TU-USUARIO.github.io/casa-joan/">
+  <meta property="og:locale" content="es_ES">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Joan Català Mateu — Diario personal">
+  <meta name="twitter:description" content="Diario personal de Joan Català Mateu: esgrima, DAM, idiomas y proyectos con IA.">
+  <meta name="twitter:image" content="https://TU-USUARIO.github.io/casa-joan/img/joan.jpg">
+
   <!-- Fuentes: Karla (lectura) + Silkscreen (rótulos pixel) + VT323 (diálogo) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -314,9 +330,14 @@
         <a href="mailto:catalajoan19@gmail.com">catalajoan19@gmail.com</a>
         <button type="button" id="diarioCopyMail" data-copy="catalajoan19@gmail.com" data-carga="no">copiar</button>
       </p>
-      <!-- [v17] · Formulario que abre tu gestor de correo (no necesita servidor).
-     Si no lo quieres, bórralo: el botón ✉ Contactar de arriba sigue igual. -->
-<form class="form-contacto" id="formContacto" novalidate>
+      <!-- [FIX] Envío real vía Web3Forms (sin servidor). PEGA tu access_key abajo.
+           IMPORTANTE: en script.js borra el handler submit del #formContacto que
+           hacía preventDefault()+mailto; el envío ya va por el action del <form>. -->
+<form class="form-contacto" id="formContacto" action="https://api.web3forms.com/submit" method="POST">
+  <input type="hidden" name="access_key" value="PEGA_TU_ACCESS_KEY">
+  <input type="hidden" name="subject" value="Mensaje desde Casa Joan">
+  <input type="hidden" name="redirect" value="https://TU-USUARIO.github.io/casa-joan/?ok=1">
+  <input type="checkbox" name="botcheck" class="hidden" style="display:none" tabindex="-1" autocomplete="off">
   <label class="fc__campo">
     <span>Nombre</span>
     <input type="text" name="nombre" required autocomplete="name">
@@ -331,12 +352,12 @@
   </label>
   <p class="fc__estado" id="formEstado" role="status" aria-live="polite"></p>
   <button class="fc__enviar" type="submit">Enviar mensaje →</button>
-  <p class="fc__nota">Se abrirá tu aplicación de correo con el mensaje escrito.</p>
+  <p class="fc__nota">Al pulsar Enviar, el mensaje llega directo a mi correo.</p>
 </form>
       <ul class="contacto__redes">
-        <li><a href="https://github.com/" target="_blank" rel="noopener">GitHub</a></li>
-        <li><a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a></li>
-        <li><a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a></li>
+        <li><a href="https://github.com/TU-USUARIO" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/in/TU-USUARIO" target="_blank" rel="noopener">LinkedIn</a></li>
+        <li><a href="https://www.instagram.com/TU-USUARIO" target="_blank" rel="noopener">Instagram</a></li>
       </ul>
       <div class="nav3" id="nav3Contacto"><!-- botón ☰ el bar, añadidos por JS --></div>
       <p class="diario__legal">© <span id="year">2025</span> Joan Català Mateu · página hecha a mano con HTML, CSS y JavaScript.</p>
@@ -422,9 +443,9 @@
             <button type="button" id="barCopyMail" data-copy="catalajoan19@gmail.com" data-carga="no">copiar</button>
           </p>
           <ul class="contacto__redes">
-            <li><a href="https://github.com/" target="_blank" rel="noopener">GitHub</a></li>
-            <li><a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a></li>
-            <li><a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a></li>
+            <li><a href="https://github.com/TU-USUARIO" target="_blank" rel="noopener">GitHub</a></li>
+            <li><a href="https://www.linkedin.com/in/TU-USUARIO" target="_blank" rel="noopener">LinkedIn</a></li>
+            <li><a href="https://www.instagram.com/TU-USUARIO" target="_blank" rel="noopener">Instagram</a></li>
           </ul>
           <p class="contacto__legal">© 2026 Joan Català Mateu · página hecha a mano.</p>
           <button class="jn-btn jn-btn--linea" id="barContactoBack" type="button">☰ la carta</button>
@@ -644,7 +665,7 @@
       
 
       <p>
-        <a class="btn" href="https://github.com/" target="_blank" rel="noopener">Ver todo en GitHub →</a>
+        <a class="btn" href="https://github.com/Joan-Catala2" target="_blank" rel="noopener">Ver todo en GitHub →</a>
       </p>
     </article>
 

@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body data-pantalla="portada">
+  <div id="starfield" class="starfield" aria-hidden="true"></div>
 
   <!-- ================================================================
        PANTALLA DE CARGA
@@ -123,7 +124,12 @@
       <!-- [MEJORA 2] el sumario se convierte en índice visual por JS -->
             <!-- ── CARTA-MENÚ del diario (sustituye al antiguo <nav class="sumario">) ── -->
            <!-- ══ CARTA-3D: índice cilíndrico girable ══ -->
-      <section class="carta3d" aria-label="Índice del diario (girable)">
+      <section class="carta3d" aria-label="Índice 3D del diario (girable)">
+        <header class="carta3d__cabecera">
+          <p class="carta3d__eyebrow">CASA JOAN · EXPLORA MI MUNDO</p>
+          <h3 class="carta3d__heading">Índice interactivo <span>3D</span></h3>
+          <p class="carta3d__intro">Gira el menú y entra en las secciones para descubrir mi historia, mis intereses y mis proyectos.</p>
+        </header>
         <div class="carta3d__fx" id="cartaFx" aria-hidden="true"></div>
 
         <div class="carta3d__escena">
@@ -314,18 +320,21 @@
        ================================================================ -->
     <section class="bar" id="bar" aria-labelledby="bar-title">
 
-    <!-- Botones sobre el marco de madera -->
-        <div class="bar__utfila">
-      <button class="bar__ini" type="button" data-ir="portada">⌂ portada</button>
-      <button class="bar__ini" type="button" data-ir="diario">📖 diario</button>
-      <button class="bar__ini" type="button" data-ir="contacto">✉ contactar</button>
-
-      <!-- [TEMA] modo claro / oscuro -->
-      <button class="bar__ini" type="button" data-tema aria-pressed="false">☀ claro</button>
-
-      <button class="bar__son" id="barSon" type="button" aria-pressed="false" data-carga="no">sonido: off</button>
-
-    </div>
+    <!-- Navegación superior estilo arcade de la referencia -->
+    <header class="bar__utfila">
+      <a class="bar__logo" href="#bar" data-ir="bar" aria-label="Casa Joan, inicio">CASA JOAN</a>
+      <nav class="bar__nav" aria-label="Navegación principal">
+        <button class="bar__ini" type="button" data-ir="portada">⌂ <span>Inicio</span></button>
+        <button class="bar__ini" type="button" data-ir="diario">♙ <span>Conóceme</span></button>
+        <button class="bar__ini is-active" type="button" data-ir="bar">♜ <span>El bar</span></button>
+        <button class="bar__ini" type="button" data-ir="herramientas">🎮 <span>Juegos</span></button>
+        <button class="bar__ini" type="button" data-scroll="proyectos">▧ <span>Galería</span></button>
+        <button class="bar__ini" type="button" data-ir="contacto">✉ <span>Contacto</span></button>
+      </nav>
+      <p class="bar__frase">“La vida es mejor<br> en buena compañía”</p>
+      <button class="bar__son" id="barSon" type="button" aria-pressed="false" data-carga="no">♪ sonido: off</button>
+      <button class="bar__ini bar__tema" type="button" data-tema aria-pressed="false">☼ tema</button>
+    </header>
 
     <div class="bar__marco">
 
@@ -396,6 +405,36 @@
       </div>
     </div>
 
+    <!-- Cuatro módulos interactivos inspirados en la imagen de referencia -->
+    <section class="bar__extras" aria-label="Actividades del bar">
+      <article class="bar-card bar-card--marcos">
+        <h2>▢ Camarero interactivo</h2>
+        <p>Habla con Marcos y descubre curiosidades, consejos y secretos que no todo el mundo conoce.</p>
+        <div class="bar-card__preview bar-card__chat"><span class="bar-card__avatar" aria-hidden="true">🧔🏻</span><p id="marcosMiniTexto">¿Sabías que aquí cada historia tiene su propio ingrediente secreto?</p></div>
+        <div class="bar-card__actions"><button type="button" data-marcos="curiosidad">💬 ¿Alguna curiosidad?</button><button type="button" data-marcos="consejo">💡 Dame un consejo</button><button type="button" data-marcos="secreto">🔒 Cuéntame un secreto</button><button type="button" data-marcos="despedida">↗ Estoy de paso</button></div>
+      </article>
+      <article class="bar-card bar-card--memoria">
+        <h2>♧ Minijuego de memoria</h2><p>Pon a prueba tu memoria con cuatro parejas. ¿Serás capaz de encontrarlas todas?</p>
+        <div class="memoria-grid" id="memoriaGrid" aria-label="Juego de memoria"></div>
+        <div class="memoria-info"><span>Intentos: <strong id="memoriaIntentos">0</strong></span><button type="button" id="memoriaReiniciar">↻ Reiniciar</button></div>
+        <p class="bar-card__status" id="memoriaEstado" role="status" aria-live="polite">Encuentra las cuatro parejas.</p>
+        <button class="bar-card__cta" type="button" id="memoriaJugar">▶ Jugar ahora</button>
+      </article>
+      <article class="bar-card bar-card--secretos">
+        <h2>♙ Tres secretos coleccionables</h2><p>Descubre los tres secretos del bar y guárdalos en tu navegador. ¿Podrás encontrarlos todos?</p>
+        <div class="secretos-lista" id="secretosLista"><button type="button" data-secreto="0" aria-label="Descubrir secreto uno">🔒</button><button type="button" data-secreto="1" aria-label="Descubrir secreto dos">🔒</button><button type="button" data-secreto="2" aria-label="Descubrir secreto tres">❔</button></div>
+        <div class="secretos-progreso"><span>Secretos encontrados:</span><strong id="secretosContador">0/3</strong><div class="secretos-barra"><span id="secretosBarra"></span></div></div>
+        <button class="bar-card__cta" type="button" id="secretosVer">🔒 Ver secretos</button>
+        <p class="bar-card__status" id="secretosEstado" role="status" aria-live="polite"></p>
+      </article>
+      <article class="bar-card bar-card--explora">
+        <h2>✧ Explora el bar</h2><p>Revisa cada rincón, encuentra objetos ocultos y descubre pequeñas sorpresas.</p>
+        <div class="bar-card__explora" id="barExplora" role="group" aria-label="Rincón del bar con objetos para investigar"><span class="explora__mesa">▰</span><button type="button" data-objeto="vela" aria-label="Investigar la vela">🕯️</button><button type="button" data-objeto="posavasos" aria-label="Investigar el posavasos">◉</button><button type="button" data-objeto="botella" aria-label="Investigar la botella">🍾</button><span class="explora__lupa" aria-hidden="true">⌕</span></div>
+        <p class="bar-card__status" id="exploraEstado" role="status" aria-live="polite">Pulsa un objeto para investigar.</p>
+        <button class="bar-card__cta" type="button" id="exploraBtn">⌕ Explorar</button>
+      </article>
+    </section>
+    <footer class="bar__footer"><span class="bar__footer-icon">🍺</span><span></span><p>BUENAS HISTORIAS <b>•</b> BUENAS BEBIDAS <b>•</b> CASA JOAN</p><span></span><span class="bar__dpad" aria-hidden="true">✥</span></footer>
     <p class="bar__hint" aria-hidden="true">1–11 saltar a un plato · c carta · s siguiente · m contactar · esc carta</p>
     </section>
 
@@ -671,6 +710,37 @@
       <p>Esta curiosidad viene sola: un artículo aleatorio de la Wikipedia en español, de su API pública. Sin clave, sin registro y sin base de datos.</p>
     </section>
   </div>
+
+    <section class="mini-juegos" aria-labelledby="mini-juegos-title">
+      <div class="mini-juegos__intro">
+        <p class="hero__eyebrow">Arcade · juega un rato</p>
+        <h2 id="mini-juegos-title">Mini juegos</h2>
+        <p>Tres clásicos sencillos para desconectar. Estos juegos solo aparecen en Herramientas.</p>
+      </div>
+      <div class="juegos-grid">
+        <article class="juego-card juego-card--snake">
+          <div class="juego-card__head"><span class="juego-card__icon">🐍</span><div><h3>Snake</h3><p>Come las estrellas sin chocar contigo mismo.</p></div></div>
+          <div class="snake-stage"><canvas id="snakeCanvas" width="320" height="240" aria-label="Tablero del juego Snake"></canvas></div>
+          <div class="juego-controls"><span>Puntos: <strong id="snakeScore">0</strong></span><button type="button" class="juego-btn" id="snakeStart">▶ Jugar / reiniciar</button></div>
+          <div class="snake-pad" aria-label="Controles de Snake"><button type="button" data-snake-dir="up" aria-label="Arriba">▲</button><div><button type="button" data-snake-dir="left" aria-label="Izquierda">◀</button><button type="button" data-snake-dir="down" aria-label="Abajo">▼</button><button type="button" data-snake-dir="right" aria-label="Derecha">▶</button></div></div>
+          <p class="juego-status" id="snakeStatus" aria-live="polite">Pulsa jugar y usa las flechas del teclado.</p>
+        </article>
+        <article class="juego-card juego-card--minas">
+          <div class="juego-card__head"><span class="juego-card__icon">💣</span><div><h3>Buscaminas</h3><p>Encuentra las casillas seguras y evita las minas.</p></div></div>
+          <div class="minas-info"><span>Minas: <strong>10</strong></span><span id="minasStatus" aria-live="polite">¡Suerte!</span></div>
+          <div id="minasGrid" class="minas-grid" role="group" aria-label="Tablero de buscaminas"></div>
+          <button type="button" class="juego-btn" id="minasReset">↻ Nueva partida</button>
+        </article>
+        <article class="juego-card juego-card--comecocos">
+          <div class="juego-card__head"><span class="juego-card__icon">👾</span><div><h3>Comecocos</h3><p>Recoge todos los puntos y evita al fantasma.</p></div></div>
+          <div id="pacmanBoard" class="pacman-board" role="group" aria-label="Tablero de Comecocos"></div>
+          <div class="juego-controls"><span>Puntos: <strong id="pacmanScore">0</strong></span><button type="button" class="juego-btn" id="pacmanReset">▶ Reiniciar</button></div>
+          <div class="pacman-pad" aria-label="Controles de Comecocos"><button type="button" data-pac-dir="up">▲</button><div><button type="button" data-pac-dir="left">◀</button><button type="button" data-pac-dir="down">▼</button><button type="button" data-pac-dir="right">▶</button></div></div>
+          <p class="juego-status" id="pacmanStatus" aria-live="polite">Usa las flechas del teclado o los botones.</p>
+        </article>
+      </div>
+    </section>
+</section>
 </section>
 
   <script>
@@ -678,6 +748,7 @@
 </script>
 
 <script src="script.js" defer></script>
+<script src="extras.js" defer></script>
 <!-- [v17] · volver arriba: aparece al bajar en diario/bar -->
 <button class="backtop" id="backTop" type="button" aria-label="Volver arriba">↑</button>
 </body>

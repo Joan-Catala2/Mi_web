@@ -2852,32 +2852,71 @@ html[data-tema="claro"] .bar__hint { color: #4b5563 !important; background: #f7e
   .carta3d .cara, .carta3d__puntos button { animation: none !important; transition: none !important; }
 }
 
+/* ══ HERRAMIENTAS ARCADE · acceso visual y minijuegos, aislados de otras pantallas ══ */
+.herramientas .herr-top-arcade{position:relative;padding:28px 28px 24px 104px;margin:8px 0 22px;min-height:138px;border:1px solid rgba(41,151,255,.35);border-radius:16px;background:radial-gradient(ellipse at 80% 15%,rgba(20,102,180,.2),transparent 48%),linear-gradient(115deg,rgba(4,13,32,.96),rgba(4,18,37,.72));box-shadow:inset 0 0 24px rgba(20,108,205,.08),0 12px 30px rgba(0,0,0,.22)}
+.herramientas .herr-top-arcade:before{content:'⚙';position:absolute;left:25px;top:28px;font-size:58px;color:#ffb52e;text-shadow:0 0 8px #ff9e24,0 0 24px #ff9e2444}
+.herramientas .herr-top-arcade .hero__eyebrow{color:#45d6ff;letter-spacing:.15em;font-size:.78rem}
+.herramientas .herr-top-arcade .hero__name{margin:.15rem 0;color:#ffd166;text-shadow:0 0 18px #ff9d2e55}
+.herramientas .herr-top-arcade .hero__frase{max-width:760px;color:#e4efff}
+.herr-top__detalle{margin:.4rem 0 0;color:#38d7ff;font-style:italic}
+.herr-tool-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin:0 0 26px}
+.herr-tool-card{--tool:#ffb52e;display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:9px;min-width:0;padding:19px;border:1px solid var(--tool);border-radius:12px;color:#eaf4ff;background:linear-gradient(150deg,rgba(4,16,36,.98),rgba(3,9,22,.97));box-shadow:inset 0 0 18px color-mix(in srgb,var(--tool) 9%,transparent),0 5px 0 color-mix(in srgb,var(--tool) 30%,#071326);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;cursor:pointer}
+.herr-tool-card:hover,.herr-tool-card:focus-visible{transform:translateY(-4px);box-shadow:0 0 18px color-mix(in srgb,var(--tool) 30%,transparent),0 7px 0 color-mix(in srgb,var(--tool) 35%,#071326);outline:none}
+.herr-tool-card--gold{--tool:#ffb52e}.herr-tool-card--blue{--tool:#16c9ff}.herr-tool-card--green{--tool:#54e68b}.herr-tool-card--purple{--tool:#c17bff}
+.herr-tool-card__icon{font-size:2.2rem;line-height:1.1;filter:drop-shadow(0 0 8px color-mix(in srgb,var(--tool) 55%,transparent))}
+.herr-tool-card strong{color:var(--tool);font-size:1.12rem}.herr-tool-card>span:not(.herr-tool-card__icon){color:#d8e7fb;line-height:1.5;font-size:.92rem;flex:1}.herr-tool-card b{width:100%;text-align:center;padding:9px 8px;border:1px solid var(--tool);border-radius:6px;color:var(--tool);font-size:.88rem;font-weight:700;margin-top:5px}
+.arcade-juegos{margin:28px 0 12px;color:#edf5ff}
+.arcade-juegos__cabecera{display:flex;align-items:center;gap:18px;padding:13px 19px;margin-bottom:17px;border:2px solid #ffb52e;border-radius:12px;background:linear-gradient(90deg,rgba(255,166,32,.08),rgba(4,14,31,.96),rgba(255,166,32,.06));box-shadow:0 0 16px #ffb52e24,inset 0 0 16px #ffb52e0c}
+.arcade-juegos__icono{font-size:2.4rem;filter:drop-shadow(0 0 8px #ffb52e)}.arcade-juegos__cabecera h2{margin:0;color:#ffd166;font-family:'Silkscreen',monospace;font-size:clamp(1.2rem,2.4vw,1.8rem)}.arcade-juegos__cabecera p{margin:0;color:#dbe8fa;flex:1}.arcade-juegos__detalle{color:#27cfff;font-style:italic}
+.arcade-juegos__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px;align-items:stretch}
+.arcade-game{--game:#43e58a;min-width:0;padding:17px;border:1px solid var(--game);border-radius:12px;background:linear-gradient(155deg,rgba(3,16,31,.98),rgba(2,8,20,.99));box-shadow:inset 0 0 20px color-mix(in srgb,var(--game) 8%,transparent),0 8px 22px rgba(0,0,0,.2);display:flex;flex-direction:column;gap:10px}
+.arcade-game--snake{--game:#43e58a}.arcade-game--mines{--game:#19c8ff}.arcade-game--pacman{--game:#ffb52e}
+.arcade-game__head{display:flex;align-items:center;gap:12px}.arcade-game__head>span{font-size:2rem;filter:drop-shadow(0 0 8px color-mix(in srgb,var(--game) 60%,transparent))}.arcade-game__head h3{margin:0;color:var(--game);font-size:1.28rem}.arcade-game>p:not(.arcade-status):not(.arcade-help){margin:0;min-height:3.8em;color:#dce8f7;line-height:1.5;font-size:.92rem}
+.arcade-game canvas{display:block;width:100%;height:auto;max-width:100%;background:#030b18;border:1px solid color-mix(in srgb,var(--game) 75%,#061329);border-radius:5px;image-rendering:pixelated;touch-action:manipulation}
+.snake-stats,.mines-stats,.pac-stats{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;color:#d8e9fb;font-size:.85rem}.snake-stats b,.pac-stats b{display:inline-block;color:var(--game);margin-left:5px;font-size:1rem}
+.arcade-game__actions{display:flex;flex-wrap:wrap;gap:7px}.arcade-game__actions button,.mines-stats button{flex:1;min-width:70px;border:1px solid var(--game);border-radius:6px;background:linear-gradient(180deg,color-mix(in srgb,var(--game) 24%,#07152a),#061022);color:var(--game);padding:9px 8px;font-weight:700;cursor:pointer}.arcade-game__actions button:hover,.mines-stats button:hover{background:var(--game);color:#06101e}
+.arcade-dpad{display:flex;flex-direction:column;align-items:center;gap:4px}.arcade-dpad>button,.arcade-dpad>div button{min-width:35px;min-height:30px;border:1px solid color-mix(in srgb,var(--game) 70%,#193452);border-radius:5px;background:#071a2d;color:var(--game);font-weight:800;touch-action:manipulation}.arcade-dpad>div{display:flex;gap:4px}.arcade-status{min-height:2.4em;margin:0;color:var(--game);font-size:.85rem;line-height:1.4}.arcade-help{margin:0;color:#a9c5e5;font-size:.78rem;line-height:1.4}
+.mines-board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:2px;width:100%;padding:5px;border:1px solid #168dd8;border-radius:5px;background:#061225}.mine-cell{min-width:0;aspect-ratio:1;padding:0;border:1px solid #7896b7;border-radius:2px;background:linear-gradient(145deg,#b9cbe0,#7188a8);color:#12365d;font-weight:800;font-size:clamp(.65rem,1.2vw,.9rem);cursor:pointer;touch-action:manipulation}.mine-cell:hover{filter:brightness(1.18)}.mine-cell.is-open{background:#d9e6f5;border-color:#9db7d6;cursor:default}.mine-cell[data-n="1"]{color:#1765d1}.mine-cell[data-n="2"]{color:#168344}.mine-cell[data-n="3"]{color:#c0392b}.mine-cell[data-n="4"]{color:#693bb5}.mine-cell.is-flag{background:#ffe4a3;color:#8a3b12}.mine-cell.is-mine{background:#b93439;color:#fff}
+html[data-tema="claro"] .herramientas .herr-top-arcade{background:linear-gradient(110deg,#fff6e6,#f0dfc0);border-color:#8a5a3a;box-shadow:0 8px 22px #6c4b2520}
+html[data-tema="claro"] .herramientas .herr-top-arcade .hero__frase{color:#26364a}
+html[data-tema="claro"] .herr-tool-card{background:linear-gradient(150deg,#fffdf7,#f3e4ca);color:#243248;box-shadow:0 5px 0 color-mix(in srgb,var(--tool) 30%,#e3d0b0)}
+html[data-tema="claro"] .herr-tool-card>span:not(.herr-tool-card__icon){color:#344256}
+html[data-tema="claro"] .arcade-juegos__cabecera{background:linear-gradient(90deg,#fff0cf,#fffaf0,#f6e5c7);border-color:#b7791f}
+html[data-tema="claro"] .arcade-juegos__cabecera p{color:#344256}
+html[data-tema="claro"] .arcade-game{background:linear-gradient(155deg,#fffdf8,#f2e5ce);color:#243248;box-shadow:0 8px 20px #65451d1c}
+html[data-tema="claro"] .arcade-game>p:not(.arcade-status):not(.arcade-help){color:#344256}
+html[data-tema="claro"] .snake-stats,html[data-tema="claro"] .mines-stats,html[data-tema="claro"] .pac-stats{color:#344256}
+html[data-tema="claro"] .arcade-status{color:color-mix(in srgb,var(--game) 72%,#17263a)}
+html[data-tema="claro"] .arcade-help{color:#4b5e73}
+html[data-tema="claro"] .arcade-game__actions button,html[data-tema="claro"] .mines-stats button{background:#fff7e8;color:color-mix(in srgb,var(--game) 70%,#15283d)}
+html[data-tema="claro"] .arcade-dpad>button,html[data-tema="claro"] .arcade-dpad>div button{background:#fff8eb;color:#26364a}
+@media(max-width:1050px){.herr-tool-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.arcade-juegos__grid{grid-template-columns:1fr 1fr}.arcade-game--pacman{grid-column:1/-1}}
+@media(max-width:650px){.herramientas .herr-top-arcade{padding:20px 17px 20px 76px;min-height:0}.herramientas .herr-top-arcade:before{left:16px;top:24px;font-size:42px}.herr-tool-cards{grid-template-columns:1fr 1fr;gap:9px}.herr-tool-card{padding:12px;gap:7px}.herr-tool-card strong{font-size:.98rem}.herr-tool-card>span:not(.herr-tool-card__icon){font-size:.82rem}.arcade-juegos__cabecera{gap:9px;flex-wrap:wrap}.arcade-juegos__cabecera p{flex-basis:100%;order:3}.arcade-juegos__detalle{margin-left:auto;font-size:.8rem}.arcade-juegos__grid{grid-template-columns:1fr}.arcade-game--pacman{grid-column:auto}.arcade-game{padding:13px}.arcade-game>p:not(.arcade-status):not(.arcade-help){min-height:0}.mine-cell{font-size:.78rem}}
+@media(prefers-reduced-motion:reduce){.herr-tool-card{transition:none}}
 
-/* ═══════════════════════════════════════════════════════════════
-   CASA JOAN · estrellas ambientales (todas las pantallas menos bar)
-   ═══════════════════════════════════════════════════════════════ */
-.starfield{position:fixed;inset:0;z-index:8;pointer-events:none;overflow:hidden;opacity:.82;transition:opacity .35s ease}
-.starfield__star{position:absolute;width:var(--s,2px);height:var(--s,2px);border-radius:50%;background:#d9f2ff;box-shadow:0 0 5px #74caff,0 0 11px #3b82f6;opacity:var(--o,.45);animation:starTwinkle var(--d,3s) ease-in-out var(--delay,0s) infinite alternate}
-.starfield__star:nth-child(3n){background:#ffd78a;box-shadow:0 0 5px #ffb347,0 0 12px #f59e0b}
-.starfield__star:nth-child(5n){background:#fff;box-shadow:0 0 7px #fff,0 0 13px #fbbf24}
-@keyframes starTwinkle{0%{opacity:.08;transform:scale(.65)}45%{opacity:var(--o,.45)}100%{opacity:1;transform:scale(1.3)}}
-body[data-pantalla="bar"] .starfield{display:none}
-@media(prefers-reduced-motion:reduce){.starfield__star{animation:none;opacity:.35}}
-html[data-tema="claro"] .starfield{opacity:.48}
-html[data-tema="claro"] .starfield__star{background:#2865a5;box-shadow:0 0 4px #60a5fa;}
-
-/* Mini juegos: solo viven dentro de la pantalla Herramientas */
-.mini-juegos{margin:clamp(2rem,5vw,4rem) auto 1rem;max-width:1250px;padding:clamp(1rem,3vw,2rem);position:relative;z-index:1;border:1px solid #24435f;border-radius:24px;background:linear-gradient(145deg,#071426ed,#0a1020f2);box-shadow:0 20px 60px #0004,inset 0 1px #7dd3fc16}
-.mini-juegos__intro{text-align:center;margin-bottom:1.5rem}.mini-juegos__intro h2{font-family:Silkscreen,monospace;color:#fbbf24;font-size:clamp(1.4rem,3vw,2.2rem);margin:.35rem 0 .65rem;text-shadow:0 0 18px #f59e0b33}.mini-juegos__intro p:last-child{color:#bfd0e5;max-width:650px;margin:.5rem auto}
-.juegos-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;align-items:stretch}
-.juego-card{--juego:#f59e0b;min-width:0;padding:1rem;border:1px solid color-mix(in srgb,var(--juego),transparent 30%);border-radius:18px;background:linear-gradient(155deg,#101f33,#080f1e);box-shadow:0 10px 28px #0004,inset 0 1px #ffffff0b;display:flex;flex-direction:column;gap:.8rem;color:#eaf3ff}
-.juego-card--minas{--juego:#45d483}.juego-card--comecocos{--juego:#36b9ff}
-.juego-card__head{display:flex;gap:.8rem;align-items:center}.juego-card__icon{display:grid;place-items:center;width:48px;height:48px;flex:0 0 48px;border:1px solid var(--juego);border-radius:13px;background:color-mix(in srgb,var(--juego),transparent 90%);font-size:1.5rem}.juego-card h3{font-family:Silkscreen,monospace;font-size:1rem;color:var(--juego);margin:0 0 .3rem}.juego-card__head p{font-size:.9rem;color:#b8c8dc;margin:0;line-height:1.4}.snake-stage{background:#050b16;border:1px solid #34506b;border-radius:12px;padding:5px;display:grid;place-items:center}.snake-stage canvas{width:100%;max-width:320px;height:auto;image-rendering:pixelated;display:block;border-radius:7px}.juego-controls{display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;font-size:.9rem}.juego-controls strong{color:var(--juego)}.juego-btn{border:1px solid var(--juego);background:color-mix(in srgb,var(--juego),#08111e 78%);color:#fff;border-radius:10px;padding:.65rem .8rem;font-weight:700;cursor:pointer;transition:transform .15s,filter .15s}.juego-btn:hover{filter:brightness(1.2);transform:translateY(-2px)}.juego-status{font-size:.82rem;min-height:2.2em;color:#c6d7ea;margin:0}.snake-pad,.pacman-pad{display:flex;flex-direction:column;align-items:center;gap:4px}.snake-pad>div,.pacman-pad>div{display:flex;gap:4px}.snake-pad button,.pacman-pad button{width:38px;height:32px;border:1px solid #496783;background:#13253a;color:#eaf3ff;border-radius:8px;cursor:pointer}.snake-pad button:focus-visible,.pacman-pad button:focus-visible,.minas-grid button:focus-visible{outline:2px solid var(--juego);outline-offset:2px}
-.minas-info{display:flex;justify-content:space-between;gap:.5rem;font-size:.82rem;color:#c7d8e8}.minas-info span:last-child{color:var(--juego)}.minas-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:3px;padding:7px;background:#050b16;border:1px solid #29445e;border-radius:12px}.minas-grid button{aspect-ratio:1;min-width:0;padding:0;border:1px solid #35516c;border-radius:4px;background:linear-gradient(145deg,#1a3550,#102239);color:#fff;font-weight:800;font-size:clamp(.65rem,1.3vw,.95rem);cursor:pointer}.minas-grid button.revealed{background:#dce9f5;color:#193047;border-color:#9bb5ca}.minas-grid button.mine{background:#7f1d1d;color:white}.minas-grid button.flagged{color:#ffd166;border-color:#f59e0b}.pacman-board{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:3px;background:#030817;border:1px solid #1e4f89;border-radius:12px;padding:7px;min-height:180px}.pacman-cell{aspect-ratio:1;display:grid;place-items:center;border-radius:4px;background:#07152a;color:#fbbf24;font-size:clamp(.55rem,1.2vw,.9rem);line-height:1}.pacman-cell.wall{background:#123c76;box-shadow:inset 0 0 0 1px #3283d6}.pacman-cell.player{color:#ffe45c;text-shadow:0 0 8px #ffcc00;font-size:1.1rem}.pacman-cell.ghost{color:#ff6b9d;text-shadow:0 0 8px #ff347a}.pacman-cell.empty{color:transparent}
-html[data-tema="claro"] .mini-juegos{background:linear-gradient(145deg,#fffdf7,#e9f2fc);border-color:#9db7d0;box-shadow:0 18px 42px #1b3b5b20}
-html[data-tema="claro"] .mini-juegos__intro h2{color:#92400e;text-shadow:none}html[data-tema="claro"] .mini-juegos__intro p:last-child{color:#334155}
-html[data-tema="claro"] .juego-card{background:linear-gradient(155deg,#fff,#eef4fa);color:#172b42;box-shadow:0 8px 20px #1e3a5f18}
-html[data-tema="claro"] .juego-card__head p,html[data-tema="claro"] .juego-status,html[data-tema="claro"] .minas-info{color:#40536a}
-html[data-tema="claro"] .juego-btn{color:#fff}html[data-tema="claro"] .snake-pad button,html[data-tema="claro"] .pacman-pad button{background:#e1edf7;color:#18324b;border-color:#9ab4cc}
-@media(max-width:900px){.juegos-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.juego-card--comecocos{grid-column:1/-1}}
-@media(max-width:600px){.juegos-grid{grid-template-columns:1fr}.juego-card--comecocos{grid-column:auto}.mini-juegos{padding:.8rem;margin:2rem .6rem}.juego-card{padding:.8rem}.pacman-board{min-height:0}}
+/* FIX: permitir desplazarse por TODA la pantalla de Herramientas y llegar a los juegos */
+body[data-pantalla="herramientas"] .herramientas{
+  position:fixed;
+  inset:0;
+  z-index:30;
+  display:flex;
+  flex-direction:column;
+  width:100%;
+  height:100vh;
+  height:100dvh;
+  min-height:0;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+  scroll-behavior:smooth;
+  padding-bottom:max(22px, env(safe-area-inset-bottom));
+}
+body[data-pantalla="herramientas"] .herramientas__barra{flex:0 0 auto}
+body[data-pantalla="herramientas"] .herramientas__top,
+body[data-pantalla="herramientas"] .herr-tool-cards,
+body[data-pantalla="herramientas"] .herr,
+body[data-pantalla="herramientas"] .arcade-juegos{flex-shrink:0}
+@media(prefers-reduced-motion:reduce){
+  body[data-pantalla="herramientas"] .herramientas{scroll-behavior:auto}
+}

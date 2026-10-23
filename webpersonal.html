@@ -15,7 +15,6 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body data-pantalla="portada">
-  <div id="starfield" class="starfield" aria-hidden="true"></div>
 
   <!-- ================================================================
        PANTALLA DE CARGA
@@ -635,10 +634,18 @@
     <button class="btn4" type="button" data-tema aria-pressed="false">☀ claro</button>
   </div>
 
-  <div class="herramientas__top">
-    <p class="hero__eyebrow">Utilidades · en vivo · sin base de datos</p>
-    <h2 class="hero__name" id="herr-title">Herramientas</h2>
-    <p class="hero__frase">Cuatro utilidades, una a la vez. Pulsa la pestaña y te la sirvo.</p>
+  <div class="herramientas__top herr-top-arcade">
+    <p class="hero__eyebrow">UTILIDADES · APIs · DIVERSIÓN</p>
+    <h2 class="hero__name" id="herr-title">⚙ Herramientas</h2>
+    <p class="hero__frase">Herramientas útiles y pequeños juegos para hacer tu día más fácil y divertido.</p>
+    <p class="herr-top__detalle">Explora, prueba y disfruta.</p>
+  </div>
+
+  <div class="herr-tool-cards" aria-label="Accesos rápidos a herramientas">
+    <button class="herr-tool-card herr-tool-card--gold" type="button" data-herr="monedas"><span class="herr-tool-card__icon">💱</span><strong>Conversor de divisas</strong><span>Convierte monedas de forma rápida y sencilla.</span><b>→ Abrir herramienta</b></button>
+    <button class="herr-tool-card herr-tool-card--blue" type="button" data-herr="paises"><span class="herr-tool-card__icon">🌐</span><strong>Países del mundo</strong><span>Descubre capitales, población, idiomas y más.</span><b>→ Abrir herramienta</b></button>
+    <button class="herr-tool-card herr-tool-card--green" type="button" data-herr="clima"><span class="herr-tool-card__icon">🌤️</span><strong>Tiempo en tu ciudad</strong><span>Consulta la información meteorológica disponible.</span><b>→ Abrir herramienta</b></button>
+    <button class="herr-tool-card herr-tool-card--purple" type="button" data-herr="curiosidades"><span class="herr-tool-card__icon">&lt;/&gt;</span><strong>APIs y utilidades</strong><span>Curiosidades y recursos útiles para tus proyectos.</span><b>→ Ver herramientas</b></button>
   </div>
 
   <div class="herr">
@@ -711,36 +718,35 @@
     </section>
   </div>
 
-    <section class="mini-juegos" aria-labelledby="mini-juegos-title">
-      <div class="mini-juegos__intro">
-        <p class="hero__eyebrow">Arcade · juega un rato</p>
-        <h2 id="mini-juegos-title">Mini juegos</h2>
-        <p>Tres clásicos sencillos para desconectar. Estos juegos solo aparecen en Herramientas.</p>
-      </div>
-      <div class="juegos-grid">
-        <article class="juego-card juego-card--snake">
-          <div class="juego-card__head"><span class="juego-card__icon">🐍</span><div><h3>Snake</h3><p>Come las estrellas sin chocar contigo mismo.</p></div></div>
-          <div class="snake-stage"><canvas id="snakeCanvas" width="320" height="240" aria-label="Tablero del juego Snake"></canvas></div>
-          <div class="juego-controls"><span>Puntos: <strong id="snakeScore">0</strong></span><button type="button" class="juego-btn" id="snakeStart">▶ Jugar / reiniciar</button></div>
-          <div class="snake-pad" aria-label="Controles de Snake"><button type="button" data-snake-dir="up" aria-label="Arriba">▲</button><div><button type="button" data-snake-dir="left" aria-label="Izquierda">◀</button><button type="button" data-snake-dir="down" aria-label="Abajo">▼</button><button type="button" data-snake-dir="right" aria-label="Derecha">▶</button></div></div>
-          <p class="juego-status" id="snakeStatus" aria-live="polite">Pulsa jugar y usa las flechas del teclado.</p>
-        </article>
-        <article class="juego-card juego-card--minas">
-          <div class="juego-card__head"><span class="juego-card__icon">💣</span><div><h3>Buscaminas</h3><p>Encuentra las casillas seguras y evita las minas.</p></div></div>
-          <div class="minas-info"><span>Minas: <strong>10</strong></span><span id="minasStatus" aria-live="polite">¡Suerte!</span></div>
-          <div id="minasGrid" class="minas-grid" role="group" aria-label="Tablero de buscaminas"></div>
-          <button type="button" class="juego-btn" id="minasReset">↻ Nueva partida</button>
-        </article>
-        <article class="juego-card juego-card--comecocos">
-          <div class="juego-card__head"><span class="juego-card__icon">👾</span><div><h3>Comecocos</h3><p>Recoge todos los puntos y evita al fantasma.</p></div></div>
-          <div id="pacmanBoard" class="pacman-board" role="group" aria-label="Tablero de Comecocos"></div>
-          <div class="juego-controls"><span>Puntos: <strong id="pacmanScore">0</strong></span><button type="button" class="juego-btn" id="pacmanReset">▶ Reiniciar</button></div>
-          <div class="pacman-pad" aria-label="Controles de Comecocos"><button type="button" data-pac-dir="up">▲</button><div><button type="button" data-pac-dir="left">◀</button><button type="button" data-pac-dir="down">▼</button><button type="button" data-pac-dir="right">▶</button></div></div>
-          <p class="juego-status" id="pacmanStatus" aria-live="polite">Usa las flechas del teclado o los botones.</p>
-        </article>
-      </div>
-    </section>
-</section>
+  <section class="arcade-juegos" aria-labelledby="arcade-juegos-titulo">
+    <div class="arcade-juegos__cabecera"><span class="arcade-juegos__icono">🎮</span><h2 id="arcade-juegos-titulo">Juegos</h2><p>Tres clásicos para desconectar un rato.</p><span class="arcade-juegos__detalle">¿Listo para jugar?</span></div>
+    <div class="arcade-juegos__grid">
+      <article class="arcade-game arcade-game--snake">
+        <header class="arcade-game__head"><span>🐍</span><h3>Snake</h3></header><p>Mueve la serpiente, recoge estrellas y consigue la mejor puntuación sin chocar contigo mismo.</p>
+        <div class="snake-stats"><span>Puntuación <b id="snakeScore">0</b></span><span>Récord <b id="snakeBest">0</b></span></div>
+        <canvas id="snakeCanvas" width="300" height="220" aria-label="Tablero del juego Snake"></canvas>
+        <div class="arcade-game__actions"><button type="button" id="snakeStart">▶ Jugar</button><button type="button" id="snakePause">Ⅱ Pausar</button><button type="button" id="snakeReset">↻ Reiniciar</button></div>
+        <div class="arcade-dpad" aria-label="Controles de Snake"><button data-snake-dir="up" aria-label="Arriba">▲</button><div><button data-snake-dir="left" aria-label="Izquierda">◀</button><button data-snake-dir="down" aria-label="Abajo">▼</button><button data-snake-dir="right" aria-label="Derecha">▶</button></div></div>
+        <p class="arcade-status" id="snakeStatus" aria-live="polite">Pulsa «Jugar» para empezar.</p>
+      </article>
+
+      <article class="arcade-game arcade-game--mines">
+        <header class="arcade-game__head"><span>✹</span><h3>Buscaminas</h3></header><p>Encuentra las casillas seguras en un tablero de 8 × 8. Usa los números y marca las minas con banderas.</p>
+        <div class="mines-stats"><span>Minas: <b id="minesLeft">10</b></span><span>Tiempo: <b id="minesTime">00:00</b></span><button type="button" id="minesReset">Reiniciar</button></div>
+        <div id="minesBoard" class="mines-board" role="grid" aria-label="Buscaminas 8 por 8"></div>
+        <p class="arcade-help">Clic: descubrir · Clic derecho: poner/quitar bandera.</p><p class="arcade-status" id="minesStatus" aria-live="polite">¡Suerte! La primera casilla siempre es segura.</p>
+      </article>
+
+      <article class="arcade-game arcade-game--pacman">
+        <header class="arcade-game__head"><span>🟡</span><h3>Comecocos</h3></header><p>Recoge todos los puntos del laberinto y evita a los fantasmas. ¡No dejes que te pillen!</p>
+        <div class="pac-stats"><span>Puntos <b id="pacScore">0</b></span><span>Vidas <b id="pacLives">3</b></span></div>
+        <canvas id="pacCanvas" width="300" height="250" aria-label="Laberinto del juego Comecocos"></canvas>
+        <div class="arcade-game__actions"><button type="button" id="pacStart">▶ Jugar</button><button type="button" id="pacReset">↻ Reiniciar</button></div>
+        <div class="arcade-dpad" aria-label="Controles de Comecocos"><button data-pac-dir="up" aria-label="Arriba">▲</button><div><button data-pac-dir="left" aria-label="Izquierda">◀</button><button data-pac-dir="down" aria-label="Abajo">▼</button><button data-pac-dir="right" aria-label="Derecha">▶</button></div></div>
+        <p class="arcade-status" id="pacStatus" aria-live="polite">Pulsa «Jugar» para entrar al laberinto.</p>
+      </article>
+    </div>
+  </section>
 </section>
 
   <script>

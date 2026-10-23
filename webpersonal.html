@@ -120,6 +120,35 @@
         </div>
       </div>
 
+      <section class="cj-perfil-neon" aria-label="Conóceme: perfil personal">
+        <div class="cj-perfil-neon__hero">
+          <div class="cj-perfil-neon__arte">
+            <img src="img/joan.jpg" alt="Retrato de Joan Català Mateu" onerror="this.closest('.cj-perfil-neon__arte').classList.add('sin-retrato')">
+            <div class="cj-perfil-neon__arte-texto"><span>CASA JOAN</span><strong>PLAYER 01</strong><small>DAM · ESGRIMA · IA</small></div>
+          </div>
+          <article class="cj-perfil-neon__presentacion">
+            <p class="cj-perfil-neon__eyebrow">✦ PERFIL DEL JUGADOR ✦</p>
+            <h2>♙ Conóceme</h2>
+            <p>Hola, soy Joan Català Mateu. He terminado Bachillerato y estoy cursando primero de DAM en el IES Simarro. Me gusta entrenar, aprender y construir proyectos; cuando algo no funciona, lo corrijo y vuelvo a intentarlo.</p>
+            <p>En esta sección puedes descubrir mis intereses, mi trayectoria y las cosas que quiero seguir mejorando.</p>
+            <blockquote>«Construyendo proyectos mientras aprendo.»</blockquote>
+          </article>
+        </div>
+        <div class="cj-perfil-neon__tarjetas">
+          <article class="cj-card cj-card--naranja"><h3>♙ Sobre mí</h3><p>Curioso y constante. Me gusta superarme, aprender y descubrir nuevas experiencias.</p><a href="#sobre-mi">Ver más sobre mí ↗</a></article>
+          <article class="cj-card cj-card--azul"><h3>♡ Mis gustos</h3><ul><li>⚔️ Esgrima</li><li>✈️ Viajar</li><li>♫ Música</li><li>▤ Aprender inglés</li><li>⌘ Tecnología e IA</li></ul></article>
+          <article class="cj-card cj-card--verde"><h3>▥ Datos rápidos</h3><ul><li><b>Estudios</b><span>1º DAM · IES Simarro</span></li><li><b>Idiomas</b><span>Valenciano C1 · Inglés B2 en curso</span></li><li><b>Interés</b><span>Programación e IA</span></li><li><b>Deporte</b><span>Esgrima · 7 años</span></li></ul></article>
+          <article class="cj-card cj-card--morado"><h3>◎ Mis metas</h3><ul><li>✓ Seguir avanzando en DAM</li><li>✓ Mejorar mi inglés</li><li>✓ Seguir entrenando esgrima</li><li>✓ Crear proyectos con IA</li></ul><button type="button" data-scroll="trayectoria">Ver mi línea de tiempo →</button></article>
+        </div>
+        <section class="cj-galeria-neon" aria-label="Un poco más de mí">
+          <h2>✧ Un poco más de mí…</h2>
+          <div class="cj-galeria-neon__grid">
+            <a href="#esgrima"><span>⚔️</span><b>Esgrima</b></a><a href="#viajar"><span>✈️</span><b>Viajar</b></a><a href="#musica"><span>♫</span><b>Música</b></a><a href="#ia"><span>⌘</span><b>Tecnología</b></a><a href="#sobre-mi"><span>🏔</span><b>Naturaleza</b></a><a href="#proyectos"><span>🌃</span><b>Proyectos</b></a>
+          </div>
+          <aside>«Las grandes cosas se construyen paso a paso.»</aside>
+        </section>
+      </section>
+
       <!-- [MEJORA 2] el sumario se convierte en índice visual por JS -->
             <!-- ── CARTA-MENÚ del diario (sustituye al antiguo <nav class="sumario">) ── -->
            <!-- ══ CARTA-3D: índice cilíndrico girable ══ -->
@@ -242,7 +271,7 @@
     <!-- ────────────────────────────────────────────────────────────
          [MEJORA 8] línea temporal
          ──────────────────────────────────────────────────────────── -->
-    <section class="linea" aria-label="Trayectoria">
+    <section class="linea" id="trayectoria" aria-label="Trayectoria">
       <p class="linea__eyebrow">Trayectoria</p>
       <ol class="linea__lista">
         <li data-reveal>

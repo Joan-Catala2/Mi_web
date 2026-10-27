@@ -95,7 +95,7 @@ function pintarErrorClima(mensaje){ $$('[data-clima]').forEach(function(b){ var 
   if(e)e.textContent='☁️ Tiempo no disponible'; if(t)t.textContent='— '+unidadTemp(); if(x)x.textContent='Revisa la API key, la ciudad o la conexión.'; if(n)n.textContent=mensaje||'Error desconocido'; botonReintento(b,cargarClima); }); }
 function cargarClima(){ if(!CLIMA.key||CLIMA.key.indexOf('TU_API_KEY')>-1){pintarErrorClima('Falta la API key en script.js.');return;}
   fetch(climaUrl()).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(pintarClima)
-  .catch(function(e){console.error('[clima]',e);pintarErrorClima(e.message);}); }
+  .catch(function(e){console.warn('[clima]',e);pintarErrorClima(e.message);}); }
 
 /* ══════════════════════════════════════════════════════════════════════
    1c. DIVISAS
@@ -119,7 +119,7 @@ function pintarErrorMonedas(m){ $$('[data-monedas]').forEach(function(b){ var r=
 function cargarTasas(){ if(!MONEDAS.key||MONEDAS.key.indexOf('PEGA_TU_KEY')>-1){pintarErrorMonedas('Falta la API key de ExchangeRate-API en script.js.');return;}
   fetch(monedasUrl(MONEDAS.base)).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
   .then(function(d){ if(d.result&&d.result!=='success')throw new Error(d['error-type']||'respuesta de error'); ultimaTasas=d; pintarMonedas(); })
-  .catch(function(e){console.error('[monedas]',e);pintarErrorMonedas('No se pudieron cargar las tasas: '+e.message);}); }
+  .catch(function(e){console.warn('[monedas]',e);pintarErrorMonedas('No se pudieron cargar las tasas: '+e.message);}); }
 function inicializarBloqueMonedas(b){ if(b.dataset.monedasListo==='1')return; poblarSelects(b);
   var cEl=b.querySelector('[data-m-cantidad]'),oEl=b.querySelector('[data-m-origen]'),dEl=b.querySelector('[data-m-destino]'),chEl=b.querySelector('[data-m-cambiar]');
   var r=function(){pintarBloqueMonedas(b);}; on(cEl,'input',r); on(oEl,'change',r); on(dEl,'change',r);
@@ -150,11 +150,11 @@ function cargarPais(b,codigo){ var er=b.querySelector('[data-p-error]'),n=b.quer
   if(n)n.textContent='Cargando '+codigo+'…'; if(f)f.innerHTML=''; if(er)er.hidden=true;
   fetch(paisesUrl(codigo)).then(function(r){ if(r.status===404)throw new Error('País no encontrado: '+codigo); if(r.status===429)throw new Error('Límite de peticiones (429). Espera un momento.'); if(!r.ok)throw new Error('HTTP '+r.status); return r.json(); })
   .then(function(res){ var d=Array.isArray(res)?res[0]:res; if(!d||!d.name)throw new Error('País no encontrado: '+codigo); pintarBloquePaises(b,d); })
-  .catch(function(e){console.error('[paises]',e);pintarErrorPaises(b,e.message||'No se pudo cargar el país.');}); }
+  .catch(function(e){console.warn('[paises]',e);pintarErrorPaises(b,e.message||'No se pudo cargar el país.');}); }
 function obtenerListaPaises(){ if(listaPaisesCache&&listaPaisesCache.length)return Promise.resolve(listaPaisesCache);
   return fetch(paisesListaUrl()).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
   .then(function(a){ var c=(a||[]).map(function(x){return x.alpha3Code||x.cca3;}).filter(Boolean); if(!c.length)throw new Error('lista vacía'); listaPaisesCache=c; return c; })
-  .catch(function(e){console.error('[paises lista]',e); return CODIGOS_PAI.slice();}); }
+  .catch(function(e){console.warn('[paises lista]',e); return CODIGOS_PAI.slice();}); }
 function inicializarBloquePaises(b){ if(b.dataset.paisesListo==='1')return; var cod=b.querySelector('[data-p-codigo]'),bu=b.querySelector('[data-p-buscar]'),al=b.querySelector('[data-p-aleatorio]');
   var buscar=function(){var c=cod?cod.value:PAISES.codigo; cargarPais(b,c);}; on(bu,'click',buscar); on(cod,'keydown',function(e){if(e.key==='Enter'){e.preventDefault();buscar();}});
   on(al,'click',function(){ obtenerListaPaises().then(function(l){var c=pick(l); if(cod)cod.value=c; cargarPais(b,c);}); });
@@ -173,7 +173,7 @@ function pintarCuriosidad(b,data){ var ti=b.querySelector('[data-c-titulo]'),tx=
 function pintarErrorCuriosidad(b,m){ var er=b.querySelector('[data-c-error]'),ti=b.querySelector('[data-c-titulo]'),tx=b.querySelector('[data-c-texto]'),im=b.querySelector('[data-c-imagen]'); if(er){er.hidden=false;er.textContent=m||'No se pudo cargar la curiosidad.';} if(ti)ti.textContent='—'; if(tx)tx.textContent='—'; if(im)im.innerHTML=''; botonReintento(b,function(){cargarCuriosidad(b);}); }
 function cargarCuriosidad(b){ var er=b.querySelector('[data-c-error]'),ti=b.querySelector('[data-c-titulo]'); if(ti)ti.textContent='Buscando algo curioso…'; if(er)er.hidden=true;
   fetch(CURIOSIDADES.url).then(function(r){ if(r.status===429)throw new Error('Demasiadas peticiones seguidas. Espera un momento y vuelve a pulsar.'); if(!r.ok)throw new Error('HTTP '+r.status); return r.json(); })
-  .then(function(d){pintarCuriosidad(b,d);}).catch(function(e){console.error('[curiosidades]',e);pintarErrorCuriosidad(b,e.message);}); }
+  .then(function(d){pintarCuriosidad(b,d);}).catch(function(e){console.warn('[curiosidades]',e);pintarErrorCuriosidad(b,e.message);}); }
 function inicializarBloqueCuriosidades(b){ if(b.dataset.curiosidadesListo==='1')return; on(b.querySelector('[data-c-nueva]'),'click',function(){cargarCuriosidad(b);}); b.dataset.curiosidadesListo='1'; cargarCuriosidad(b); }
 function inicializarCuriosidades(){ $$('[data-curiosidades]').forEach(inicializarBloqueCuriosidades); }
 
@@ -391,18 +391,33 @@ modulo('scroll-directo',function(){ document.addEventListener('click',function(e
 modulo('backtop',function(){ var bt=document.getElementById('backTop'); if(!bt)return; function revisar(){ var y=window.scrollY||document.documentElement.scrollTop; var p=document.body.dataset.pantalla; bt.classList.toggle('is-on',(p==='diario'||p==='bar'||p==='herramientas')&&y>600); } on(window,'scroll',revisar); on(window,'resize',revisar); on(bt,'click',function(){window.scrollTo({top:0,behavior:REDUCED?'auto':'smooth'});}); revisar(); });
 
 /* ══════════════════════════════════════════════════════════════════════
-   13. [v17 · FORM-MAILTO]  el formulario abre tu gestor de correo
+   13. [FIX · FORM-ENVIO]  el formulario envía de verdad vía Web3Forms
+   (sustituye al antiguo form-mailto que abría el gestor de correo y
+    contradecía el action del <form>). Pinta el estado en #formEstado.
    ══════════════════════════════════════════════════════════════════════ */
-modulo('form-mailto',function(){ var f=document.getElementById('formContacto'); if(!f)return; var estado=document.getElementById('formEstado'); var MAIL='catalajoan19@gmail.com';
+modulo('form-envio',function(){ var f=document.getElementById('formContacto'); if(!f)return; var estado=document.getElementById('formEstado'); var btn=f.querySelector('button[type="submit"]');
   function set(txt,tipo){ if(!estado)return; estado.textContent=txt; estado.className='fc__estado'+(tipo?' is-'+tipo:''); }
-  f.addEventListener('submit',function(e){ e.preventDefault(); var d=new FormData(f); var nombre=(d.get('nombre')||'').trim(), mail=(d.get('email')||'').trim(), msg=(d.get('mensaje')||'').trim();
-    if(!nombre){set('Escribe tu nombre.', 'err'); return;} if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){set('El email no parece válido.', 'err'); return;} if(!msg){set('Escribe un mensaje.', 'err'); return;}
-    var asunto='Contacto desde Casa Joan — '+nombre; var cuerpo='Nombre: '+nombre+'\nEmail: '+mail+'\n\n'+msg+'\n\n— Enviado desde webpersonal';
-    set('Abriendo tu correo…', 'ok'); window.location.href='mailto:'+MAIL+'?subject='+encodeURIComponent(asunto)+'&body='+encodeURIComponent(cuerpo); });
+  f.addEventListener('submit',function(e){ e.preventDefault();
+    var d=new FormData(f); var nombre=(d.get('nombre')||'').trim(), mail=(d.get('email')||'').trim(), msg=(d.get('mensaje')||'').trim();
+    if(!nombre){set('Escribe tu nombre.','err');return;}
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){set('El email no parece válido.','err');return;}
+    if(!msg){set('Escribe un mensaje.','err');return;}
+    var key=(d.get('access_key')||'').trim(); if(!key){set('Falta la access_key en el formulario.','err');return;}
+    if(btn){btn.disabled=true; btn.textContent='Enviando…';}
+    set('Enviando…','carga');
+    fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
+      body:JSON.stringify({access_key:key,subject:(d.get('subject')||'Mensaje desde Casa Joan'),name:nombre,email:mail,message:msg})})
+      .then(function(r){return r.json();})
+      .then(function(j){ if(j.success){f.reset();set('MENSAJE ENVIADO ✔ el camarero lo guarda en la barra.','ok');} else {set('No se ha enviado: '+(j.message||'error')+'. Reintenta.','err');} })
+      .catch(function(err){ console.warn('[form]',err); set('Sin conexión. Prueba en un momento.','err'); })
+      .finally(function(){ if(btn){btn.disabled=false; btn.textContent='Enviar mensaje →';} });
+  });
 });
 
 /* ══════════════════════════════════════════════════════════════════════
    14. [v18 · HERR-TABS]  una sola herramienta visible a la vez
+   [FIX] los accesos rápidos (.herr-tool-card) viven fuera de .herr;
+   antes no activaban nada. Añadido fallback al primer .herr.
    ══════════════════════════════════════════════════════════════════════ */
 modulo('herr-tabs',function(){
   function activar(grupo,clave){
@@ -411,7 +426,7 @@ modulo('herr-tabs',function(){
   }
   document.addEventListener('click',function(e){
     var t=e.target.closest&&e.target.closest('[data-herr]'); if(!t)return;
-    var grupo=t.closest('.herr'); if(!grupo)return;
+    var grupo=t.closest('.herr')||document.querySelector('.herr'); if(!grupo)return;
     e.preventDefault(); activar(grupo,t.getAttribute('data-herr')); Sonido.tintir();
   });
 });

@@ -5600,3 +5600,14 @@ html[data-tema="claro"] .diario__cuerpo p,html[data-tema="claro"] .diario__cuerp
 @media(max-width:900px){.cj-perfil-neon__tarjetas{grid-template-columns:repeat(2,minmax(0,1fr))}.cj-galeria-neon__grid{grid-template-columns:repeat(3,minmax(0,1fr));padding-right:0}.cj-galeria-neon aside{position:static;width:auto;min-height:70px;margin-top:12px}.cj-perfil-neon__hero{grid-template-columns:1fr 1fr}}
 @media(max-width:620px){.cj-perfil-neon__hero{grid-template-columns:1fr}.cj-perfil-neon__arte{min-height:220px}.cj-perfil-neon__arte img{min-height:220px;max-height:300px}.cj-perfil-neon__tarjetas{grid-template-columns:1fr}.cj-galeria-neon__grid{grid-template-columns:repeat(2,minmax(0,1fr))}.diario__barra{position:relative}.cj-perfil-neon__presentacion h2{font-size:23px}}
 @media(prefers-reduced-motion:reduce){.cj-card,.cj-galeria-neon__grid a{transition:none}}
+/* parche rápido contra desbordes (arregla la causa cuando puedas) */
+html, body { overflow-x: hidden; }
+
+/* que nada fijo de px desborde */
+img, video, canvas { max-width: 100%; height: auto; }
+
+/* el índice 3D en móvil: reduce el radio para que no se salga */
+@media (max-width: 600px) {
+  .carta3d__cubo { --r: 220px; }   /* ajusta el número hasta que quepa */
+  .hero__name { font-size: clamp(1.8rem, 8vw, 3rem); } /* títulos que ceden */
+}
